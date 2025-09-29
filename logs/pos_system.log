@@ -1,0 +1,56 @@
+2025-09-29 14:35:52,265 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 14:35:52,353 - MainController - INFO - Sistema POS iniciado
+2025-09-29 14:35:52,353 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 14:35:52,353 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 14:35:52,569 - AuthController - ERROR - Error mostrando login: 'SystemSettings' object has no attribute 'get_colors'
+2025-09-29 14:35:52,569 - MainController - WARNING - Fallo de login: Error al inicializar login: 'SystemSettings' object has no attribute 'get_colors'
+2025-09-29 14:35:52,574 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 14:36:35,002 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 14:36:35,023 - MainController - INFO - Sistema POS iniciado
+2025-09-29 14:36:35,023 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 14:36:35,023 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 14:40:39,781 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 14:40:39,872 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 14:40:39,903 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 14:40:39,912 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 14:40:39,932 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 14:40:39,941 - database - ERROR - Error ejecutando query: 1146 (42S02): Table 'pos_system.user_sessions' doesn't exist
+2025-09-29 14:40:39,942 - database - ERROR - Query: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-09-29 14:40:39,942 - database - ERROR - Params: (1, 'admin', 'admin', datetime.datetime(2025, 9, 29, 14, 40, 39, 913088), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 9, 29, 22, 40, 39, 913120))
+2025-09-29 14:40:39,944 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 14:40:39,945 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 14:40:39,945 - model.AuthModel - ERROR - Error creando sesión: 'session_id'
+2025-09-29 14:40:39,946 - AuthController - WARNING - Error de login: Error al crear sesión
+2025-09-29 14:40:39,946 - MainController - WARNING - Fallo de login: Error al crear sesión
+2025-09-29 14:42:31,050 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 14:42:31,054 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 14:42:31,075 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 14:42:31,082 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 14:42:31,106 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 14:42:31,111 - database - ERROR - Error ejecutando query: 1146 (42S02): Table 'pos_system.user_sessions' doesn't exist
+2025-09-29 14:42:31,112 - database - ERROR - Query: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-09-29 14:42:31,112 - database - ERROR - Params: (1, 'admin', 'admin', datetime.datetime(2025, 9, 29, 14, 42, 31, 82487), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 9, 29, 22, 42, 31, 82504))
+2025-09-29 14:42:31,114 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 14:42:31,114 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 14:42:31,115 - model.AuthModel - ERROR - Error creando sesión: 'session_id'
+2025-09-29 14:42:31,115 - AuthController - WARNING - Error de login: Error al crear sesión
+2025-09-29 14:42:31,115 - MainController - WARNING - Fallo de login: Error al crear sesión
+2025-09-29 14:42:48,701 - AuthController - INFO - Intento de login para usuario: cajero1
+2025-09-29 14:42:48,716 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 14:42:48,731 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 14:42:48,740 - model.UserModel - INFO - Usuario autenticado exitosamente: cajero1
+2025-09-29 14:42:48,762 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 14:42:48,768 - database - ERROR - Error ejecutando query: 1146 (42S02): Table 'pos_system.user_sessions' doesn't exist
+2025-09-29 14:42:48,768 - database - ERROR - Query: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-09-29 14:42:48,768 - database - ERROR - Params: (2, 'cajero1', 'cashier', datetime.datetime(2025, 9, 29, 14, 42, 48, 740583), 'manual', True, '{"ventas": ["ver", "crear"], "productos": ["ver"]}', datetime.datetime(2025, 9, 29, 22, 42, 48, 740601))
+2025-09-29 14:42:48,770 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 14:42:48,770 - model.AuthModel - INFO - Sesión creada para usuario: cajero1
+2025-09-29 14:42:48,770 - model.AuthModel - ERROR - Error creando sesión: 'session_id'
+2025-09-29 14:42:48,771 - AuthController - WARNING - Error de login: Error al crear sesión
+2025-09-29 14:42:48,771 - MainController - WARNING - Fallo de login: Error al crear sesión
+2025-09-29 14:43:10,573 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 14:43:10,576 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 14:43:10,576 - model.AuthModel - INFO - Sesión cerrada para usuario: cajero1
+2025-09-29 14:43:10,576 - MainController - INFO - Logout de usuario cajero1, razón: cleanup
+2025-09-29 14:43:10,576 - AuthController - INFO - Logout exitoso para: cajero1
+2025-09-29 14:43:10,579 - AuthController - INFO - Controlador de autenticación limpiado

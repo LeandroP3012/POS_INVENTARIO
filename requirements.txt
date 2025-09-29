@@ -1,0 +1,12 @@
+# Dependencias del Sistema POS
+mysql-connector-python>=8.0.33
+
+# Dependencias incluidas en Python estándar (no requieren instalación):
+# - tkinter (GUI)
+# - hashlib (hashing)
+# - json (manejo de JSON)
+# - datetime (fechas y tiempo)
+# - logging (sistema de logs)
+# - os (sistema operativo)
+# - sys (sistema Python)
+# - typing (type hints)

@@ -1,0 +1,521 @@
+"""
+Controlador Principal del Sistema POS
+Maneja la aplicación completa y coordina entre controladores
+"""
+
+import tkinter as tk
+from tkinter import messagebox
+import logging
+import sys
+import os
+from typing import Dict, Any, Optional
+from controllers.auth_controller import AuthController
+from views.login_view import LoginView
+from config.settings import SystemSettings
+
+class MainController:
+    """Controlador principal de la aplicación"""
+    
+    def __init__(self):
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.settings = SystemSettings()
+        
+        # Estado de la aplicación
+        self.is_running = False
+        self.current_user = None
+        
+        # Controladores
+        self.auth_controller = AuthController()
+        
+        # Ventana principal (se crea después del login)
+        self.main_window = None
+        
+        # Configurar logging
+        self._setup_logging()
+        
+        # Configurar controladores
+        self._setup_controllers()
+        
+        self.logger.info("Sistema POS iniciado")
+    
+    def _setup_logging(self):
+        """Configurar sistema de logging"""
+        try:
+            # Crear directorio de logs si no existe
+            os.makedirs('logs', exist_ok=True)
+            
+            # Configurar logging si no está configurado
+            if not logging.getLogger().handlers:
+                logging.basicConfig(
+                    level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    handlers=[
+                        logging.FileHandler('logs/app.log', encoding='utf-8'),
+                        logging.StreamHandler()
+                    ]
+                )
+            
+        except Exception as e:
+            print(f"Error configurando logging: {e}")
+    
+    def _setup_controllers(self):
+        """Configurar callbacks de controladores"""
+        # Configurar callbacks del controlador de autenticación
+        self.auth_controller.set_login_success_callback(self._on_login_success)
+        self.auth_controller.set_login_failure_callback(self._on_login_failure)
+        self.auth_controller.set_logout_callback(self._on_logout)
+    
+    def start(self):
+        """Iniciar la aplicación"""
+        try:
+            self.is_running = True
+            self.logger.info("Iniciando aplicación POS")
+            
+            # Mostrar pantalla de login
+            self._show_login()
+            
+        except Exception as e:
+            self.logger.error(f"Error iniciando aplicación: {e}")
+            self._show_error("Error Fatal", f"No se pudo iniciar la aplicación: {str(e)}")
+            sys.exit(1)
+    
+    def _show_login(self):
+        """Mostrar pantalla de login"""
+        try:
+            self.logger.info("Mostrando pantalla de login")
+            self.auth_controller.show_login()
+            
+        except Exception as e:
+            self.logger.error(f"Error mostrando login: {e}")
+            self._show_error("Error de Login", f"No se pudo mostrar la pantalla de login: {str(e)}")
+    
+    def _on_login_success(self, user_data: Dict[str, Any]):
+        """Manejar login exitoso"""
+        try:
+            self.current_user = user_data
+            username = user_data.get('username', 'Usuario')
+            user_type = user_data.get('user_type', 'user')
+            
+            self.logger.info(f"Login exitoso para {user_type}: {username}")
+            
+            # Crear y mostrar ventana principal
+            self._create_main_window()
+            
+        except Exception as e:
+            self.logger.error(f"Error después del login exitoso: {e}")
+            self._show_error("Error", f"Error al inicializar la aplicación: {str(e)}")
+    
+    def _on_login_failure(self, error_message: str):
+        """Manejar fallo de login"""
+        self.logger.warning(f"Fallo de login: {error_message}")
+        # El error ya se muestra en la vista de login
+    
+    def _on_logout(self, username: str, reason: str):
+        """Manejar logout"""
+        try:
+            self.logger.info(f"Logout de usuario {username}, razón: {reason}")
+            
+            # Cerrar ventana principal si existe
+            if self.main_window:
+                self.main_window.destroy()
+                self.main_window = None
+            
+            # Limpiar datos del usuario actual
+            self.current_user = None
+            
+            # Mostrar login nuevamente si el logout no fue por cierre de aplicación
+            if reason != 'cleanup' and self.is_running:
+                self._show_login()
+            
+        except Exception as e:
+            self.logger.error(f"Error en logout: {e}")
+    
+    def _create_main_window(self):
+        """Crear ventana principal del sistema"""
+        try:
+            # Crear ventana principal
+            self.main_window = tk.Tk()
+            self.main_window.title("Sistema POS - Panel Principal")
+            self.main_window.geometry("1200x800")
+            self.main_window.state('zoomed')  # Maximizar en Windows
+            
+            # Configurar protocolo de cierre
+            self.main_window.protocol("WM_DELETE_WINDOW", self._on_main_window_close)
+            
+            # Configurar colores
+            colors = self.settings.get_colors()
+            self.main_window.configure(bg=colors['background'])
+            
+            # Crear interfaz principal
+            self._create_main_interface()
+            
+            # Mostrar ventana
+            self.main_window.deiconify()
+            self.main_window.lift()
+            self.main_window.focus_force()
+            
+            # Iniciar loop principal
+            self.main_window.mainloop()
+            
+        except Exception as e:
+            self.logger.error(f"Error creando ventana principal: {e}")
+            self._show_error("Error", f"No se pudo crear la ventana principal: {str(e)}")
+    
+    def _create_main_interface(self):
+        """Crear interfaz principal"""
+        try:
+            # Crear barra de menú
+            self._create_menu_bar()
+            
+            # Crear barra de herramientas
+            self._create_toolbar()
+            
+            # Crear área principal
+            self._create_main_area()
+            
+            # Crear barra de estado
+            self._create_status_bar()
+            
+        except Exception as e:
+            self.logger.error(f"Error creando interfaz principal: {e}")
+            raise
+    
+    def _create_menu_bar(self):
+        """Crear barra de menú"""
+        menubar = tk.Menu(self.main_window)
+        self.main_window.config(menu=menubar)
+        
+        # Menú Archivo
+        file_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Archivo", menu=file_menu)
+        file_menu.add_command(label="Nueva Venta", command=self._new_sale)
+        file_menu.add_separator()
+        file_menu.add_command(label="Cerrar Sesión", command=self._logout)
+        file_menu.add_command(label="Salir", command=self._exit_application)
+        
+        # Menú Ventas
+        sales_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Ventas", menu=sales_menu)
+        sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
+        sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
+        
+        # Menú Inventario (solo si tiene permisos)
+        if self.auth_controller.has_permission('inventory_view'):
+            inventory_menu = tk.Menu(menubar, tearoff=0)
+            menubar.add_cascade(label="Inventario", menu=inventory_menu)
+            inventory_menu.add_command(label="Ver Productos", command=self._view_products)
+            
+            if self.auth_controller.has_permission('inventory_manage'):
+                inventory_menu.add_command(label="Agregar Producto", command=self._add_product)
+                inventory_menu.add_command(label="Gestionar Inventario", command=self._manage_inventory)
+        
+        # Menú Reportes (solo supervisores y admins)
+        if self.auth_controller.has_permission('reports_basic'):
+            reports_menu = tk.Menu(menubar, tearoff=0)
+            menubar.add_cascade(label="Reportes", menu=reports_menu)
+            reports_menu.add_command(label="Ventas del Día", command=self._daily_sales_report)
+            
+            if self.auth_controller.has_permission('reports_full'):
+                reports_menu.add_command(label="Reporte Completo", command=self._full_report)
+        
+        # Menú Administración (solo admins)
+        if self.auth_controller.has_permission('users_manage'):
+            admin_menu = tk.Menu(menubar, tearoff=0)
+            menubar.add_cascade(label="Administración", menu=admin_menu)
+            admin_menu.add_command(label="Gestionar Usuarios", command=self._manage_users)
+            admin_menu.add_command(label="Configuración", command=self._system_config)
+        
+        # Menú Ayuda
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Ayuda", menu=help_menu)
+        help_menu.add_command(label="Manual de Usuario", command=self._show_manual)
+        help_menu.add_command(label="Acerca de", command=self._show_about)
+    
+    def _create_toolbar(self):
+        """Crear barra de herramientas"""
+        toolbar_frame = tk.Frame(self.main_window, bg=self.settings.get_colors()['surface'])
+        toolbar_frame.pack(fill='x', padx=5, pady=5)
+        
+        # Información del usuario
+        user_info = f"Usuario: {self.current_user.get('full_name', self.current_user.get('username'))}"
+        user_info += f" ({self.current_user.get('user_type', 'user').title()})"
+        
+        user_label = tk.Label(
+            toolbar_frame,
+            text=user_info,
+            bg=self.settings.get_colors()['surface'],
+            fg=self.settings.get_colors()['on_surface'],
+            font=('Segoe UI', 10, 'bold')
+        )
+        user_label.pack(side='left', padx=10)
+        
+        # Botones de acción rápida
+        quick_buttons_frame = tk.Frame(toolbar_frame, bg=self.settings.get_colors()['surface'])
+        quick_buttons_frame.pack(side='right', padx=10)
+        
+        # Botón Nueva Venta
+        new_sale_btn = tk.Button(
+            quick_buttons_frame,
+            text="Nueva Venta",
+            command=self._new_sale,
+            bg=self.settings.get_colors()['primary'],
+            fg='white',
+            font=('Segoe UI', 10, 'bold'),
+            padx=20,
+            pady=5
+        )
+        new_sale_btn.pack(side='left', padx=5)
+        
+        # Botón Cerrar Sesión
+        logout_btn = tk.Button(
+            quick_buttons_frame,
+            text="Cerrar Sesión",
+            command=self._logout,
+            bg=self.settings.get_colors()['secondary'],
+            fg='white',
+            font=('Segoe UI', 10),
+            padx=15,
+            pady=5
+        )
+        logout_btn.pack(side='left', padx=5)
+    
+    def _create_main_area(self):
+        """Crear área principal"""
+        main_frame = tk.Frame(self.main_window, bg=self.settings.get_colors()['background'])
+        main_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # Título de bienvenida
+        welcome_label = tk.Label(
+            main_frame,
+            text=f"¡Bienvenido al Sistema POS, {self.current_user.get('full_name', self.current_user.get('username'))}!",
+            bg=self.settings.get_colors()['background'],
+            fg=self.settings.get_colors()['on_background'],
+            font=('Segoe UI', 18, 'bold')
+        )
+        welcome_label.pack(pady=30)
+        
+        # Panel de accesos rápidos
+        self._create_quick_access_panel(main_frame)
+    
+    def _create_quick_access_panel(self, parent):
+        """Crear panel de accesos rápidos"""
+        panel_frame = tk.Frame(parent, bg=self.settings.get_colors()['surface'])
+        panel_frame.pack(fill='both', expand=True, padx=20, pady=20)
+        
+        title_label = tk.Label(
+            panel_frame,
+            text="Accesos Rápidos",
+            bg=self.settings.get_colors()['surface'],
+            fg=self.settings.get_colors()['on_surface'],
+            font=('Segoe UI', 14, 'bold')
+        )
+        title_label.pack(pady=20)
+        
+        # Grid de botones
+        buttons_frame = tk.Frame(panel_frame, bg=self.settings.get_colors()['surface'])
+        buttons_frame.pack(expand=True)
+        
+        # Definir botones según permisos
+        buttons = []
+        
+        # Botón Nueva Venta (todos los usuarios)
+        buttons.append({
+            'text': '🛒\nNueva Venta',
+            'command': self._new_sale,
+            'color': self.settings.get_colors()['primary']
+        })
+        
+        # Botón Historial (todos los usuarios)
+        buttons.append({
+            'text': '📋\nHistorial',
+            'command': self._sales_history,
+            'color': self.settings.get_colors()['secondary']
+        })
+        
+        # Botón Productos (si tiene permisos)
+        if self.auth_controller.has_permission('inventory_view'):
+            buttons.append({
+                'text': '📦\nProductos',
+                'command': self._view_products,
+                'color': self.settings.get_colors()['success']
+            })
+        
+        # Botón Reportes (si tiene permisos)
+        if self.auth_controller.has_permission('reports_basic'):
+            buttons.append({
+                'text': '📊\nReportes',
+                'command': self._daily_sales_report,
+                'color': self.settings.get_colors()['warning']
+            })
+        
+        # Botón Administración (solo admins)
+        if self.auth_controller.has_permission('users_manage'):
+            buttons.append({
+                'text': '⚙️\nAdministración',
+                'command': self._manage_users,
+                'color': self.settings.get_colors()['danger']
+            })
+        
+        # Crear botones en grid
+        cols = 3
+        for i, btn_config in enumerate(buttons):
+            row = i // cols
+            col = i % cols
+            
+            btn = tk.Button(
+                buttons_frame,
+                text=btn_config['text'],
+                command=btn_config['command'],
+                bg=btn_config['color'],
+                fg='white',
+                font=('Segoe UI', 12, 'bold'),
+                width=15,
+                height=4,
+                relief='flat',
+                cursor='hand2'
+            )
+            btn.grid(row=row, column=col, padx=15, pady=15, sticky='nsew')
+        
+        # Configurar grid
+        for i in range(cols):
+            buttons_frame.grid_columnconfigure(i, weight=1)
+    
+    def _create_status_bar(self):
+        """Crear barra de estado"""
+        status_frame = tk.Frame(self.main_window, bg=self.settings.get_colors()['surface'])
+        status_frame.pack(fill='x', side='bottom')
+        
+        # Información de sesión
+        session_info = self.auth_controller.get_session_info()
+        if session_info.get('authenticated'):
+            time_remaining = session_info.get('time_remaining', {})
+            hours = time_remaining.get('hours', 0)
+            minutes = time_remaining.get('minutes', 0)
+            
+            status_text = f"Sesión activa - Tiempo restante: {hours}h {minutes}m"
+        else:
+            status_text = "Sin sesión activa"
+        
+        status_label = tk.Label(
+            status_frame,
+            text=status_text,
+            bg=self.settings.get_colors()['surface'],
+            fg=self.settings.get_colors()['on_surface'],
+            font=('Segoe UI', 9)
+        )
+        status_label.pack(side='left', padx=10, pady=5)
+        
+        # Versión del sistema
+        version_label = tk.Label(
+            status_frame,
+            text="Sistema POS v1.0",
+            bg=self.settings.get_colors()['surface'],
+            fg=self.settings.get_colors()['on_surface_variant'],
+            font=('Segoe UI', 9)
+        )
+        version_label.pack(side='right', padx=10, pady=5)
+    
+    # Métodos de acción (placeholder - se implementarán con los módulos correspondientes)
+    def _new_sale(self):
+        """Iniciar nueva venta"""
+        messagebox.showinfo("Nueva Venta", "Módulo de ventas en desarrollo")
+    
+    def _sales_history(self):
+        """Mostrar historial de ventas"""
+        messagebox.showinfo("Historial", "Módulo de historial en desarrollo")
+    
+    def _view_products(self):
+        """Ver productos"""
+        messagebox.showinfo("Productos", "Módulo de productos en desarrollo")
+    
+    def _add_product(self):
+        """Agregar producto"""
+        messagebox.showinfo("Agregar Producto", "Función en desarrollo")
+    
+    def _manage_inventory(self):
+        """Gestionar inventario"""
+        messagebox.showinfo("Inventario", "Módulo de inventario en desarrollo")
+    
+    def _daily_sales_report(self):
+        """Reporte de ventas diarias"""
+        messagebox.showinfo("Reporte Diario", "Módulo de reportes en desarrollo")
+    
+    def _full_report(self):
+        """Reporte completo"""
+        messagebox.showinfo("Reporte Completo", "Función en desarrollo")
+    
+    def _manage_users(self):
+        """Gestionar usuarios"""
+        messagebox.showinfo("Gestión de Usuarios", "Módulo en desarrollo")
+    
+    def _system_config(self):
+        """Configuración del sistema"""
+        messagebox.showinfo("Configuración", "Módulo en desarrollo")
+    
+    def _show_manual(self):
+        """Mostrar manual"""
+        messagebox.showinfo("Manual", "Manual de usuario en desarrollo")
+    
+    def _show_about(self):
+        """Mostrar información del sistema"""
+        about_text = """Sistema POS v1.0
+        
+Desarrollado con Python y Tkinter
+Arquitectura MVC
+
+Características:
+- Autenticación por roles
+- Gestión de ventas
+- Control de inventario
+- Reportes avanzados
+- Base de datos MySQL
+
+© 2024 Sistema POS"""
+        
+        messagebox.showinfo("Acerca de Sistema POS", about_text)
+    
+    def _logout(self):
+        """Cerrar sesión"""
+        if messagebox.askyesno("Cerrar Sesión", "¿Estás seguro de que deseas cerrar sesión?"):
+            self.auth_controller.logout('manual')
+    
+    def _exit_application(self):
+        """Salir de la aplicación"""
+        self._on_main_window_close()
+    
+    def _on_main_window_close(self):
+        """Manejar cierre de ventana principal"""
+        if messagebox.askyesno("Salir", "¿Estás seguro de que deseas salir del sistema?"):
+            self.shutdown()
+    
+    def _show_error(self, title: str, message: str):
+        """Mostrar mensaje de error"""
+        try:
+            messagebox.showerror(title, message)
+        except:
+            print(f"ERROR: {title} - {message}")
+    
+    def shutdown(self):
+        """Cerrar aplicación completamente"""
+        try:
+            self.logger.info("Cerrando aplicación POS")
+            self.is_running = False
+            
+            # Cerrar sesión si existe
+            if self.auth_controller.is_authenticated():
+                self.auth_controller.logout('cleanup')
+            
+            # Limpiar controladores
+            self.auth_controller.cleanup()
+            
+            # Cerrar ventana principal
+            if self.main_window:
+                self.main_window.quit()
+                self.main_window.destroy()
+            
+            self.logger.info("Aplicación cerrada correctamente")
+            
+        except Exception as e:
+            self.logger.error(f"Error cerrando aplicación: {e}")
+        finally:
+            sys.exit(0)

@@ -267,6 +267,25 @@ class SystemSettings:
         return cls.COLORS.get(color_name.upper(), cls.COLORS['PRIMARY'])
     
     @classmethod
+    def get_colors(cls) -> Dict[str, str]:
+        """Obtener todos los colores del sistema en formato compatible con vistas"""
+        return {
+            'primary': cls.COLORS['PRIMARY'],
+            'primary_dark': cls.COLORS['DARK'],
+            'secondary': cls.COLORS['SECONDARY'],
+            'success': cls.COLORS['SUCCESS'],
+            'warning': cls.COLORS['WARNING'],
+            'danger': cls.COLORS['DANGER'],
+            'info': cls.COLORS['INFO'],
+            'background': cls.COLORS['BG_PRIMARY'],
+            'surface': cls.COLORS['BG_SECONDARY'],
+            'on_background': cls.COLORS['TEXT_PRIMARY'],
+            'on_surface': cls.COLORS['TEXT_PRIMARY'],
+            'on_surface_variant': cls.COLORS['TEXT_SECONDARY'],
+            'error': cls.COLORS['DANGER']
+        }
+    
+    @classmethod
     def get_directory(cls, dir_name: str) -> str:
         """Obtener directorio del sistema por nombre"""
         return cls.DIRECTORIES.get(dir_name.upper(), 'temp')
