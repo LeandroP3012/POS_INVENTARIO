@@ -1,0 +1,8 @@
+2025-09-29 01:14:16 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 01:14:16 - ERROR - Error ejecutando query: Unread result found
+2025-09-29 01:14:16 - ERROR - Query: SHOW DATABASES
+2025-09-29 01:14:16 - ERROR - Params: None
+2025-09-29 01:14:16 - INFO - Intentando reconectar a la base de datos...
+2025-09-29 01:14:16 - ERROR - Error cerrando conexión: Unread result found
+2025-09-29 01:14:16 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 01:14:16 - INFO - Conexión a MySQL cerrada

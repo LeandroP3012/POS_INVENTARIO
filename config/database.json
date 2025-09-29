@@ -1,0 +1,46 @@
+{
+    "host": "localhost",
+    "port": 3306,
+    "database": "pos_system",
+    "username": "root",
+    "password": "D3v3l0p3r@@$",
+    "charset": "utf8mb4",
+    "autocommit": true,
+    "pool_name": "pos_pool",
+    "pool_size": 5,
+    "pool_reset_session": true,
+    "connection_timeout": 10,
+    "reconnection_attempts": 3,
+    "ssl_disabled": true,
+    
+    "_comentarios": {
+        "info": "Configuración de conexión MySQL para Sistema POS",
+        "instrucciones": [
+            "1. Modifique 'username' y 'password' según su instalación de MySQL",
+            "2. Para XAMPP/WAMP: password usualmente está vacío ('')",
+            "3. Para MAMP: puerto usualmente es 8889",
+            "4. Para instalaciones personalizadas: ajuste host, puerto y credenciales",
+            "5. El sistema creará automáticamente la base de datos 'pos_system'"
+        ],
+        "ejemplos_comunes": {
+            "XAMPP_Windows": {
+                "host": "localhost",
+                "port": 3306,
+                "username": "root",
+                "password": ""
+            },
+            "MAMP_Mac": {
+                "host": "localhost", 
+                "port": 8889,
+                "username": "root",
+                "password": "root"
+            },
+            "MySQL_Personalizado": {
+                "host": "localhost",
+                "port": 3306,
+                "username": "tu_usuario",
+                "password": "tu_contraseña"
+            }
+        }
+    }
+}
