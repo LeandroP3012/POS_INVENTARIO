@@ -352,12 +352,42 @@ CREATE TABLE IF NOT EXISTS stock_movements (
 COMMENT='Movimientos de stock';
 
 -- =============================================================================
+-- TABLA: user_sessions
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS user_sessions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    username VARCHAR(50) NOT NULL,
+    user_type VARCHAR(20) NOT NULL,
+    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    logout_time TIMESTAMP NULL,
+    login_method VARCHAR(20) DEFAULT 'manual',
+    logout_reason VARCHAR(50) NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    permissions JSON,
+    expires_at TIMESTAMP NOT NULL,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_user_id (user_id),
+    INDEX idx_username (username),
+    INDEX idx_is_active (is_active),
+    INDEX idx_expires_at (expires_at),
+    INDEX idx_login_time (login_time),
+    INDEX idx_last_activity (last_activity),
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
+COMMENT='Sesiones de usuarios activas';
+
+-- =============================================================================
 -- TABLA: activity_logs
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS activity_logs (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT,
-    action VARCHAR(100) NOT NULL,
+    activity_type VARCHAR(50) NOT NULL,
     table_name VARCHAR(50),
     record_id INT,
     description TEXT,
@@ -369,7 +399,7 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     INDEX idx_user_id (user_id),
-    INDEX idx_action (action),
+    INDEX idx_activity_type (activity_type),
     INDEX idx_table_name (table_name),
     INDEX idx_record_id (record_id),
     INDEX idx_created_at (created_at),

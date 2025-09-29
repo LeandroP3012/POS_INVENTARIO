@@ -79,6 +79,12 @@ class BaseView:
             padding=(15, 8)
         )
         
+        self.style.map(
+            'Secondary.TButton',
+            background=[('active', colors['primary']),
+                       ('pressed', colors['primary'])]
+        )
+        
         self.style.configure(
             'Success.TButton',
             background=colors['success'],

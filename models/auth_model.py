@@ -35,9 +35,16 @@ class AuthModel(BaseModel):
             
             # Si hay conexión a BD, guardar sesión
             if self.connect():
-                session_id = self.create(session_data)
-                if session_id:
-                    session_data['session_id'] = session_id
+                try:
+                    session_id = self.create(session_data)
+                    if session_id:
+                        session_data['session_id'] = session_id
+                    else:
+                        # Si falla la inserción, usar ID local
+                        session_data['session_id'] = f"local_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                except Exception as db_error:
+                    self.logger.warning(f"Error guardando sesión en BD: {db_error}")
+                    session_data['session_id'] = f"local_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             else:
                 # Generar ID local
                 session_data['session_id'] = f"local_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -45,16 +52,19 @@ class AuthModel(BaseModel):
             # Establecer como sesión actual
             self.current_session = session_data
             
-            # Log de actividad
-            self.log_activity(
-                'LOGIN', 
-                user_data.get('id', 0), 
-                f"Usuario {user_data.get('username')} inició sesión", 
-                user_data.get('id', 0)
-            )
+            # Log de actividad (opcional si falla)
+            try:
+                self.log_activity(
+                    'LOGIN', 
+                    user_data.get('id', 0), 
+                    f"Usuario {user_data.get('username')} inició sesión", 
+                    user_data.get('id', 0)
+                )
+            except Exception as log_error:
+                self.logger.warning(f"No se pudo registrar actividad: {log_error}")
             
             self.logger.info(f"Sesión creada para usuario: {user_data.get('username')}")
-            return session_data['session_id']
+            return session_data.get('session_id')
             
         except Exception as e:
             self.logger.error(f"Error creando sesión: {e}")

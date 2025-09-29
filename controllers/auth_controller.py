@@ -51,6 +51,9 @@ class AuthController:
                 self.login_view = LoginView()
                 self._setup_login_callbacks()
             
+            # Resetear formulario para limpiar estado previo
+            self.login_view.reset_form()
+            
             # Cargar usuario recordado si existe
             self._load_remembered_user()
             
