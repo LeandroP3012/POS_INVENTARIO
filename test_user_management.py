@@ -20,6 +20,16 @@ def test_imports():
         from models.user_model import UserModel
         print("   ✅ UserModel importado correctamente")
         
+        # Probar importar sistema de roles
+        from models.role_model import RoleModel
+        print("   ✅ RoleModel importado correctamente")
+        
+        from controllers.role_controller import RoleController
+        print("   ✅ RoleController importado correctamente")
+        
+        from views.role_management_view import RoleManagementView
+        print("   ✅ RoleManagementView importado correctamente")
+        
         return True
         
     except Exception as e:
@@ -77,6 +87,70 @@ def test_user_model():
         traceback.print_exc()
         return False
 
+def test_role_controller():
+    """Probar el controlador de roles"""
+    try:
+        print("\n🔄 Probando RoleController...")
+        
+        from controllers.role_controller import RoleController
+        
+        # Crear instancia del controlador
+        controller = RoleController()
+        print("   ✅ RoleController instanciado correctamente")
+        
+        # Probar obtener roles
+        roles = controller.get_all_roles()
+        print(f"   ✅ get_all_roles() ejecutado, {len(roles)} roles encontrados")
+        
+        if roles:
+            print(f"      Primer rol: {roles[0]['name']}")
+        
+        # Probar obtener permisos
+        permissions = controller.get_all_permissions()
+        print(f"   ✅ get_all_permissions() ejecutado, {len(permissions)} permisos disponibles")
+        
+        # Probar permisos por categoría
+        permissions_by_cat = controller.get_permissions_by_category()
+        print(f"   ✅ get_permissions_by_category() ejecutado, {len(permissions_by_cat)} categorías")
+        
+        return True
+        
+    except Exception as e:
+        print(f"   ❌ Error en RoleController: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+def test_role_model():
+    """Probar el modelo de roles"""
+    try:
+        print("\n🔄 Probando RoleModel...")
+        
+        from models.role_model import RoleModel
+        
+        # Crear instancia del modelo
+        model = RoleModel()
+        print("   ✅ RoleModel instanciado correctamente")
+        
+        # Probar obtener roles
+        roles = model.get_all_roles()
+        print(f"   ✅ get_all_roles() ejecutado, {len(roles)} roles encontrados")
+        
+        if roles:
+            print(f"      Primer rol: {roles[0]}")
+        
+        # Probar estadísticas
+        stats = model.get_roles_stats()
+        print(f"   ✅ get_roles_stats() ejecutado: {stats}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"   ❌ Error en RoleModel: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
 if __name__ == "__main__":
     print("=" * 50)
     print("🧪 PRUEBAS DE GESTIÓN DE USUARIOS")
@@ -88,6 +162,8 @@ if __name__ == "__main__":
     all_tests_passed &= test_imports()
     all_tests_passed &= test_user_controller()
     all_tests_passed &= test_user_model()
+    all_tests_passed &= test_role_model()
+    all_tests_passed &= test_role_controller()
     
     print("\n" + "=" * 50)
     if all_tests_passed:

@@ -223,6 +223,8 @@ class MainController:
             admin_menu = tk.Menu(menubar, tearoff=0)
             menubar.add_cascade(label="Administración", menu=admin_menu)
             admin_menu.add_command(label="Gestionar Usuarios", command=self._manage_users)
+            admin_menu.add_command(label="Gestionar Roles", command=self._manage_roles)
+            admin_menu.add_separator()
             admin_menu.add_command(label="Configuración", command=self._system_config)
         
         # Menú Ayuda
@@ -690,7 +692,7 @@ class MainController:
             permissions_map = {
                 'manager': ['users_view', 'stats_view', 'config_view'],
                 'employee': ['stats_view'],
-                'admin': ['users_manage', 'users_view', 'stats_view', 'config_view', 'config_manage']
+                'admin': ['users_manage', 'users_view', 'roles_manage', 'roles_view', 'stats_view', 'config_view', 'config_manage']
             }
             
             allowed_permissions = permissions_map.get(user_type, [])
@@ -904,6 +906,50 @@ class MainController:
             traceback.print_exc()
             self.logger.error(f"Error abriendo gestión de usuarios: {e}")
             messagebox.showerror("Error", f"Error abriendo la gestión de usuarios:\n{str(e)}")
+    
+    def _manage_roles(self):
+        """Gestionar roles y permisos"""
+        try:
+            print("🔐 DEBUG: Abriendo gestión de roles desde main_controller")
+            print(f"   - main_window tipo: {type(self.main_window)}")
+            print(f"   - current_user: {self.current_user}")
+            
+            # Verificar permisos del usuario
+            if not self._check_user_permission('roles_manage'):
+                messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder a la gestión de roles")
+                return
+            
+            # Limpiar la ventana principal
+            self._clear_main_content()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Crear contenido de gestión de roles en la ventana principal
+            from views.role_management_view import RoleManagementView
+            print("   🔄 Creando RoleManagementView...")
+            
+            # Pasar el current_user como diccionario con la estructura esperada
+            user_data = {
+                'id': self.current_user.get('id', 0),
+                'username': self.current_user.get('username', ''),
+                'full_name': self.current_user.get('full_name', ''),
+                'email': self.current_user.get('email', ''),
+                'role': self.current_user.get('user_type', 'admin'),  # Mapear user_type a role
+                'permissions': self.current_user.get('permissions', {})
+            }
+            
+            self.roles_view = RoleManagementView(self.main_window, user_data, embedded=True)
+            print("   ✅ RoleManagementView creada exitosamente")
+            
+            # Registrar callbacks
+            self.roles_view.bind_callback('back_to_dashboard', self._back_to_dashboard)
+            print("   ✅ Callbacks registrados")
+            
+        except Exception as e:
+            print(f"   ❌ Error en _manage_roles: {e}")
+            import traceback
+            traceback.print_exc()
+            self.logger.error(f"Error abriendo gestión de roles: {e}")
+            messagebox.showerror("Error", f"Error abriendo la gestión de roles:\n{str(e)}")
     
     def _manage_clients(self):
         """Gestionar clientes"""

@@ -1928,3 +1928,159 @@
 2025-09-30 13:29:05,932 - AuthController - INFO - Logout exitoso para: admin
 2025-09-30 13:29:05,983 - AuthController - INFO - Controlador de autenticación limpiado
 2025-09-30 13:29:05,983 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-30 13:44:08,492 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-30 13:44:08,544 - MainController - INFO - Sistema POS iniciado
+2025-09-30 13:44:08,545 - MainController - INFO - Iniciando aplicación POS
+2025-09-30 13:44:08,545 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 13:44:22,965 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 13:44:23,065 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:23,066 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:23,066 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 13:44:25,070 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:25,071 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:44:25,071 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:25,071 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 13:44:28,127 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 13:44:30,595 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:42,437 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-09-30 13:44:42,437 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:42,437 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:44:42,438 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:42,438 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:44:42,438 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:42,438 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:44:42,439 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:42,439 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:44:42,439 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:42,439 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:44:42,439 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:44:42,439 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-09-30 13:44:42,440 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:47:16,779 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:53:35,079 - MainController - INFO - Cerrando aplicación POS
+2025-09-30 13:53:35,079 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:53:35,079 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:53:35,079 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:53:35,079 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 13:53:35,079 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-30 13:53:35,232 - AuthController - INFO - Logout exitoso para: admin
+2025-09-30 13:53:35,288 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-30 13:53:35,288 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-30 13:55:52,432 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-30 13:55:52,481 - MainController - INFO - Sistema POS iniciado
+2025-09-30 13:55:52,482 - MainController - INFO - Iniciando aplicación POS
+2025-09-30 13:55:52,482 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 13:55:58,075 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 13:55:58,188 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:55:58,188 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:55:58,189 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 13:56:00,198 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:00,198 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:56:00,199 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:00,199 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 13:56:03,270 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 13:56:04,810 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:21,553 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:30,077 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-09-30 13:56:30,077 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:30,077 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:56:30,077 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:30,078 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:56:30,078 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:30,078 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:56:30,078 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:30,078 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:56:30,079 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:30,079 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:56:30,079 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:30,079 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-09-30 13:56:30,079 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:42,406 - controller.RoleController - INFO - Obteniendo rol por ID: 2
+2025-09-30 13:56:42,407 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:42,407 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:56:42,407 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:46,906 - controller.RoleController - INFO - Obteniendo rol por ID: 2
+2025-09-30 13:56:46,907 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:56:46,907 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:56:46,907 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:03,714 - controller.RoleController - INFO - Obteniendo rol por ID: 4
+2025-09-30 13:58:03,714 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:03,715 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:03,715 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:06,340 - controller.RoleController - INFO - Obteniendo rol por ID: 4
+2025-09-30 13:58:06,340 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:06,340 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:06,340 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:09,071 - controller.RoleController - INFO - Obteniendo rol por ID: 1
+2025-09-30 13:58:09,071 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:09,072 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:09,072 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:12,125 - controller.RoleController - INFO - Obteniendo rol por ID: 1
+2025-09-30 13:58:12,125 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:12,125 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:12,125 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:12,921 - controller.RoleController - INFO - Obteniendo rol por ID: 2
+2025-09-30 13:58:12,922 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:12,922 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:12,922 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:14,181 - controller.RoleController - INFO - Obteniendo rol por ID: 3
+2025-09-30 13:58:14,181 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:14,182 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:14,182 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:17,276 - controller.RoleController - INFO - Obteniendo rol por ID: 4
+2025-09-30 13:58:17,277 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:17,277 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:17,278 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:19,121 - controller.RoleController - INFO - Obteniendo rol por ID: 5
+2025-09-30 13:58:19,122 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:19,123 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:19,123 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:20,578 - controller.RoleController - INFO - Obteniendo rol por ID: 5
+2025-09-30 13:58:20,579 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:20,579 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:20,580 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,128 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-09-30 13:58:23,128 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,129 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:23,129 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,129 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:23,129 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,130 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:23,130 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,130 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:23,130 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,131 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:23,131 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,131 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-09-30 13:58:23,132 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,812 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-09-30 13:58:23,812 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,813 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:23,813 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,813 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:23,813 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,813 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:23,814 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,814 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:23,814 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,814 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:58:23,814 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:23,815 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-09-30 13:58:23,815 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:31,157 - controller.RoleController - INFO - Desactivando rol ID: 4
+2025-09-30 13:58:31,158 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:31,158 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:31,158 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:58:31,158 - database - ERROR - Error inesperado: 'database'
+2025-09-30 14:04:05,308 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 14:04:05,309 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 14:04:09,258 - database - ERROR - Error inesperado: 'database'
+2025-09-30 14:16:29,909 - MainController - INFO - Cerrando aplicación POS
+2025-09-30 14:16:29,910 - database - ERROR - Error inesperado: 'database'
+2025-09-30 14:16:29,910 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 14:16:29,910 - database - ERROR - Error inesperado: 'database'
+2025-09-30 14:16:29,910 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 14:16:29,910 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-30 14:16:30,197 - AuthController - INFO - Logout exitoso para: admin
+2025-09-30 14:16:30,346 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-30 14:16:30,347 - MainController - INFO - Aplicación cerrada correctamente
