@@ -1,0 +1,9 @@
+2025-09-30 12:13:20 - INFO - Intento de login para usuario: admin
+2025-09-30 12:13:20 - ERROR - Error inesperado: 'database'
+2025-09-30 12:13:20 - ERROR - Error inesperado: 'database'
+2025-09-30 12:13:20 - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 12:13:20 - ERROR - Error inesperado: 'database'
+2025-09-30 12:13:20 - INFO - Intentando reconectar a la base de datos...
+2025-09-30 12:13:20 - ERROR - Error inesperado: 'database'
+2025-09-30 12:13:20 - INFO - Sesión creada para usuario: admin
+2025-09-30 12:13:23 - INFO - Login completado para: admin

@@ -27,6 +27,8 @@ class ConfigurationView(BaseView):
         self.config_data = {}
         self.changes_made = False
         self.embedded = embedded
+        self.loading_data = True  # Flag para evitar marcar cambios durante la carga
+        self.saving_data = False  # Flag para evitar marcar cambios durante el guardado
         
         # Inicializar controlador de configuración
         self.config_controller = ConfigurationController()
@@ -591,7 +593,7 @@ class ConfigurationView(BaseView):
         
         # Incluir impuestos en precio
         self.include_tax_var = tk.BooleanVar(value=self.config_data.get('include_tax', True))
-        self.include_tax_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.include_tax_var.trace_add('write', self.safe_mark_changes)
         tax_check = tk.Checkbutton(
             tax_inner,
             text="Incluir impuestos en el precio mostrado",
@@ -746,7 +748,7 @@ class ConfigurationView(BaseView):
         
         # Opciones adicionales
         self.show_animations_var = tk.BooleanVar(value=self.config_data.get('show_animations', True))
-        self.show_animations_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.show_animations_var.trace_add('write', self.safe_mark_changes)
         animations_check = tk.Checkbutton(
             system_inner,
             text="Mostrar animaciones en la interfaz",
@@ -758,7 +760,7 @@ class ConfigurationView(BaseView):
         animations_check.pack(anchor='w', pady=5)
         
         self.sound_notifications_var = tk.BooleanVar(value=self.config_data.get('sound_notifications', True))
-        self.sound_notifications_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.sound_notifications_var.trace_add('write', self.safe_mark_changes)
         sound_check = tk.Checkbutton(
             system_inner,
             text="Reproducir sonidos de notificación",
@@ -770,7 +772,7 @@ class ConfigurationView(BaseView):
         sound_check.pack(anchor='w', pady=5)
         
         self.auto_save_var = tk.BooleanVar(value=self.config_data.get('auto_save', True))
-        self.auto_save_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.auto_save_var.trace_add('write', self.safe_mark_changes)
         auto_save_check = tk.Checkbutton(
             system_inner,
             text="Guardar automáticamente los cambios",
@@ -1066,7 +1068,7 @@ class ConfigurationView(BaseView):
         
         # Opciones de recibo
         self.auto_print_var = tk.BooleanVar(value=self.config_data.get('auto_print', True))
-        self.auto_print_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.auto_print_var.trace_add('write', self.safe_mark_changes)
         auto_print_check = tk.Checkbutton(
             receipt_inner,
             text="Imprimir recibo automáticamente después de cada venta",
@@ -1078,7 +1080,7 @@ class ConfigurationView(BaseView):
         auto_print_check.pack(anchor='w', pady=5)
         
         self.print_logo_var = tk.BooleanVar(value=self.config_data.get('print_logo', True))
-        self.print_logo_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.print_logo_var.trace_add('write', self.safe_mark_changes)
         print_logo_check = tk.Checkbutton(
             receipt_inner,
             text="Incluir logo de la empresa en el recibo",
@@ -1090,7 +1092,7 @@ class ConfigurationView(BaseView):
         print_logo_check.pack(anchor='w', pady=5)
         
         self.print_company_info_var = tk.BooleanVar(value=self.config_data.get('print_company_info', True))
-        self.print_company_info_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.print_company_info_var.trace_add('write', self.safe_mark_changes)
         company_info_check = tk.Checkbutton(
             receipt_inner,
             text="Incluir información completa de la empresa",
@@ -1102,7 +1104,7 @@ class ConfigurationView(BaseView):
         company_info_check.pack(anchor='w', pady=5)
         
         self.print_customer_info_var = tk.BooleanVar(value=self.config_data.get('print_customer_info', False))
-        self.print_customer_info_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.print_customer_info_var.trace_add('write', self.safe_mark_changes)
         customer_info_check = tk.Checkbutton(
             receipt_inner,
             text="Incluir información del cliente (si disponible)",
@@ -1184,7 +1186,7 @@ class ConfigurationView(BaseView):
         
         # Opciones adicionales
         self.print_barcode_var = tk.BooleanVar(value=self.config_data.get('print_barcode', False))
-        self.print_barcode_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.print_barcode_var.trace_add('write', self.safe_mark_changes)
         barcode_check = tk.Checkbutton(
             advanced_inner,
             text="Incluir código de barras en recibos",
@@ -1196,7 +1198,7 @@ class ConfigurationView(BaseView):
         barcode_check.pack(anchor='w', pady=5)
         
         self.save_pdf_copy_var = tk.BooleanVar(value=self.config_data.get('save_pdf_copy', False))
-        self.save_pdf_copy_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.save_pdf_copy_var.trace_add('write', self.safe_mark_changes)
         pdf_check = tk.Checkbutton(
             advanced_inner,
             text="Guardar copia en PDF automáticamente",
@@ -1392,7 +1394,7 @@ class ConfigurationView(BaseView):
         ).pack(anchor='w')
         
         self.db_max_connections_var = tk.StringVar(value=self.config_data.get('db_max_connections', '10'))
-        self.db_max_connections_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.db_max_connections_var.trace_add('write', self.safe_mark_changes)
         max_conn_entry = tk.Entry(
             performance_inner,
             textvariable=self.db_max_connections_var,
@@ -1414,7 +1416,7 @@ class ConfigurationView(BaseView):
         ).pack(anchor='w')
         
         self.db_timeout_var = tk.StringVar(value=self.config_data.get('db_timeout', '30'))
-        self.db_timeout_var.trace_add('write', lambda *args: self.mark_changes_made())
+        self.db_timeout_var.trace_add('write', self.safe_mark_changes)
         timeout_entry = tk.Entry(
             performance_inner,
             textvariable=self.db_timeout_var,
@@ -2006,7 +2008,7 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
             setattr(self, f'{var_name}_var', tk.StringVar(value=self.config_data.get(var_name, placeholder)))
         
         var = getattr(self, f'{var_name}_var')
-        var.trace_add('write', lambda *args: self.mark_changes_made())
+        var.trace_add('write', lambda *args: self.safe_mark_changes())
         
         entry = tk.Entry(
             field_frame,
@@ -2084,7 +2086,7 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
             """Sincronizar Entry → Variable"""
             new_value = entry.get()
             var.set(new_value)
-            self.mark_changes_made()
+            self.safe_mark_changes()
         
         def on_var_change(*args):
             """Sincronizar Variable → Entry"""
@@ -2192,9 +2194,12 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
             ]
         )
         if file_path:
+            # Actualizar la variable de UI con el path completo
             self.logo_path_var.set(file_path)
-            self.config_data['company_logo'] = file_path
+            # Guardar el path real en config_data
+            self.config_data['logo_path'] = file_path
             self.mark_changes_made()
+            print(f"🖼️ Logo seleccionado: {file_path}")
     
     def select_backup_folder(self):
         """Seleccionar carpeta de backup"""
@@ -2266,9 +2271,21 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
     
     def save_configuration(self):
         """Guardar configuración"""
+        print(f"\n🔧 INICIANDO SAVE_CONFIGURATION - changes_made: {self.changes_made}")
+        
+        # Activar flag de guardado para evitar cambios durante el proceso
+        self.saving_data = True
+        print(f"🔒 ACTIVADO saving_data - No se marcarán cambios durante el guardado")
+        
         try:
+            # Obtener configuración actual para comparación
+            old_config = self.config_data.copy()
+            
             # Recopilar todos los valores de las variables
             config_to_save = self.collect_config_data()
+            
+            # Verificar si requiere reinicio
+            needs_restart, changed_field = self.requires_restart(old_config, config_to_save)
             
             # Validar configuración
             is_valid, errors = self.config_controller.validate_configuration(config_to_save)
@@ -2279,11 +2296,29 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
             
             # Guardar usando el controlador
             if self.config_controller.save_configuration(config_to_save):
+                print(f"💾 GUARDADO EXITOSO - RESETEANDO changes_made: {self.changes_made} → False")
                 self.changes_made = False
-                messagebox.showinfo("Configuración", "✅ Configuración guardada exitosamente")
+                
+                # Mostrar mensaje apropiado según si requiere reinicio
+                if needs_restart:
+                    field_names = {
+                        'company_name': 'nombre de la empresa',
+                        'logo_path': 'imagen del logo'
+                    }
+                    field_desc = field_names.get(changed_field, 'configuración')
+                    
+                    messagebox.showwarning("Reinicio Requerido", 
+                                         f"✅ Configuración guardada exitosamente.\n\n"
+                                         f"⚠️ IMPORTANTE: Has cambiado el {field_desc}.\n"
+                                         f"Para que este cambio se aplique completamente,\n"
+                                         f"necesitas reiniciar la aplicación.")
+                else:
+                    messagebox.showinfo("Configuración", "✅ Configuración guardada exitosamente")
                 
                 # Emitir callback de configuración guardada (para actualizar login si es necesario)
                 self.trigger_callback('configuration_saved', config_to_save)
+                
+                print(f"💾 DESPUÉS DEL CALLBACK - changes_made: {self.changes_made}")
             else:
                 messagebox.showerror("Error", "❌ Error guardando la configuración")
             
@@ -2293,8 +2328,14 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
     def apply_configuration(self):
         """Aplicar configuración sin cerrar ventana"""
         try:
+            # Obtener configuración actual para comparación
+            old_config = self.config_data.copy()
+            
             # Recopilar configuración
             config_to_save = self.collect_config_data()
+            
+            # Verificar si requiere reinicio
+            needs_restart, changed_field = self.requires_restart(old_config, config_to_save)
             
             # Validar configuración
             is_valid, errors = self.config_controller.validate_configuration(config_to_save)
@@ -2307,18 +2348,47 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
             if self.config_controller.save_configuration(config_to_save):
                 # Aplicar cambios al sistema
                 if self.config_controller.apply_configuration(config_to_save):
+                    print(f"✅ APLICADO EXITOSO - RESETEANDO changes_made: {self.changes_made} → False")
                     self.changes_made = False
-                    messagebox.showinfo("Configuración", "✅ Configuración aplicada exitosamente")
+                    
+                    # Mostrar mensaje apropiado según si requiere reinicio
+                    if needs_restart:
+                        field_names = {
+                            'company_name': 'nombre de la empresa',
+                            'logo_path': 'imagen del logo'
+                        }
+                        field_desc = field_names.get(changed_field, 'configuración')
+                        
+                        messagebox.showwarning("Reinicio Requerido", 
+                                             f"✅ Configuración aplicada exitosamente.\n\n"
+                                             f"⚠️ IMPORTANTE: Has cambiado el {field_desc}.\n"
+                                             f"Para que este cambio se aplique completamente,\n"
+                                             f"necesitas reiniciar la aplicación.")
+                    else:
+                        messagebox.showinfo("Configuración", "✅ Configuración aplicada exitosamente")
                 else:
                     messagebox.showwarning("Advertencia", "⚠️ Configuración guardada pero algunos cambios requieren reiniciar la aplicación")
                 
                 # Emitir callback de configuración guardada (para actualizar login si es necesario)
                 self.trigger_callback('configuration_saved', config_to_save)
+                
+                # Asegurar que changes_made sigue siendo False después del callback
+                if self.changes_made:
+                    print(f"⚠️ CALLBACK CAMBIÓ changes_made a True - Reseteando a False")
+                    self.changes_made = False
+                
+                print(f"✅ DESPUÉS DEL CALLBACK - changes_made: {self.changes_made}")
             else:
                 messagebox.showerror("Error", "❌ Error aplicando la configuración")
                 
         except Exception as e:
             messagebox.showerror("Error", f"❌ Error aplicando configuración:\n{str(e)}")
+        finally:
+            # Desactivar flag de guardado al final del proceso
+            self.saving_data = False
+            print(f"🔓 DESACTIVADO saving_data - Cambios pueden ser marcados nuevamente")
+        
+        print(f"🔧 FINALIZANDO SAVE_CONFIGURATION - changes_made: {self.changes_made}\n")
     
     def cancel_changes(self):
         """Cancelar cambios"""
@@ -2389,7 +2459,27 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
                 var = getattr(self, attr_name)
                 if isinstance(var, (tk.StringVar, tk.BooleanVar)):
                     key = attr_name.replace('_var', '')
-                    config_to_save[key] = var.get()
+                    value = var.get()
+                    
+                    # Manejo especial para logo_path
+                    if key == 'logo_path':
+                        # Si contiene texto de UI, extraer el path real o usar el path del config_data
+                        if "Logo seleccionado:" in value:
+                            # Usar el path real del config_data si existe
+                            if 'logo_path' in self.config_data and not "Logo seleccionado:" in self.config_data['logo_path']:
+                                config_to_save[key] = self.config_data['logo_path']
+                            else:
+                                # Limpiar el formato de UI
+                                filename = value.replace("Logo seleccionado: ", "")
+                                # Si es solo un nombre de archivo, mantenerlo así o buscar path completo
+                                config_to_save[key] = filename
+                        elif value == 'No se ha seleccionado ningún logo':
+                            config_to_save[key] = ''
+                        else:
+                            # Path completo directo
+                            config_to_save[key] = value
+                    else:
+                        config_to_save[key] = value
         
         # Variables de base de datos
         if hasattr(self, 'db_vars'):
@@ -2399,7 +2489,45 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
     
     def mark_changes_made(self):
         """Marcar que se han hecho cambios"""
-        self.changes_made = True
+        # Solo marcar cambios si no estamos cargando datos
+        if not getattr(self, 'loading_data', False):
+            old_value = self.changes_made
+            self.changes_made = True
+            if not old_value:  # Solo imprimir cuando cambie de False a True
+                import traceback
+                print(f"🔄 CAMBIOS MARCADOS: {old_value} → {self.changes_made}")
+                print("📍 Stack trace del cambio:")
+                for line in traceback.format_stack()[-3:-1]:
+                    print(f"   {line.strip()}")
+        else:
+            print("🔄 Cambio detectado durante carga - ignorando...")
+    
+    def safe_mark_changes(self, *args):
+        """Versión segura de mark_changes_made para usar en callbacks"""
+        print(f"🔔 SAFE_MARK_CHANGES LLAMADO - args: {args}")
+        
+        # No marcar cambios si estamos cargando o guardando datos
+        if self.loading_data:
+            print("🚫 IGNORADO: loading_data=True")
+            return
+            
+        if self.saving_data:
+            print("🚫 IGNORADO: saving_data=True") 
+            return
+            
+        self.mark_changes_made()
+    
+    def requires_restart(self, old_config, new_config):
+        """Verificar si los cambios requieren reiniciar la aplicación"""
+        restart_fields = ['company_name', 'logo_path']
+        
+        for field in restart_fields:
+            old_value = old_config.get(field, '')
+            new_value = new_config.get(field, '')
+            if old_value != new_value:
+                return True, field
+        
+        return False, None
     
     def update_ui_with_config(self):
         """Actualizar UI con datos de configuración cargados"""
@@ -2454,11 +2582,6 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
                             print(f"   ✅ {key}: '{old_value}' → '{new_value}' | {id_status}")
                         else:
                             print(f"   ✓ {key}: valor ya correcto '{old_value}'")
-                        
-                        # Agregar callback para detectar cambios (solo una vez)
-                        if not hasattr(var, '_change_callback_added'):
-                            var.trace_add('write', lambda *args: self.mark_changes_made())
-                            var._change_callback_added = True
             
             # Actualizar variables de base de datos si existen (SIN RECREAR)
             if hasattr(self, 'db_vars'):
@@ -2476,11 +2599,6 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
                             print(f"   ✅ DB {key}: '{old_value}' → '{new_value}' | {id_status}")
                         else:
                             print(f"   ✓ DB {key}: valor ya correcto '{old_value}'")
-                        
-                        # Agregar callback para detectar cambios (solo una vez)
-                        if not hasattr(var, '_change_callback_added'):
-                            var.trace_add('write', lambda *args: self.mark_changes_made())
-                            var._change_callback_added = True
             
             # Verificación final - asegurar que los valores están en las variables
             print("\n🔍 VERIFICACIÓN FINAL de variables importantes:")
@@ -2508,23 +2626,44 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
                 if logo_path and logo_path != '':
                     import os
                     if "Logo seleccionado:" in logo_path:
-                        # Ya está en formato de UI
+                        # Ya está en formato de UI, mantenerlo
                         self.logo_path_var.set(logo_path)
-                        print(f"   ✅ Logo UI format: {logo_path}")
+                        print(f"   ✅ Logo UI format mantenido: {logo_path}")
                     elif os.path.exists(logo_path):
+                        # Path completo válido, mantenerlo tal como está para uso interno
+                        # pero mostrar solo el nombre en la UI
                         filename = os.path.basename(logo_path)
-                        self.logo_path_var.set(f"Logo seleccionado: {filename}")
-                        print(f"   ✅ Logo encontrado: {filename}")
+                        self.logo_path_var.set(logo_path)  # Mantener path completo en la variable
+                        print(f"   ✅ Logo encontrado - path completo mantenido: {logo_path}")
                     else:
-                        self.logo_path_var.set(f"Logo: {os.path.basename(logo_path)} (no encontrado)")
-                        print(f"   ⚠️ Logo no encontrado en: {logo_path}")
+                        # Buscar archivo por nombre en directorios comunes
+                        possible_paths = [
+                            os.path.join(os.path.expanduser("~"), "Downloads", logo_path),
+                            os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "images", logo_path),
+                        ]
+                        found = False
+                        for possible_path in possible_paths:
+                            if os.path.exists(possible_path):
+                                self.logo_path_var.set(possible_path)
+                                self.config_data['logo_path'] = possible_path
+                                print(f"   ✅ Logo encontrado en: {possible_path}")
+                                found = True
+                                break
+                        
+                        if not found:
+                            self.logo_path_var.set('No se ha seleccionado ningún logo')
+                            print(f"   ⚠️ Logo no encontrado: {logo_path}")
                 else:
                     self.logo_path_var.set('No se ha seleccionado ningún logo')
                     print("   ℹ️ No hay logo configurado")
             
             # Resetear estado de cambios después de cargar
             self.changes_made = False
+            self.loading_data = False  # Terminar modo de carga
             print("\n✅ UI actualizada correctamente con datos guardados")
+            
+            # Ahora agregar callbacks para detectar cambios futuros
+            self.setup_change_callbacks()
             
             # Forzar actualización de la ventana
             if hasattr(self, 'root'):
@@ -2535,6 +2674,34 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
             print(f"❌ Error actualizando UI: {e}")
             import traceback
             traceback.print_exc()
+    
+    def setup_change_callbacks(self):
+        """Configurar callbacks para detectar cambios después de la carga inicial"""
+        try:
+            print("🔗 Configurando callbacks para detectar cambios...")
+            
+            # Configurar callbacks para variables principales
+            for attr_name in dir(self):
+                if attr_name.endswith('_var') and hasattr(self, attr_name):
+                    var = getattr(self, attr_name)
+                    if isinstance(var, (tk.StringVar, tk.BooleanVar)) and not hasattr(var, '_change_callback_added'):
+                        var.trace_add('write', self.safe_mark_changes)
+                        var._change_callback_added = True
+                        key = attr_name.replace('_var', '')
+                        print(f"   ✅ Callback agregado para {key}")
+            
+            # Configurar callbacks para variables de base de datos
+            if hasattr(self, 'db_vars'):
+                for key, var in self.db_vars.items():
+                    if not hasattr(var, '_change_callback_added'):
+                        var.trace_add('write', self.safe_mark_changes)
+                        var._change_callback_added = True
+                        print(f"   ✅ Callback DB agregado para {key}")
+            
+            print("✅ Callbacks configurados correctamente")
+            
+        except Exception as e:
+            print(f"❌ Error configurando callbacks: {e}")
     
     def force_ui_refresh(self):
         """Forzar actualización de la interfaz después de un retraso"""

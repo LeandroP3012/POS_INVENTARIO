@@ -48,18 +48,18 @@ class AuthController:
             
             # Crear vista si no existe
             if not self.login_view:
-                # Crear una ventana raíz para la vista de login MÁS GRANDE
+                # Crear una ventana raíz para la vista de login - TAMAÑO OPTIMIZADO
                 import tkinter as tk
                 root = tk.Tk()
                 root.title("Sistema POS - Iniciar Sesión")
-                root.geometry("550x850")
+                root.geometry("400x620")
                 root.resizable(False, False)
                 
                 # Centrar ventana
                 root.update_idletasks()
-                x = (root.winfo_screenwidth() // 2) - (550 // 2)
-                y = (root.winfo_screenheight() // 2) - (750 // 2)
-                root.geometry(f"450x850+{x}+{y}")
+                x = (root.winfo_screenwidth() // 2) - (400 // 2)
+                y = (root.winfo_screenheight() // 2) - (600 // 2)
+                root.geometry(f"400x620+{x}+{y}")
                 
                 self.login_view = LoginView(root, None, self)
                 self._setup_login_callbacks()
@@ -100,47 +100,80 @@ class AuthController:
                 self.login_view.on_login_error("Demasiados intentos fallidos. Reinicia la aplicación.")
                 return
             
-            # Autenticar usuario
-            user_data = self.user_model.authenticate(username, password)
-            
-            if user_data:
-                # Login exitoso
-                self.login_attempts = 0  # Resetear intentos
-                
-                # Crear sesión
-                session_id = self.auth_model.create_session(user_data, 'manual')
-                
-                if session_id:
-                    self.current_user = user_data
-                    
-                    # Guardar usuario si se marcó recordar
-                    if remember:
-                        self._save_remembered_user(username)
-                    else:
-                        self._clear_remembered_user()
-                    
-                    # Notificar éxito a la vista
-                    self.login_view.on_login_success(user_data)
-                    
-                    # Ocultar login después de un breve delay
-                    self.login_view.root.after(1500, self._complete_login_success)
-                    
-                else:
-                    self.login_view.on_login_error("Error al crear sesión")
-            else:
-                # Login fallido
-                self.login_attempts += 1
-                remaining = self.max_login_attempts - self.login_attempts
-                
-                if remaining > 0:
-                    error_msg = f"Credenciales incorrectas. Te quedan {remaining} intentos."
-                else:
-                    error_msg = "Credenciales incorrectas. Has agotado tus intentos."
-                
-                self.login_view.on_login_error(error_msg)
+            # Ejecutar autenticación con delay para mostrar animación
+            self.login_view.root.after(100, lambda: self._process_authentication(username, password, remember))
                 
         except Exception as e:
             self.logger.error(f"Error en intento de login: {e}")
+            self.login_view.on_login_error("Error interno del sistema")
+    
+    def _process_authentication(self, username: str, password: str, remember: bool):
+        """Procesar autenticación con retraso para mostrar animación"""
+        try:
+            # Autenticar usuario
+            user_data = self.user_model.authenticate(username, password)
+            
+            # Simular tiempo de procesamiento realista (1.5-2.5 segundos)
+            delay = 2000  # 2 segundos para ver la animación
+            
+            if user_data:
+                # Login exitoso - programar resultado exitoso
+                self.login_view.root.after(delay, lambda: self._handle_successful_auth(user_data, remember))
+            else:
+                # Login fallido - programar resultado de error
+                self.login_view.root.after(delay, lambda: self._handle_failed_auth())
+                
+        except Exception as e:
+            self.logger.error(f"Error procesando autenticación: {e}")
+            self.login_view.root.after(1500, lambda: self.login_view.on_login_error("Error interno del sistema"))
+    
+    def _handle_successful_auth(self, user_data: Dict[str, Any], remember: bool):
+        """Manejar autenticación exitosa"""
+        try:
+            # Login exitoso
+            self.login_attempts = 0  # Resetear intentos
+            
+            # Crear sesión
+            session_id = self.auth_model.create_session(user_data, 'manual')
+            
+            if session_id:
+                self.current_user = user_data
+                
+                # Guardar usuario si se marcó recordar
+                if remember:
+                    self._save_remembered_user(user_data['username'])
+                else:
+                    self._clear_remembered_user()
+                
+                # Notificar éxito a la vista
+                self.login_view.on_login_success(user_data)
+                
+                # Ocultar login después de mostrar mensaje de éxito
+                self.login_view.root.after(3000, self._complete_login_success)
+                
+            else:
+                self.login_view.on_login_error("Error al crear sesión")
+                
+        except Exception as e:
+            self.logger.error(f"Error en autenticación exitosa: {e}")
+            self.login_view.on_login_error("Error interno del sistema")
+    
+    def _handle_failed_auth(self):
+        """Manejar autenticación fallida"""
+        try:
+            # Login fallido
+            self.login_attempts += 1
+            remaining = self.max_login_attempts - self.login_attempts
+            
+            if remaining > 0:
+                error_msg = f"Credenciales incorrectas. Te quedan {remaining} intentos."
+            else:
+                error_msg = "Credenciales incorrectas. Has agotado tus intentos."
+            
+            self.login_view.on_login_error(error_msg)
+            
+        except Exception as e:
+            self.logger.error(f"Error en autenticación fallida: {e}")
             self.login_view.on_login_error("Error interno del sistema")
     
     def _complete_login_success(self):

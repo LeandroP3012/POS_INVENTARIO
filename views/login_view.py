@@ -11,6 +11,8 @@ class LoginView(BaseView):
         self.controller = controller
         self.auth_controller = auth_controller
         self.logo_label = None  # Logo dinámico
+        self.loading_animation = False  # Estado de animación
+        self.loading_dots = 0  # Contador para animación
         self.setup_ui()
         self.load_company_info()  # Cargar info de la empresa
         
@@ -21,57 +23,32 @@ class LoginView(BaseView):
         self.setup_layout()
         
     def create_widgets(self):
-        # Marco para el logo (FUERA del cuadro blanco)
-        logo_frame = tk.Frame(self.root, bg='#f5f5f5', width=140, height=140)
+        # Marco para el logo (FUERA del cuadro blanco) - REDUCIDO
+        logo_frame = tk.Frame(self.root, bg='#f5f5f5', width=100, height=100)
         logo_frame.pack_propagate(False)
         
         # Logo dinámico de la empresa - fondo azul con diamante
-        self.logo_bg_frame = tk.Frame(logo_frame, bg='#2196f3', width=120, height=120)
+        self.logo_bg_frame = tk.Frame(logo_frame, bg='#2196f3', width=80, height=80)
         self.logo_bg_frame.pack_propagate(False)
         
-        # Canvas para crear el rombo/diamante azul MÁS GRANDE
-        logo_canvas = tk.Canvas(
-            logo_frame,
-            width=140,
-            height=140,
-            bg='#f5f5f5',
-            highlightthickness=0
-        )
-        logo_canvas.pack()
-        
-        # Crear el diamante azul MÁS GRANDE
-        points = [70, 20, 120, 70, 70, 120, 20, 70]  # Coordenadas del diamante más grande
-        logo_canvas.create_polygon(points, fill='#2196f3', outline='#1976d2', width=2)
-        
-        # Signo de interrogación blanco en el centro MÁS GRANDE
-        logo_canvas.create_text(70, 70, text='?', font=('Arial', 36, 'bold'), fill='white')
-        
-        # Almacenar canvas para poder actualizarlo después
-        self.logo_canvas = logo_canvas
-        
-        # Logo dinámico (se posicionará encima del canvas si hay imagen)
+        # Logo dinámico simple (sin diamante, solo imagen) - REDUCIDO
         self.logo_label = tk.Label(
             logo_frame,
-            text="",  # Inicialmente vacío
-            font=('Segoe UI Emoji', 32),
+            text="🏪",  # Placeholder por defecto
+            font=('Segoe UI Emoji', 24),
             bg='#f5f5f5',
             fg='#2196f3'
         )
+        self.logo_label.pack(expand=True)
         
-        # Título IPV (dinámico - FUERA del cuadro blanco)
-        self.title_label = tk.Label(
-            self.root,
-            text="IPV",
-            font=('Arial', 36, 'bold'),
-            bg='#f5f5f5',
-            fg='#2196f3'
-        )
+        # Título eliminado - ya no se muestra
+        # self.title_label comentado
         
-        # Subtítulo dinámico de la empresa (FUERA del cuadro blanco)
+        # Subtítulo dinámico de la empresa (FUERA del cuadro blanco) - REDUCIDO
         self.company_label = tk.Label(
             self.root,
             text="Importadora Punto de Venta",
-            font=('Arial', 20, 'bold'),
+            font=('Arial', 16, 'bold'),
             bg='#f5f5f5',
             fg='#333333'
         )
@@ -85,8 +62,8 @@ class LoginView(BaseView):
             fg='#666666'
         )
         
-        # CUADRO BLANCO - Solo para campos de entrada
-        self.login_frame = tk.Frame(self.root, bg='#ffffff', width=380, height=350, relief='solid', bd=1)
+        # CUADRO BLANCO - Solo para campos de entrada (optimizado para ventana más pequeña)
+        self.login_frame = tk.Frame(self.root, bg='#ffffff', width=340, height=320, relief='solid', bd=1)
         self.login_frame.pack_propagate(False)
         
         # Campo de usuario con icono (DENTRO del cuadro blanco)
@@ -190,6 +167,17 @@ class LoginView(BaseView):
             activeforeground='white'
         )
         
+        # Mensaje de estado debajo del botón
+        self.status_label = tk.Label(
+            self.login_frame,
+            text="",
+            font=('Arial', 11),
+            bg='#ffffff',
+            fg='#666666',
+            wraplength=300,
+            justify='center'
+        )
+        
         # Footer (FUERA del cuadro blanco)
         footer_frame = tk.Frame(self.root, bg='#f5f5f5')
         
@@ -249,44 +237,98 @@ class LoginView(BaseView):
             self.password_entry.config(show='*')
             self.show_password_button.config(text='👁')
     
+    def show_status_message(self, message, msg_type="info"):
+        """Mostrar mensaje de estado debajo del botón"""
+        color_map = {
+            "success": "#4caf50",  # Verde
+            "error": "#f44336",    # Rojo
+            "info": "#2196f3",     # Azul
+            "warning": "#ff9800"   # Naranja
+        }
+        
+        self.status_label.config(
+            text=message,
+            fg=color_map.get(msg_type, "#666666")
+        )
+        # Forzar actualización visual
+        self.status_label.update()
+    
+    def clear_status_message(self):
+        """Limpiar mensaje de estado"""
+        self.status_label.config(text="")
+    
+    def start_loading_animation(self):
+        """Iniciar animación de carga en el botón"""
+        self.login_button.config(
+            text="⏳ Iniciando sesión...",
+            state="disabled",
+            bg="#1976d2",
+            cursor="wait"
+        )
+        self.show_status_message("Verificando credenciales...", "info")
+        
+        # Animación de puntos
+        self.loading_dots = 0
+        self.loading_animation = True
+        self.animate_loading()
+    
+    def animate_loading(self):
+        """Animar los puntos de carga"""
+        if self.loading_animation:
+            dots = "." * (self.loading_dots % 4)
+            self.login_button.config(text=f"⏳ Iniciando sesión{dots}")
+            self.loading_dots += 1
+            # Continuar animación más lenta para que se aprecie mejor
+            self.root.after(700, self.animate_loading)
+    
+    def stop_loading_animation(self):
+        """Detener animación de carga"""
+        self.loading_animation = False
+        self.login_button.config(
+            text="🔓 Iniciar Sesión",
+            state="normal",
+            bg="#2196f3",
+            cursor="hand2"
+        )
+    
     def setup_layout(self):
-        # Layout NUEVO con elementos organizados correctamente
+        # Layout OPTIMIZADO con espaciados reducidos
         
         # PARTE SUPERIOR (fuera del cuadro blanco)
         # Logo
-        self.logo_frame.pack(pady=(30, 20))
+        self.logo_frame.pack(pady=(20, 10))
         
-        # Título IPV
-        self.title_label.pack(pady=(0, 8))
-        
-        # Nombre de empresa  
-        self.company_label.pack(pady=(0, 12))
+        # Nombre de empresa (sin título de iniciales)
+        self.company_label.pack(pady=(0, 8))
         
         # Mensaje de bienvenida
-        self.welcome_label.pack(pady=(0, 25))
+        self.welcome_label.pack(pady=(0, 15))
         
         # CUADRO BLANCO CENTRADO con campos de entrada
-        self.login_frame.pack(pady=(0, 25))
+        self.login_frame.pack(pady=(0, 15))
         
-        # DENTRO del cuadro blanco:
+        # DENTRO del cuadro blanco - ESPACIADOS COMPACTOS:
         # Campo de usuario
-        self.user_frame.pack(fill='x', padx=30, pady=(25, 15))
-        self.user_icon_label.pack(anchor='w', pady=(0, 5))
-        self.user_entry.pack(fill='x', ipady=8)
+        self.user_frame.pack(fill='x', padx=25, pady=(20, 12))
+        self.user_icon_label.pack(anchor='w', pady=(0, 4))
+        self.user_entry.pack(fill='x', ipady=6)
         
         # Campo de contraseña
-        self.password_frame.pack(fill='x', padx=30, pady=(0, 15))
-        self.password_icon_label.pack(anchor='w', pady=(0, 5))
+        self.password_frame.pack(fill='x', padx=25, pady=(0, 12))
+        self.password_icon_label.pack(anchor='w', pady=(0, 4))
         self.password_input_frame.pack(fill='x')
-        self.password_entry.pack(side='left', fill='x', expand=True, ipady=8, padx=(8, 0))
-        self.show_password_button.pack(side='right', padx=(0, 8))
+        self.password_entry.pack(side='left', fill='x', expand=True, ipady=6, padx=(6, 0))
+        self.show_password_button.pack(side='right', padx=(0, 6))
         
         # Checkbox recordar
-        self.remember_frame.pack(fill='x', padx=30, pady=(0, 20))
+        self.remember_frame.pack(fill='x', padx=25, pady=(0, 15))
         self.remember_checkbox.pack(anchor='w')
         
         # Botón de login
-        self.login_button.pack(padx=30, pady=(0, 25), fill='x', ipady=6)
+        self.login_button.pack(padx=25, pady=(0, 8), fill='x', ipady=4)
+        
+        # Mensaje de estado
+        self.status_label.pack(padx=25, pady=(0, 12))
         
         # PARTE INFERIOR (fuera del cuadro blanco)
         # Footer
@@ -309,10 +351,7 @@ class LoginView(BaseView):
                 company_name = config.get('company_name', 'Importadora Punto de Venta')
                 if company_name and company_name.strip():
                     self.company_label.config(text=company_name)
-                    
-                    # Actualizar iniciales (IPV por defecto)
-                    initials = self.get_company_initials(company_name)
-                    self.title_label.config(text=initials)
+                    # Ya no mostramos iniciales
                 
                 # Actualizar logo
                 self.try_update_logo(config)
@@ -339,64 +378,54 @@ class LoginView(BaseView):
             return "IPV"  # Fallback en caso de error
     
     def try_update_logo(self, config):
-        """Intenta actualizar el logo de la empresa"""
+        """Intenta actualizar el logo de la empresa (solo imagen, sin diamante)"""
         try:
             logo_path = config.get('logo_path', '')
             if logo_path and os.path.exists(logo_path) and 'no encontrado' not in logo_path:
-                # Cargar y redimensionar imagen para el diamante MÁS GRANDE
+                # Cargar y redimensionar imagen - TAMAÑO REDUCIDO
                 pil_image = Image.open(logo_path)
                 pil_image = pil_image.resize((80, 80), Image.Resampling.LANCZOS)
                 
                 # Convertir a PhotoImage
                 photo = ImageTk.PhotoImage(pil_image)
                 
-                # Limpiar el canvas y dibujar el diamante con la imagen
-                self.logo_canvas.delete("all")
-                
-                # Crear el diamante azul MÁS GRANDE
-                points = [70, 20, 120, 70, 70, 120, 20, 70]
-                self.logo_canvas.create_polygon(points, fill='#2196f3', outline='#1976d2', width=2)
-                
-                # Colocar la imagen en el centro del diamante MÁS GRANDE
-                self.logo_canvas.create_image(70, 70, image=photo)
-                
-                # Mantener referencia de la imagen
-                self.logo_canvas.image = photo
+                # Actualizar directamente el label con la imagen
+                self.logo_label.config(image=photo, text="")
+                self.logo_label.image = photo  # Mantener referencia
                 
                 print(f"Logo actualizado: {logo_path}")
             else:
                 print(f"Logo no disponible: {logo_path}")
+                # Mantener emoji por defecto
+                self.logo_label.config(image="", text="🏪")
                 
         except Exception as e:
             print(f"Error actualizando logo: {e}")
-    
-    def _draw_default_logo(self):
-        """Dibujar el logo por defecto (diamante con ?) MÁS GRANDE"""
-        try:
-            self.logo_canvas.delete("all")
-            # Crear el diamante azul MÁS GRANDE
-            points = [70, 20, 120, 70, 70, 120, 20, 70]
-            self.logo_canvas.create_polygon(points, fill='#2196f3', outline='#1976d2', width=2)
-            # Signo de interrogación blanco en el centro MÁS GRANDE
-            self.logo_canvas.create_text(70, 70, text='?', font=('Arial', 36, 'bold'), fill='white')
-        except Exception as e:
-            print(f"Error dibujando logo por defecto: {e}")
+            # Volver al emoji por defecto en caso de error
+            self.logo_label.config(image="", text="🏪")
     
     def handle_login(self):
         """Maneja el proceso de autenticación"""
         username = self.user_entry.get().strip()
         password = self.password_entry.get().strip()
         
+        # Limpiar mensaje de estado anterior
+        self.clear_status_message()
+        
         # Validar que no sean los placeholders
         if username == "Ingresa tu usuario" or not username:
-            messagebox.showerror("Error", "Por favor ingrese un usuario válido")
+            self.show_status_message("Por favor ingrese un usuario válido", "error")
             self.user_entry.focus()
             return
             
         if not password:
-            messagebox.showerror("Error", "Por favor ingrese su contraseña")
+            self.show_status_message("Por favor ingrese su contraseña", "error")
             self.password_entry.focus()
             return
+        
+        # Iniciar animación de carga
+        self.loading_animation = True
+        self.start_loading_animation()
         
         # Crear datos del formulario
         form_data = {
@@ -410,7 +439,8 @@ class LoginView(BaseView):
             self._login_callback(form_data)
         else:
             # Fallback simple - solo para compatibilidad
-            messagebox.showerror("Error", "Sistema de autenticación no disponible")
+            self.stop_loading_animation()
+            self.show_status_message("Sistema de autenticación no disponible", "error")
             self.password_entry.delete(0, tk.END)
             
     def update_company_info(self):
@@ -425,43 +455,31 @@ class LoginView(BaseView):
                 company_name = config.get('company_name', 'Importadora Punto de Venta')
                 if company_name and company_name.strip():
                     self.company_label.config(text=company_name)
-                    
-                    # Actualizar iniciales
-                    initials = self.get_company_initials(company_name)
-                    self.title_label.config(text=initials)
+                    # Ya no actualizamos iniciales porque eliminamos el título
                 
-                # Actualizar logo
+                # Actualizar logo (solo imagen, sin diamante)
                 logo_path = config.get('logo_path', '')
                 if logo_path and os.path.exists(logo_path) and 'no encontrado' not in logo_path:
                     try:
-                        # Cargar y redimensionar imagen para el diamante MÁS GRANDE
+                        # Cargar y redimensionar imagen - TAMAÑO REDUCIDO
                         pil_image = Image.open(logo_path)
                         pil_image = pil_image.resize((80, 80), Image.Resampling.LANCZOS)
                         
                         # Convertir a PhotoImage
                         photo = ImageTk.PhotoImage(pil_image)
                         
-                        # Limpiar el canvas y dibujar el diamante con la imagen
-                        self.logo_canvas.delete("all")
-                        
-                        # Crear el diamante azul MÁS GRANDE
-                        points = [70, 20, 120, 70, 70, 120, 20, 70]
-                        self.logo_canvas.create_polygon(points, fill='#2196f3', outline='#1976d2', width=2)
-                        
-                        # Colocar la imagen en el centro del diamante MÁS GRANDE
-                        self.logo_canvas.create_image(70, 70, image=photo)
-                        
-                        # Mantener referencia de la imagen
-                        self.logo_canvas.image = photo
+                        # Actualizar directamente el label con la imagen
+                        self.logo_label.config(image=photo, text="")
+                        self.logo_label.image = photo  # Mantener referencia
                         
                         print(f"Logo actualizado dinámicamente: {logo_path}")
                     except Exception as e:
                         print(f"Error actualizando logo dinámicamente: {e}")
-                        # Volver al diamante por defecto
-                        self._draw_default_logo()
+                        # Volver al emoji por defecto
+                        self.logo_label.config(image="", text="🏪")
                 else:
-                    # Volver al diamante por defecto si no hay logo válido
-                    self._draw_default_logo()
+                    # Volver al emoji por defecto si no hay logo válido
+                    self.logo_label.config(image="", text="🏪")
                     
         except Exception as e:
             print(f"Error en update_company_info: {e}")
@@ -490,6 +508,8 @@ class LoginView(BaseView):
         self.user_entry.configure(fg='#aaaaaa')
         self.password_entry.delete(0, tk.END)
         self.remember_var.set(False)
+        self.clear_status_message()
+        self.stop_loading_animation()
         self.user_entry.focus()
     
     def show(self):
@@ -508,16 +528,28 @@ class LoginView(BaseView):
     
     def on_login_success(self, user_data):
         """Manejar éxito de login"""
-        messagebox.showinfo("Éxito", f"Bienvenido {user_data.get('username', 'Usuario')}")
-        if hasattr(self, '_success_callback') and self._success_callback:
-            self._success_callback(user_data)
+        self.stop_loading_animation()
+        username = user_data.get('username', 'Usuario')
+        self.show_status_message(f"✅ ¡Bienvenido {username}! Accediendo al sistema...", "success")
+        
+        # Pequeña pausa para mostrar el mensaje antes de proceder
+        self.root.after(1500, lambda: self._proceed_with_success(user_data))
     
     def on_login_error(self, error_message):
         """Manejar error de login"""
-        messagebox.showerror("Error", error_message)
+        self.stop_loading_animation()
+        self.show_status_message(f"❌ {error_message}", "error")
         self.password_entry.delete(0, tk.END)
+        self.password_entry.focus()
+        
         if hasattr(self, '_error_callback') and self._error_callback:
             self._error_callback(error_message)
+    
+    def _proceed_with_success(self, user_data):
+        """Proceder con el éxito después de mostrar el mensaje"""
+        # Este método ahora no hace nada porque el auth_controller maneja la transición
+        # El auth_controller espera 3 segundos antes de proceder
+        pass
     
     def load_remembered_user(self, username):
         """Cargar usuario recordado"""
