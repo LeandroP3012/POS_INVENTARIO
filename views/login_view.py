@@ -1,19 +1,13 @@
 """
 Vista de Login para el Sistema POS
-Interfaz de autenticación con diseñ        # Logo provisional de la empresa
-        logo_label = tk.Label(
-            logo_bg,
-            text="🏪",
-            font=('Arial', 35),
-            bg='#ffffff',
-            fg='#1976d2'
-        )
-        logo_label.place(relx=0.5, rely=0.5, anchor='center')
+Interfaz de autenticación con diseño moderno
 """
 
 import tkinter as tk
 from tkinter import ttk
 from typing import Callable, Optional
+import json
+import os
 from views.base_view import BaseView
 
 class LoginView(BaseView):
@@ -33,6 +27,10 @@ class LoginView(BaseView):
         self.password_entry = None
         self.login_button = None
         self.status_label = None
+        self.title_label = None  # Agregar referencia al título para poder actualizarlo
+        
+        # Configuración de empresa
+        self.company_name = self.load_company_name()
         
         # Configurar ventana principal
         self.setup_main_window()
@@ -52,6 +50,29 @@ class LoginView(BaseView):
         
         # Configurar protocolo de cierre
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+    
+    def load_company_name(self):
+        """Cargar nombre de la empresa desde la configuración"""
+        try:
+            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'system_config.json')
+            if os.path.exists(config_path):
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    return config.get('company_name', 'Sistema POS')
+        except Exception as e:
+            print(f"Error cargando configuración: {e}")
+        
+        # Valor por defecto si no se puede cargar
+        return 'Sistema POS'
+    
+    def update_company_name(self):
+        """Actualizar nombre de la empresa en la interfaz"""
+        new_name = self.load_company_name()
+        if self.company_name != new_name:
+            self.company_name = new_name
+            if self.title_label and self.title_label.winfo_exists():
+                self.title_label.configure(text=self.company_name)
+                print(f"✅ Nombre de empresa actualizado en login: '{self.company_name}'")
     
     def create_login_form(self):
         """Crear formulario de login"""
@@ -105,15 +126,15 @@ class LoginView(BaseView):
         )
         logo_text.pack()
         
-        # Título principal con estilo moderno
-        title_label = tk.Label(
+        # Título principal con estilo moderno - DINÁMICO desde configuración
+        self.title_label = tk.Label(
             header_frame,
-            text="Importadora Punto de Venta",
+            text=self.company_name,  # Usar nombre dinámico de la empresa
             font=('Segoe UI', 16, 'bold'),  # Reducido de 22 a 16
             bg='#f0f2f5',
             fg="#1d2336"
         )
-        title_label.pack(pady=(5, 0))  # Reducido padding
+        self.title_label.pack(pady=(5, 0))  # Reducido padding
         
         # Subtítulo elegante
         subtitle_label = tk.Label(
@@ -559,6 +580,8 @@ class LoginView(BaseView):
     
     def show(self):
         """Mostrar ventana de login"""
+        # Actualizar nombre de empresa antes de mostrar
+        self.update_company_name()
         self.root.deiconify()
         self.root.lift()
         self.focus_username()
@@ -566,6 +589,10 @@ class LoginView(BaseView):
     def hide(self):
         """Ocultar ventana de login"""
         self.root.withdraw()
+    
+    def refresh_company_info(self):
+        """Método público para refrescar información de la empresa"""
+        self.update_company_name()
     
     def run(self):
         """Ejecutar loop principal"""

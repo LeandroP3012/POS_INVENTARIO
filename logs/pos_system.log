@@ -523,3 +523,419 @@
 2025-09-29 21:44:38,851 - AuthController - INFO - Logout exitoso para: admin
 2025-09-29 21:44:38,853 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'
 2025-09-29 21:44:38,870 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 21:46:39,485 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 21:46:39,490 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'
+2025-09-29 21:46:39,507 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 21:49:34,648 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 21:49:34,676 - MainController - INFO - Sistema POS iniciado
+2025-09-29 21:49:34,676 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 21:49:34,676 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 21:49:39,397 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 21:49:39,456 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:49:39,461 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:49:39,467 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 21:49:39,485 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:49:39,491 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 21:49:39,491 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 21:49:41,027 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 21:53:53,830 - MainController - INFO - Cerrando aplicación POS
+2025-09-29 21:53:53,856 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:53:53,866 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 21:53:53,866 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 21:53:53,866 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-29 21:53:54,004 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 21:53:54,004 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 21:53:54,005 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-29 21:54:08,730 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 21:54:08,742 - MainController - INFO - Sistema POS iniciado
+2025-09-29 21:54:08,743 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 21:54:08,743 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 21:54:15,399 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 21:54:15,459 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:54:15,464 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:54:15,470 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 21:54:15,488 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:54:15,496 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 21:54:15,496 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 21:54:17,025 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 21:54:19,813 - ConfigController - INFO - Configuración del sistema cargada
+2025-09-29 21:54:19,814 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 21:56:55,831 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:56:55,838 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 21:56:55,839 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 21:56:55,839 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-09-29 21:56:55,968 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 21:56:57,376 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 21:56:57,377 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'
+2025-09-29 21:56:57,390 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 22:03:08,082 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 22:03:08,110 - MainController - INFO - Sistema POS iniciado
+2025-09-29 22:03:08,111 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 22:03:08,111 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 22:03:12,095 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 22:03:12,155 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 22:03:12,176 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 22:03:12,182 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 22:03:12,208 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 22:03:12,215 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 22:03:12,216 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 22:03:13,755 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 22:03:15,816 - ConfigController - INFO - Configuración del sistema cargada
+2025-09-29 22:03:15,817 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:03:32,410 - ConfigController - INFO - Configuración del sistema cargada
+2025-09-29 22:03:32,411 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:03:35,826 - ConfigController - INFO - Configuración del sistema cargada
+2025-09-29 22:03:35,827 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:03:43,570 - ConfigController - INFO - Configuración del sistema cargada
+2025-09-29 22:03:43,571 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:03:59,036 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-29 22:04:02,311 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-29 22:04:02,312 - ConfigController - INFO - Configuración aplicada al sistema
+2025-09-29 22:04:07,054 - ConfigController - INFO - Configuración del sistema cargada
+2025-09-29 22:04:07,055 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:04:16,324 - ConfigController - ERROR - Error probando conexión de BD: 'DatabaseConnection' object has no attribute 'get_connection'
+2025-09-29 22:14:36,972 - MainController - INFO - Cerrando aplicación POS
+2025-09-29 22:14:36,976 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 22:14:36,983 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 22:14:36,983 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 22:14:36,984 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-29 22:14:37,309 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 22:14:37,316 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 22:14:37,316 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 22:14:37,316 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-29 22:14:37,342 - MainController - INFO - Sistema POS iniciado
+2025-09-29 22:14:37,343 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 22:14:37,343 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 22:16:44,261 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 22:16:44,261 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:16:44,261 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:16:44,261 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 22:16:44,262 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:16:44,262 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:16:44,262 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:16:44,262 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 22:16:45,784 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 22:16:48,210 - ConfigController - INFO - Configuración del sistema cargada
+2025-09-29 22:16:48,210 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:19:49,586 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-29 22:19:49,587 - ConfigController - INFO - Configuración aplicada al sistema
+2025-09-29 22:19:52,741 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-29 22:19:57,460 - ConfigController - INFO - Configuración del sistema cargada
+2025-09-29 22:19:57,461 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:25:57,249 - MainController - INFO - Cerrando aplicación POS
+2025-09-29 22:25:57,250 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:25:57,250 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:25:57,250 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:25:57,250 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 22:25:57,250 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-29 22:25:57,463 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 22:25:57,463 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 22:25:57,463 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-29 22:25:58,680 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 22:25:58,697 - MainController - INFO - Sistema POS iniciado
+2025-09-29 22:25:58,697 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 22:25:58,697 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 22:26:03,802 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 22:26:03,803 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:26:03,803 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:26:03,803 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 22:26:03,804 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:26:03,804 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:26:03,804 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:26:03,805 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 22:26:05,334 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 22:26:07,306 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-29 22:26:07,306 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:28:19,294 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-29 22:28:22,448 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-29 22:28:22,449 - ConfigController - INFO - Configuración aplicada al sistema
+2025-09-29 22:28:27,545 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-29 22:28:27,545 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:30:23,778 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-29 22:30:23,779 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:36:21,546 - MainController - INFO - Cerrando aplicación POS
+2025-09-29 22:36:21,547 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:36:21,547 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:36:21,547 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:36:21,547 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 22:36:21,547 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-29 22:36:21,843 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 22:36:21,844 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 22:36:21,844 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-29 22:36:29,356 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 22:36:29,370 - MainController - INFO - Sistema POS iniciado
+2025-09-29 22:36:29,370 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 22:36:29,370 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 22:36:33,291 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 22:36:33,291 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:36:33,292 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:36:33,292 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 22:36:33,292 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:36:33,292 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:36:33,293 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:36:33,293 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 22:36:34,820 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 22:36:37,507 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-29 22:36:37,508 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:38:53,042 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-29 22:39:45,825 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-29 22:39:45,826 - ConfigController - INFO - Configuración aplicada al sistema
+2025-09-29 22:39:50,126 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-29 22:41:34,811 - MainController - INFO - Cerrando aplicación POS
+2025-09-29 22:41:34,811 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:41:34,811 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:41:34,812 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:41:34,812 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 22:41:34,812 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-29 22:41:34,975 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 22:41:34,976 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 22:41:34,976 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-29 22:43:58,772 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 22:43:58,785 - MainController - INFO - Sistema POS iniciado
+2025-09-29 22:43:58,786 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 22:43:58,786 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 22:44:42,443 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 22:44:42,443 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:44:42,444 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:44:42,444 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 22:44:42,444 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:44:42,444 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:44:42,444 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:44:42,445 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 22:44:43,971 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 22:44:51,603 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-29 22:44:51,604 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:45:59,846 - MainController - INFO - Cerrando aplicación POS
+2025-09-29 22:45:59,846 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:45:59,846 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:45:59,846 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:45:59,847 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 22:45:59,847 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-29 22:46:00,022 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 22:46:00,022 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 22:46:00,022 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-29 22:48:10,522 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 22:48:10,537 - MainController - INFO - Sistema POS iniciado
+2025-09-29 22:48:10,538 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 22:48:10,538 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 22:48:15,046 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 22:48:15,046 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:48:15,046 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:48:15,047 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 22:48:15,047 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:48:15,047 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:48:15,048 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:48:15,048 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 22:48:16,578 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 22:48:17,811 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-29 22:48:17,811 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:48:23,283 - MainController - INFO - Cerrando aplicación POS
+2025-09-29 22:48:23,283 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:48:23,283 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:48:23,283 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:48:23,283 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 22:48:23,284 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-29 22:48:23,460 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 22:48:23,460 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 22:48:23,460 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-29 22:49:50,719 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 22:49:50,747 - MainController - INFO - Sistema POS iniciado
+2025-09-29 22:49:50,747 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 22:49:50,748 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 22:49:54,263 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 22:49:54,263 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:49:54,264 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:49:54,264 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 22:49:54,264 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:49:54,265 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:49:54,265 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:49:54,265 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 22:49:55,789 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 22:49:56,990 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-29 22:49:56,990 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-29 22:55:23,311 - MainController - INFO - Cerrando aplicación POS
+2025-09-29 22:55:23,311 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:55:23,311 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-29 22:55:23,311 - database - ERROR - Error inesperado: 'database'
+2025-09-29 22:55:23,312 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 22:55:23,312 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-29 22:55:23,481 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 22:55:23,481 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 22:55:23,481 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-29 22:58:50,472 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 22:58:50,486 - MainController - INFO - Sistema POS iniciado
+2025-09-29 22:58:50,487 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 22:58:50,487 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 23:01:52,780 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-30 00:03:20,118 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-30 00:03:20,131 - MainController - INFO - Sistema POS iniciado
+2025-09-30 00:03:20,132 - MainController - INFO - Iniciando aplicación POS
+2025-09-30 00:03:20,132 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 00:03:30,058 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 00:03:30,058 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:03:30,059 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:03:30,059 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 00:03:30,059 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:03:30,059 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:03:30,060 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:03:30,060 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 00:03:31,596 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 00:03:33,098 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:03:33,098 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:03:48,131 - MainController - INFO - Cerrando aplicación POS
+2025-09-30 00:03:48,131 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:03:48,131 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:03:48,132 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:03:48,132 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 00:03:48,132 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-30 00:03:48,287 - AuthController - INFO - Logout exitoso para: admin
+2025-09-30 00:03:48,288 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-30 00:03:48,288 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-30 00:05:50,451 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-30 00:05:50,482 - MainController - INFO - Sistema POS iniciado
+2025-09-30 00:05:50,483 - MainController - INFO - Iniciando aplicación POS
+2025-09-30 00:05:50,483 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 00:05:54,511 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 00:05:54,512 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:05:54,512 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:05:54,512 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 00:05:54,512 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:05:54,513 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:05:54,513 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:05:54,513 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 00:05:56,049 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 00:05:57,509 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:05:57,510 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:06:09,554 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:06:14,455 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:06:16,476 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:06:16,476 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:07:29,885 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:07:29,885 - ConfigController - INFO - Configuración aplicada al sistema
+2025-09-30 00:07:32,193 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:07:35,800 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:07:37,868 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:07:37,868 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:08:28,411 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:08:30,671 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:08:30,671 - ConfigController - INFO - Configuración aplicada al sistema
+2025-09-30 00:08:33,808 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:08:33,808 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:09:45,177 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:13:10,686 - MainController - INFO - Cerrando aplicación POS
+2025-09-30 00:13:10,687 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:13:10,687 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:13:10,687 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:13:10,687 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 00:13:10,687 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-30 00:13:10,964 - AuthController - INFO - Logout exitoso para: admin
+2025-09-30 00:13:10,965 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-30 00:13:10,965 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-30 00:13:20,033 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-30 00:13:20,081 - MainController - INFO - Sistema POS iniciado
+2025-09-30 00:13:20,081 - MainController - INFO - Iniciando aplicación POS
+2025-09-30 00:13:20,081 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 00:13:24,897 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 00:13:24,897 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:13:24,898 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:13:24,898 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 00:13:24,898 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:13:24,898 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:13:24,899 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:13:24,899 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 00:13:26,431 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 00:13:28,015 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:13:28,016 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:13:47,852 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:13:50,066 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:13:50,067 - ConfigController - INFO - Configuración aplicada al sistema
+2025-09-30 00:13:53,641 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:13:55,916 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:13:55,916 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:14:13,837 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:14:13,837 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:20:12,160 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-30 00:20:12,174 - MainController - INFO - Sistema POS iniciado
+2025-09-30 00:20:12,175 - MainController - INFO - Iniciando aplicación POS
+2025-09-30 00:20:12,175 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 00:20:16,106 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 00:20:16,106 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:20:16,107 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:20:16,107 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 00:20:16,107 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:20:16,107 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:20:16,107 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:20:16,108 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 00:20:17,649 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 00:20:19,333 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:20:19,334 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:20:37,961 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:22:08,794 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:22:08,795 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:22:45,976 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:22:48,496 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:22:48,496 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:23:24,348 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:23:24,348 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:25:11,518 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:25:16,644 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:25:16,644 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:25:48,433 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:25:48,434 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:25:48,434 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:25:48,434 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 00:25:48,434 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-09-30 00:25:48,675 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 00:32:52,315 - MainController - INFO - Cerrando aplicación POS
+2025-09-30 00:32:52,316 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:32:52,316 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:32:52,316 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:32:52,316 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 00:32:52,316 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-30 00:32:52,519 - AuthController - INFO - Logout exitoso para: admin
+2025-09-30 00:32:52,520 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-30 00:32:52,520 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-30 00:37:13,277 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-30 00:37:13,321 - MainController - INFO - Sistema POS iniciado
+2025-09-30 00:37:13,322 - MainController - INFO - Iniciando aplicación POS
+2025-09-30 00:37:13,322 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 00:37:40,178 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 00:37:40,179 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:37:40,179 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:37:40,179 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 00:37:40,180 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:37:40,180 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:37:40,180 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:37:40,180 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 00:37:41,714 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 00:37:43,413 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:37:43,414 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:37:52,716 - ConfigController - INFO - Configuración guardada exitosamente
+2025-09-30 00:37:56,721 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:37:56,722 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:37:56,722 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:37:56,722 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 00:37:56,722 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-09-30 00:37:56,865 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 00:38:22,213 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'
+2025-09-30 00:39:27,876 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 00:39:27,876 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:39:27,877 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:39:27,877 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 00:39:27,877 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:39:27,878 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:39:27,878 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:39:27,878 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 00:39:29,414 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 00:39:32,218 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 00:39:32,219 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 00:40:07,063 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:40:07,063 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 00:40:07,063 - database - ERROR - Error inesperado: 'database'
+2025-09-30 00:40:07,064 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 00:40:07,064 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-09-30 00:40:07,209 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 00:42:32,264 - AuthController - INFO - Logout exitoso para: admin
+2025-09-30 00:42:32,265 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'
+2025-09-30 00:42:32,265 - AuthController - INFO - Logout exitoso para: admin
+2025-09-30 00:42:32,265 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'

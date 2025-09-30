@@ -663,6 +663,26 @@ class MainController:
         # Convertir de vuelta a hex
         return '#{:02x}{:02x}{:02x}'.format(*darker_rgb)
     
+    def _clear_main_content(self):
+        """Limpiar contenido principal de la ventana"""
+        # Destruir todos los widgets hijos excepto la barra de menú
+        for widget in self.main_window.winfo_children():
+            if not isinstance(widget, tk.Menu):
+                widget.destroy()
+    
+    def _back_to_dashboard(self):
+        """Volver al dashboard principal"""
+        try:
+            # Limpiar contenido actual
+            self._clear_main_content()
+            
+            # Recrear interfaz principal
+            self._create_main_interface()
+            
+        except Exception as e:
+            self.logger.error(f"Error volviendo al dashboard: {e}")
+            messagebox.showerror("Error", f"Error volviendo al dashboard:\n{str(e)}")
+    
     def _create_quick_access_panel(self, parent):
         """Crear panel de accesos rápidos"""
         panel_frame = tk.Frame(parent, bg=self.settings.get_colors()['surface'])
@@ -828,7 +848,52 @@ class MainController:
     
     def _system_config(self):
         """Configuración del sistema"""
-        messagebox.showinfo("Configuración", "Módulo en desarrollo")
+        try:
+            print("🔧 DEBUG: Abriendo configuración desde main_controller")
+            print(f"   - main_window tipo: {type(self.main_window)}")
+            print(f"   - current_user: {self.current_user}")
+            
+            # Limpiar la ventana principal
+            self._clear_main_content()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Crear contenido de configuración en la ventana principal
+            from views.configuration_view import ConfigurationView
+            print("   🔄 Creando ConfigurationView...")
+            
+            self.config_view = ConfigurationView(self.main_window, self.current_user, embedded=True)
+            print("   ✅ ConfigurationView creada exitosamente")
+            
+            # Registrar callbacks
+            self.config_view.bind_callback('back_to_dashboard', self._back_to_dashboard)
+            self.config_view.bind_callback('configuration_saved', self._on_configuration_saved)
+            print("   ✅ Callbacks registrados")
+            
+        except Exception as e:
+            print(f"   ❌ Error en _system_config: {e}")
+            import traceback
+            traceback.print_exc()
+            self.logger.error(f"Error abriendo configuración: {e}")
+            messagebox.showerror("Error", f"Error abriendo la configuración:\n{str(e)}")
+    
+    def _on_configuration_saved(self, config_data: dict):
+        """Manejar cuando se guarda la configuración"""
+        try:
+            print(f"🔧 Configuración guardada, actualizando login...")
+            
+            # Verificar si el nombre de la empresa cambió
+            if 'company_name' in config_data:
+                company_name = config_data['company_name']
+                print(f"   📝 Nuevo nombre de empresa: '{company_name}'")
+                
+                # Actualizar el login view si existe
+                if hasattr(self.auth_controller, 'login_view') and self.auth_controller.login_view:
+                    self.auth_controller.login_view.refresh_company_info()
+                    print(f"   ✅ Login actualizado con nuevo nombre de empresa")
+                
+        except Exception as e:
+            print(f"   ❌ Error actualizando información de empresa en login: {e}")
+            self.logger.error(f"Error actualizando login después de guardar configuración: {e}")
     
     def _show_manual(self):
         """Mostrar manual"""
