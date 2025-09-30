@@ -48,7 +48,20 @@ class AuthController:
             
             # Crear vista si no existe
             if not self.login_view:
-                self.login_view = LoginView()
+                # Crear una ventana raíz para la vista de login MÁS GRANDE
+                import tkinter as tk
+                root = tk.Tk()
+                root.title("Sistema POS - Iniciar Sesión")
+                root.geometry("550x850")
+                root.resizable(False, False)
+                
+                # Centrar ventana
+                root.update_idletasks()
+                x = (root.winfo_screenwidth() // 2) - (550 // 2)
+                y = (root.winfo_screenheight() // 2) - (750 // 2)
+                root.geometry(f"450x850+{x}+{y}")
+                
+                self.login_view = LoginView(root, None, self)
                 self._setup_login_callbacks()
             
             # Resetear formulario para limpiar estado previo

@@ -1,600 +1,532 @@
-"""
-Vista de Login para el Sistema POS
-Interfaz de autenticación con diseño moderno
-"""
-
 import tkinter as tk
-from tkinter import ttk
-from typing import Callable, Optional
+from tkinter import messagebox, ttk
 import json
 import os
+from PIL import Image, ImageTk
 from views.base_view import BaseView
 
 class LoginView(BaseView):
-    """Vista para el formulario de login"""
-    
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent, controller, auth_controller):
+        super().__init__(parent)  # BaseView solo acepta parent
+        self.controller = controller
+        self.auth_controller = auth_controller
+        self.logo_label = None  # Logo dinámico
+        self.setup_ui()
+        self.load_company_info()  # Cargar info de la empresa
         
-        # Variables del formulario
-        self.username_var = tk.StringVar()
-        self.password_var = tk.StringVar()
+    def setup_ui(self):
+        # Configuración del estilo visual - fondo gris claro como en la imagen
+        self.root.configure(bg='#f5f5f5')
+        self.create_widgets()
+        self.setup_layout()
+        
+    def create_widgets(self):
+        # Marco para el logo (FUERA del cuadro blanco)
+        logo_frame = tk.Frame(self.root, bg='#f5f5f5', width=140, height=140)
+        logo_frame.pack_propagate(False)
+        
+        # Logo dinámico de la empresa - fondo azul con diamante
+        self.logo_bg_frame = tk.Frame(logo_frame, bg='#2196f3', width=120, height=120)
+        self.logo_bg_frame.pack_propagate(False)
+        
+        # Canvas para crear el rombo/diamante azul MÁS GRANDE
+        logo_canvas = tk.Canvas(
+            logo_frame,
+            width=140,
+            height=140,
+            bg='#f5f5f5',
+            highlightthickness=0
+        )
+        logo_canvas.pack()
+        
+        # Crear el diamante azul MÁS GRANDE
+        points = [70, 20, 120, 70, 70, 120, 20, 70]  # Coordenadas del diamante más grande
+        logo_canvas.create_polygon(points, fill='#2196f3', outline='#1976d2', width=2)
+        
+        # Signo de interrogación blanco en el centro MÁS GRANDE
+        logo_canvas.create_text(70, 70, text='?', font=('Arial', 36, 'bold'), fill='white')
+        
+        # Almacenar canvas para poder actualizarlo después
+        self.logo_canvas = logo_canvas
+        
+        # Logo dinámico (se posicionará encima del canvas si hay imagen)
+        self.logo_label = tk.Label(
+            logo_frame,
+            text="",  # Inicialmente vacío
+            font=('Segoe UI Emoji', 32),
+            bg='#f5f5f5',
+            fg='#2196f3'
+        )
+        
+        # Título IPV (dinámico - FUERA del cuadro blanco)
+        self.title_label = tk.Label(
+            self.root,
+            text="IPV",
+            font=('Arial', 36, 'bold'),
+            bg='#f5f5f5',
+            fg='#2196f3'
+        )
+        
+        # Subtítulo dinámico de la empresa (FUERA del cuadro blanco)
+        self.company_label = tk.Label(
+            self.root,
+            text="Importadora Punto de Venta",
+            font=('Arial', 20, 'bold'),
+            bg='#f5f5f5',
+            fg='#333333'
+        )
+        
+        # Mensaje de bienvenida (FUERA del cuadro blanco)
+        welcome_label = tk.Label(
+            self.root,
+            text="Inicia sesión para continuar",
+            font=('Arial', 14),
+            bg='#f5f5f5',
+            fg='#666666'
+        )
+        
+        # CUADRO BLANCO - Solo para campos de entrada
+        self.login_frame = tk.Frame(self.root, bg='#ffffff', width=380, height=350, relief='solid', bd=1)
+        self.login_frame.pack_propagate(False)
+        
+        # Campo de usuario con icono (DENTRO del cuadro blanco)
+        user_frame = tk.Frame(self.login_frame, bg='#ffffff')
+        
+        user_icon_label = tk.Label(
+            user_frame,
+            text="👤 Usuario",
+            font=('Arial', 12, 'bold'),
+            bg='#ffffff',
+            fg='#555555'
+        )
+        
+        self.user_entry = tk.Entry(
+            user_frame,
+            font=('Arial', 12),
+            width=32,
+            relief='solid',
+            bd=1,
+            bg='#ffffff',
+            fg='#333333',
+            insertbackground='#333333',
+            highlightthickness=1,
+            highlightcolor='#2196f3',
+            highlightbackground='#e0e0e0'
+        )
+        self.user_entry.insert(0, "Ingresa tu usuario")
+        self.user_entry.configure(fg='#aaaaaa')
+        
+        # Campo de contraseña con icono (DENTRO del cuadro blanco)
+        password_frame = tk.Frame(self.login_frame, bg='#ffffff')
+        
+        password_icon_label = tk.Label(
+            password_frame,
+            text="🔒 Contraseña",
+            font=('Arial', 12, 'bold'),
+            bg='#ffffff',
+            fg='#555555'
+        )
+        
+        # Frame para contraseña y botón de mostrar
+        password_input_frame = tk.Frame(password_frame, bg='#ffffff', relief='solid', bd=1)
+        
+        self.password_entry = tk.Entry(
+            password_input_frame,
+            font=('Arial', 12),
+            width=28,
+            show='*',
+            relief='flat',
+            bd=0,
+            bg='#ffffff',
+            fg='#333333',
+            insertbackground='#333333'
+        )
+        
+        # Botón para mostrar/ocultar contraseña
+        self.show_password_button = tk.Button(
+            password_input_frame,
+            text="👁",
+            font=('Arial', 12),
+            bg='#ffffff',
+            fg='#999999',
+            relief='flat',
+            bd=0,
+            cursor='hand2',
+            command=self.toggle_password_visibility,
+            width=3
+        )
+        
+        # Checkbox recordar datos (DENTRO del cuadro blanco)
+        remember_frame = tk.Frame(self.login_frame, bg='#ffffff')
+        
         self.remember_var = tk.BooleanVar()
-        self.show_password_var = tk.BooleanVar()
+        self.remember_checkbox = tk.Checkbutton(
+            remember_frame,
+            text="Recordar mis datos",
+            variable=self.remember_var,
+            font=('Arial', 11),
+            bg='#ffffff',
+            fg='#666666',
+            selectcolor='#ffffff',
+            activebackground='#ffffff',
+            activeforeground='#2196f3',
+            relief='flat'
+        )
         
-        # Widgets principales
-        self.username_entry = None
-        self.password_entry = None
-        self.login_button = None
-        self.status_label = None
-        self.title_label = None  # Agregar referencia al título para poder actualizarlo
+        # Botón de login (DENTRO del cuadro blanco)
+        self.login_button = tk.Button(
+            self.login_frame,
+            text="🔓 Iniciar Sesión",
+            font=('Arial', 13, 'bold'),
+            bg='#2196f3',
+            fg='white',
+            width=32,
+            height=2,
+            cursor='hand2',
+            relief='flat',
+            bd=0,
+            command=self.handle_login,
+            activebackground='#1976d2',
+            activeforeground='white'
+        )
         
-        # Configuración de empresa
-        self.company_name = self.load_company_name()
+        # Footer (FUERA del cuadro blanco)
+        footer_frame = tk.Frame(self.root, bg='#f5f5f5')
         
-        # Configurar ventana principal
-        self.setup_main_window()
-        self.create_login_form()
+        help_label = tk.Label(
+            footer_frame,
+            text="¿Problemas para acceder? Contacta al administrador",
+            font=('Arial', 10),
+            bg='#f5f5f5',
+            fg='#999999'
+        )
         
-    def setup_main_window(self):
-        """Configurar ventana principal"""
-        self.root.title("Sistema POS - Iniciar Sesión")
-        self.root.geometry("480x700")  # Tamaño optimizado y consistente
-        self.root.resizable(False, False)
+        version_label = tk.Label(
+            footer_frame,
+            text="Sistema POS v1.0 • 2025",
+            font=('Arial', 9),
+            bg='#f5f5f5',
+            fg='#cccccc'
+        )
         
-        # Gradiente de fondo moderno
-        self.root.configure(bg='#f0f2f5')
+        # Asignar widgets a variables para layout
+        self.logo_frame = logo_frame
+        self.user_frame = user_frame
+        self.password_frame = password_frame
+        self.remember_frame = remember_frame
+        self.footer_frame = footer_frame
+        self.welcome_label = welcome_label
+        self.user_icon_label = user_icon_label
+        self.password_icon_label = password_icon_label
+        self.password_input_frame = password_input_frame
+        self.help_label = help_label
+        self.version_label = version_label
         
-        # Centrar ventana - DIMENSIONES CONSISTENTES
-        self.center_window(self.root, 480, 800)
+        # Placeholder para usuario
+        def on_user_focus_in(event):
+            if self.user_entry.get() == "Ingresa tu usuario":
+                self.user_entry.delete(0, tk.END)
+                self.user_entry.configure(fg='#333333')
         
-        # Configurar protocolo de cierre
-        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+        def on_user_focus_out(event):
+            if not self.user_entry.get():
+                self.user_entry.insert(0, "Ingresa tu usuario")
+                self.user_entry.configure(fg='#aaaaaa')
+        
+        self.user_entry.bind('<FocusIn>', on_user_focus_in)
+        self.user_entry.bind('<FocusOut>', on_user_focus_out)
+        
+        # Configurar eventos de teclado
+        self.password_entry.bind('<Return>', lambda event: self.handle_login())
+        self.user_entry.bind('<Return>', lambda event: self.password_entry.focus())
     
-    def load_company_name(self):
-        """Cargar nombre de la empresa desde la configuración"""
+    def toggle_password_visibility(self):
+        """Alternar visibilidad de la contraseña"""
+        if self.password_entry.cget('show') == '*':
+            self.password_entry.config(show='')
+            self.show_password_button.config(text='🙈')
+        else:
+            self.password_entry.config(show='*')
+            self.show_password_button.config(text='👁')
+    
+    def setup_layout(self):
+        # Layout NUEVO con elementos organizados correctamente
+        
+        # PARTE SUPERIOR (fuera del cuadro blanco)
+        # Logo
+        self.logo_frame.pack(pady=(30, 20))
+        
+        # Título IPV
+        self.title_label.pack(pady=(0, 8))
+        
+        # Nombre de empresa  
+        self.company_label.pack(pady=(0, 12))
+        
+        # Mensaje de bienvenida
+        self.welcome_label.pack(pady=(0, 25))
+        
+        # CUADRO BLANCO CENTRADO con campos de entrada
+        self.login_frame.pack(pady=(0, 25))
+        
+        # DENTRO del cuadro blanco:
+        # Campo de usuario
+        self.user_frame.pack(fill='x', padx=30, pady=(25, 15))
+        self.user_icon_label.pack(anchor='w', pady=(0, 5))
+        self.user_entry.pack(fill='x', ipady=8)
+        
+        # Campo de contraseña
+        self.password_frame.pack(fill='x', padx=30, pady=(0, 15))
+        self.password_icon_label.pack(anchor='w', pady=(0, 5))
+        self.password_input_frame.pack(fill='x')
+        self.password_entry.pack(side='left', fill='x', expand=True, ipady=8, padx=(8, 0))
+        self.show_password_button.pack(side='right', padx=(0, 8))
+        
+        # Checkbox recordar
+        self.remember_frame.pack(fill='x', padx=30, pady=(0, 20))
+        self.remember_checkbox.pack(anchor='w')
+        
+        # Botón de login
+        self.login_button.pack(padx=30, pady=(0, 25), fill='x', ipady=6)
+        
+        # PARTE INFERIOR (fuera del cuadro blanco)
+        # Footer
+        self.footer_frame.pack(fill='x', padx=30, pady=(0, 20))
+        self.help_label.pack()
+        self.version_label.pack(pady=(5, 0))
+        
+        # Focus inicial (después de que se cargue todo)
+        self.root.after(100, lambda: self.user_entry.focus())
+        
+    def load_company_info(self):
+        """Carga la información dinámica de la empresa desde la configuración"""
         try:
             config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'system_config.json')
             if os.path.exists(config_path):
                 with open(config_path, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-                    return config.get('company_name', 'Sistema POS')
+                    
+                # Actualizar nombre de empresa
+                company_name = config.get('company_name', 'Importadora Punto de Venta')
+                if company_name and company_name.strip():
+                    self.company_label.config(text=company_name)
+                    
+                    # Actualizar iniciales (IPV por defecto)
+                    initials = self.get_company_initials(company_name)
+                    self.title_label.config(text=initials)
+                
+                # Actualizar logo
+                self.try_update_logo(config)
+                    
         except Exception as e:
-            print(f"Error cargando configuración: {e}")
-        
-        # Valor por defecto si no se puede cargar
-        return 'Sistema POS'
+            print(f"Error cargando configuración de empresa: {e}")
     
-    def update_company_name(self):
-        """Actualizar nombre de la empresa en la interfaz"""
-        new_name = self.load_company_name()
-        if self.company_name != new_name:
-            self.company_name = new_name
-            if self.title_label and self.title_label.winfo_exists():
-                self.title_label.configure(text=self.company_name)
-                print(f"✅ Nombre de empresa actualizado en login: '{self.company_name}'")
+    def get_company_initials(self, company_name):
+        """Obtener iniciales del nombre de la empresa"""
+        try:
+            words = company_name.upper().split()
+            if len(words) >= 3:
+                # Si tiene 3 o más palabras, tomar las primeras 3 iniciales
+                return ''.join([word[0] for word in words[:3]])
+            elif len(words) == 2:
+                # Si tiene 2 palabras, tomar ambas iniciales
+                return ''.join([word[0] for word in words])
+            elif len(words) == 1:
+                # Si tiene 1 palabra, tomar las primeras 3 letras
+                return words[0][:3]
+            else:
+                return "IPV"  # Fallback
+        except:
+            return "IPV"  # Fallback en caso de error
     
-    def create_login_form(self):
-        """Crear formulario de login"""
-        # Frame principal directo (sin canvas para evitar problemas de layout)
-        main_frame = tk.Frame(self.root, bg='#f0f2f5')
-        main_frame.pack(fill='both', expand=True, padx=30, pady=30)
-        
-        # Header con logo y título
-        self.create_header(main_frame)
-        
-        # Formulario
-        self.create_form(main_frame)
-        
-        # Footer
-        self.create_footer(main_frame)
+    def try_update_logo(self, config):
+        """Intenta actualizar el logo de la empresa"""
+        try:
+            logo_path = config.get('logo_path', '')
+            if logo_path and os.path.exists(logo_path) and 'no encontrado' not in logo_path:
+                # Cargar y redimensionar imagen para el diamante MÁS GRANDE
+                pil_image = Image.open(logo_path)
+                pil_image = pil_image.resize((80, 80), Image.Resampling.LANCZOS)
+                
+                # Convertir a PhotoImage
+                photo = ImageTk.PhotoImage(pil_image)
+                
+                # Limpiar el canvas y dibujar el diamante con la imagen
+                self.logo_canvas.delete("all")
+                
+                # Crear el diamante azul MÁS GRANDE
+                points = [70, 20, 120, 70, 70, 120, 20, 70]
+                self.logo_canvas.create_polygon(points, fill='#2196f3', outline='#1976d2', width=2)
+                
+                # Colocar la imagen en el centro del diamante MÁS GRANDE
+                self.logo_canvas.create_image(70, 70, image=photo)
+                
+                # Mantener referencia de la imagen
+                self.logo_canvas.image = photo
+                
+                print(f"Logo actualizado: {logo_path}")
+            else:
+                print(f"Logo no disponible: {logo_path}")
+                
+        except Exception as e:
+            print(f"Error actualizando logo: {e}")
     
-    def create_header(self, parent):
-        """Crear header con logo y título"""
-        header_frame = tk.Frame(parent, bg='#f0f2f5')
-        header_frame.pack(fill='x', pady=(0, 15))  # Reducido de 30 a 15
-        
-        # Logo moderno con efecto sombra
-        logo_frame = tk.Frame(header_frame, bg='#f0f2f5')
-        logo_frame.pack(pady=(0, 10))  # Reducido de 20 a 10
-        
-        # Marco circular para el logo
-        logo_bg = tk.Frame(logo_frame, bg='#ffffff', width=80, height=80)
-        logo_bg.pack_propagate(False)
-        logo_bg.pack()
-        
-        # Logo provisional de la empresa
-        logo_label = tk.Label(
-            logo_bg,
-            text="�",
-            font=('Segoe UI Emoji', 40),
-            bg='#ffffff',
-            fg='#1976d2'
-        )
-        logo_label.place(relx=0.5, rely=0.5, anchor='center')
-        
-        # Logo adicional en texto (provisional)
-        logo_text_frame = tk.Frame(header_frame, bg='#f0f2f5')
-        logo_text_frame.pack(pady=(5, 0))  # Reducido de 10 a 5
-        
-        logo_text = tk.Label(
-            logo_text_frame,
-            text="IPV",
-            font=('Segoe UI', 18, 'bold'),  # Reducido de 24 a 18
-            bg='#f0f2f5',
-            fg='#1976d2'
-        )
-        logo_text.pack()
-        
-        # Título principal con estilo moderno - DINÁMICO desde configuración
-        self.title_label = tk.Label(
-            header_frame,
-            text=self.company_name,  # Usar nombre dinámico de la empresa
-            font=('Segoe UI', 16, 'bold'),  # Reducido de 22 a 16
-            bg='#f0f2f5',
-            fg="#1d2336"
-        )
-        self.title_label.pack(pady=(5, 0))  # Reducido padding
-        
-        # Subtítulo elegante
-        subtitle_label = tk.Label(
-            header_frame,
-            text="Inicia sesión para continuar",
-            font=('Segoe UI', 12),
-            bg='#f0f2f5',
-            fg='#666666'
-        )
-        subtitle_label.pack()
+    def _draw_default_logo(self):
+        """Dibujar el logo por defecto (diamante con ?) MÁS GRANDE"""
+        try:
+            self.logo_canvas.delete("all")
+            # Crear el diamante azul MÁS GRANDE
+            points = [70, 20, 120, 70, 70, 120, 20, 70]
+            self.logo_canvas.create_polygon(points, fill='#2196f3', outline='#1976d2', width=2)
+            # Signo de interrogación blanco en el centro MÁS GRANDE
+            self.logo_canvas.create_text(70, 70, text='?', font=('Arial', 36, 'bold'), fill='white')
+        except Exception as e:
+            print(f"Error dibujando logo por defecto: {e}")
     
-    def create_form(self, parent):
-        """Crear formulario de login"""
-        # Frame con sombra y bordes redondeados simulados
-        form_frame = tk.Frame(parent, bg='#ffffff', relief='flat', bd=0)
-        form_frame.pack(fill='x', pady=(10, 15), padx=20)  # Reducido pady
+    def handle_login(self):
+        """Maneja el proceso de autenticación"""
+        username = self.user_entry.get().strip()
+        password = self.password_entry.get().strip()
         
-        # Simular sombra con frame de fondo
-        shadow_frame = tk.Frame(parent, bg='#e0e0e0', height=2)
-        shadow_frame.pack(fill='x', padx=22, pady=(0, 2))
-        
-        # Padding interno
-        inner_frame = tk.Frame(form_frame, bg='#ffffff')
-        inner_frame.pack(fill='both', expand=True, padx=25, pady=20)  # Reducido más el padding
-        
-        # Campo de usuario
-        self.create_username_field(inner_frame)
-        
-        # Campo de contraseña
-        self.create_password_field(inner_frame)
-        
-        # Checkbox recordar
-        self.create_remember_checkbox(inner_frame)
-        
-        # Botón de login
-        self.create_login_button(inner_frame)
-        
-        # Label de estado
-        self.create_status_label(inner_frame)
-    
-    def create_username_field(self, parent):
-        """Crear campo de usuario"""
-        field_frame = tk.Frame(parent, bg='#ffffff')
-        field_frame.pack(fill='x', pady=(0, 15))  # Reducido de 25 a 15
-        
-        # Etiqueta con icono
-        label_frame = tk.Frame(field_frame, bg='#ffffff')
-        label_frame.pack(fill='x', pady=(0, 8))
-        
-        username_label = tk.Label(
-            label_frame,
-            text="👤 Usuario",
-            font=('Segoe UI', 11, 'bold'),
-            bg='#ffffff',
-            fg='#333333'
-        )
-        username_label.pack(anchor='w')
-        
-        # Frame para entrada con borde personalizado
-        entry_frame = tk.Frame(field_frame, bg='#f8f9fa', relief='solid', bd=1)
-        entry_frame.pack(fill='x', ipady=2)
-        
-        self.username_entry = tk.Entry(
-            entry_frame,
-            textvariable=self.username_var,
-            font=('Segoe UI', 11),
-            bg='#f8f9fa',
-            fg='#333333',
-            bd=0,
-            relief='flat'
-        )
-        self.username_entry.pack(fill='x', padx=15, pady=12)
-        
-        # Bind eventos de navegación
-        self.username_entry.bind('<Return>', lambda e: self.password_entry.focus())
-        
-        # Efectos de foco visuales (se agregan después de los placeholders)
-        self.username_entry.bind('<FocusIn>', lambda e: self.on_entry_focus_in(entry_frame), add='+')
-        self.username_entry.bind('<FocusOut>', lambda e: self.on_entry_focus_out(entry_frame), add='+')
-        
-        # Agregar placeholder después de los eventos visuales
-        self.add_custom_placeholder(self.username_entry, "Ingresa tu usuario")
-    
-    def create_password_field(self, parent):
-        """Crear campo de contraseña"""
-        field_frame = tk.Frame(parent, bg='#ffffff')
-        field_frame.pack(fill='x', pady=(0, 15))  # Reducido de 25 a 15
-        
-        # Etiqueta con icono
-        label_frame = tk.Frame(field_frame, bg='#ffffff')
-        label_frame.pack(fill='x', pady=(0, 8))
-        
-        password_label = tk.Label(
-            label_frame,
-            text="🔒 Contraseña",
-            font=('Segoe UI', 11, 'bold'),
-            bg='#ffffff',
-            fg='#333333'
-        )
-        password_label.pack(anchor='w')
-        
-        # Frame principal para entrada
-        main_entry_frame = tk.Frame(field_frame, bg='#f8f9fa', relief='solid', bd=1)
-        main_entry_frame.pack(fill='x', ipady=2)
-        
-        # Frame interno para entrada y botón
-        entry_frame = tk.Frame(main_entry_frame, bg='#f8f9fa')
-        entry_frame.pack(fill='x', padx=15, pady=12)
-        
-        self.password_entry = tk.Entry(
-            entry_frame,
-            textvariable=self.password_var,
-            font=('Segoe UI', 11),
-            bg='#f8f9fa',
-            fg='#333333',
-            bd=0,
-            relief='flat',
-            show='*'
-        )
-        self.password_entry.pack(side='left', fill='x', expand=True)
-        
-        # Botón mostrar/ocultar contraseña
-        show_button = tk.Button(
-            entry_frame,
-            text="👁",
-            font=('Segoe UI', 10),
-            bg='#f8f9fa',
-            fg='#666666',
-            bd=0,
-            relief='flat',
-            cursor='hand2',
-            command=self.toggle_password_visibility
-        )
-        show_button.pack(side='right', padx=(10, 0))
-        
-        # Bind eventos de navegación
-        self.password_entry.bind('<Return>', lambda e: self.attempt_login())
-        
-        # Efectos de foco visuales (se agregan después de los placeholders)
-        self.password_entry.bind('<FocusIn>', lambda e: self.on_entry_focus_in(main_entry_frame), add='+')
-        self.password_entry.bind('<FocusOut>', lambda e: self.on_entry_focus_out(main_entry_frame), add='+')
-        
-        # Agregar placeholder después de los eventos visuales
-        self.add_custom_placeholder(self.password_entry, "Ingresa tu contraseña")
-    
-    def create_remember_checkbox(self, parent):
-        """Crear checkbox de recordar"""
-        remember_frame = tk.Frame(parent, bg='#ffffff')
-        remember_frame.pack(fill='x', pady=(0, 20))  # Reducido de 30 a 20
-        
-        remember_check = tk.Checkbutton(
-            remember_frame,
-            text="Recordar mis datos",
-            variable=self.remember_var,
-            font=('Segoe UI', 10),
-            bg='#ffffff',
-            fg='#666666',
-            activebackground='#ffffff',
-            activeforeground='#1976d2',
-            selectcolor='#ffffff',
-            cursor='hand2'
-        )
-        remember_check.pack(anchor='w')
-    
-    def create_login_button(self, parent):
-        """Crear botones de login"""
-        buttons_frame = tk.Frame(parent, bg='#ffffff')
-        buttons_frame.pack(fill='x', pady=(0, 25))
-        
-        # Botón principal de login - OPTIMIZADO
-        self.login_button = tk.Button(
-            buttons_frame,
-            text="🔐 Iniciar Sesión",
-            font=('Segoe UI', 11, 'bold'),  # Reducido de 14 a 11
-            bg='#1976d2',
-            fg='white',
-            activebackground='#1565c0',
-            activeforeground='white',
-            relief='raised',
-            bd=2,  # Reducido de 3 a 2
-            cursor='hand2',
-            command=self.attempt_login,
-            width=20,  # Reducido de 25 a 20
-            height=1   # Reducido de 2 a 1
-        )
-        self.login_button.pack(fill='x', ipady=12, pady=8)  # Reducido padding
-        
-        # Efectos hover para botón principal
-        self.login_button.bind('<Enter>', lambda e: self.login_button.configure(bg='#1565c0'))
-        self.login_button.bind('<Leave>', lambda e: self.login_button.configure(bg='#1976d2'))
-    
-    def create_status_label(self, parent):
-        """Crear label de estado"""
-        self.status_label = tk.Label(
-            parent,
-            text="",
-            font=('Segoe UI', 10),
-            bg='#ffffff',
-            fg='#d32f2f',
-            wraplength=300,
-            justify='center'
-        )
-        self.status_label.pack(fill='x', pady=(10, 0))
-    
-    def create_footer(self, parent):
-        """Crear footer con información adicional"""
-        footer_frame = tk.Frame(parent, bg='#f0f2f5')
-        footer_frame.pack(fill='x', pady=(10, 0))  # Reducido de 20 a 10
-        
-        # Línea separadora sutil
-        separator = tk.Frame(footer_frame, bg='#e0e0e0', height=1)
-        separator.pack(fill='x', pady=(0, 15))
-        
-        help_label = tk.Label(
-            footer_frame,
-            text="¿Problemas para acceder? Contacta al administrador",
-            font=('Segoe UI', 9),
-            bg='#f0f2f5',
-            fg='#888888'
-        )
-        help_label.pack(pady=(0, 8))
-        
-        version_label = tk.Label(
-            footer_frame,
-            text="Sistema POS v1.0 • 2025",
-            font=('Segoe UI', 8),
-            bg='#f0f2f5',
-            fg='#aaaaaa'
-        )
-        version_label.pack()
-    
-
-    
-    def add_custom_placeholder(self, entry, placeholder: str):
-        """Agregar placeholder personalizado a un Entry de tkinter"""
-        # Marcar el entry con el placeholder para identificarlo
-        entry.placeholder_text = placeholder
-        
-        def on_focus_in(event):
-            if entry.get() == placeholder:
-                entry.delete(0, tk.END)
-                entry.configure(fg='#333333')
-                if entry == self.password_entry:
-                    entry.configure(show='*')
-        
-        def on_focus_out(event):
-            if not entry.get().strip():
-                entry.delete(0, tk.END)  # Limpiar primero
-                entry.insert(0, placeholder)
-                entry.configure(fg='#999999')
-                if entry == self.password_entry:
-                    entry.configure(show='')
-        
-        # Establecer placeholder inicial
-        entry.delete(0, tk.END)
-        entry.insert(0, placeholder)
-        entry.configure(fg='#999999')
-        if entry == self.password_entry:
-            entry.configure(show='')
-        
-        # Bind eventos de placeholder (estos se ejecutan primero)
-        entry.bind('<FocusIn>', on_focus_in, add='+')
-        entry.bind('<FocusOut>', on_focus_out, add='+')
-    
-    def on_entry_focus_in(self, entry_frame):
-        """Efecto visual cuando el campo recibe foco"""
-        entry_frame.configure(relief='solid', bd=2)
-        entry_frame.configure(bg='#ffffff')
-    
-    def on_entry_focus_out(self, entry_frame):
-        """Efecto visual cuando el campo pierde foco"""
-        entry_frame.configure(relief='solid', bd=1)
-        entry_frame.configure(bg='#f8f9fa')
-    
-    def toggle_password_visibility(self):
-        """Alternar visibilidad de contraseña"""
-        if self.password_entry.cget('show') == '*':
-            self.password_entry.configure(show='')
-        else:
-            self.password_entry.configure(show='*')
-    
-
-    
-    def attempt_login(self):
-        """Intentar hacer login"""
-        self.clear_status()
-        
-        username = self.username_var.get().strip()
-        password = self.password_var.get().strip()
-        
-        # Verificar si los campos contienen solo placeholders
-        if not username or username == "Ingresa tu usuario":
-            self.show_status("Por favor ingresa tu usuario", 'error')
-            self.username_entry.focus()
+        # Validar que no sean los placeholders
+        if username == "Ingresa tu usuario" or not username:
+            messagebox.showerror("Error", "Por favor ingrese un usuario válido")
+            self.user_entry.focus()
             return
-        
-        if not password or password == "Ingresa tu contraseña":
-            self.show_status("Por favor ingresa tu contraseña", 'error')
+            
+        if not password:
+            messagebox.showerror("Error", "Por favor ingrese su contraseña")
             self.password_entry.focus()
             return
         
-        self.set_login_state(False)
-        self.show_status("Verificando credenciales...", 'info')
-        
-        self.trigger_callback('login_attempt', {
+        # Crear datos del formulario
+        form_data = {
             'username': username,
             'password': password,
-            'remember': self.remember_var.get()
-        })
-    
-    def show_status(self, message: str, status_type: str = 'info'):
-        """Mostrar mensaje de estado"""
-        colors = {
-            'info': '#1976d2',
-            'error': '#d32f2f',
-            'success': '#388e3c',
-            'warning': '#f57c00'
+            'remember': self.remember_var.get()  # Usar el valor del checkbox
         }
         
-        self.status_label.configure(
-            text=message,
-            fg=colors.get(status_type, '#333333')
-        )
-        
-        if status_type == 'info':
-            self.root.after(5000, self.clear_status)
-    
-    def clear_status(self):
-        """Limpiar mensaje de estado"""
-        self.status_label.configure(text="")
-    
-    def set_login_state(self, enabled: bool):
-        """Habilitar/deshabilitar controles de login"""
-        state = 'normal' if enabled else 'disabled'
-        
-        self.username_entry.configure(state=state)
-        self.password_entry.configure(state=state)
-        self.login_button.configure(state=state)
-        
-        if enabled:
-            self.login_button.configure(
-                text="🔐 Iniciar Sesión",
-                bg='#1976d2'
-            )
+        # Llamar al callback de login si existe
+        if hasattr(self, '_login_callback') and self._login_callback:
+            self._login_callback(form_data)
         else:
-            self.login_button.configure(
-                text="⏳ Verificando...",
-                bg='#999999'
-            )
+            # Fallback simple - solo para compatibilidad
+            messagebox.showerror("Error", "Sistema de autenticación no disponible")
+            self.password_entry.delete(0, tk.END)
+            
+    def update_company_info(self):
+        """Método público para actualizar info de empresa (callback desde configuración)"""
+        try:
+            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'system_config.json')
+            if os.path.exists(config_path):
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    
+                # Actualizar nombre de empresa
+                company_name = config.get('company_name', 'Importadora Punto de Venta')
+                if company_name and company_name.strip():
+                    self.company_label.config(text=company_name)
+                    
+                    # Actualizar iniciales
+                    initials = self.get_company_initials(company_name)
+                    self.title_label.config(text=initials)
+                
+                # Actualizar logo
+                logo_path = config.get('logo_path', '')
+                if logo_path and os.path.exists(logo_path) and 'no encontrado' not in logo_path:
+                    try:
+                        # Cargar y redimensionar imagen para el diamante MÁS GRANDE
+                        pil_image = Image.open(logo_path)
+                        pil_image = pil_image.resize((80, 80), Image.Resampling.LANCZOS)
+                        
+                        # Convertir a PhotoImage
+                        photo = ImageTk.PhotoImage(pil_image)
+                        
+                        # Limpiar el canvas y dibujar el diamante con la imagen
+                        self.logo_canvas.delete("all")
+                        
+                        # Crear el diamante azul MÁS GRANDE
+                        points = [70, 20, 120, 70, 70, 120, 20, 70]
+                        self.logo_canvas.create_polygon(points, fill='#2196f3', outline='#1976d2', width=2)
+                        
+                        # Colocar la imagen en el centro del diamante MÁS GRANDE
+                        self.logo_canvas.create_image(70, 70, image=photo)
+                        
+                        # Mantener referencia de la imagen
+                        self.logo_canvas.image = photo
+                        
+                        print(f"Logo actualizado dinámicamente: {logo_path}")
+                    except Exception as e:
+                        print(f"Error actualizando logo dinámicamente: {e}")
+                        # Volver al diamante por defecto
+                        self._draw_default_logo()
+                else:
+                    # Volver al diamante por defecto si no hay logo válido
+                    self._draw_default_logo()
+                    
+        except Exception as e:
+            print(f"Error en update_company_info: {e}")
     
-    def on_login_success(self, user_data: dict):
-        """Manejar login exitoso"""
-        self.show_status(f"¡Bienvenido {user_data.get('full_name', user_data.get('username'))}!", 'success')
-        self.password_var.set("")
-        self.trigger_callback('login_success', user_data)
+    # Métodos para compatibilidad con AuthController
+    def bind_login_callback(self, callback):
+        """Vincular callback de intento de login"""
+        self._login_callback = callback
     
-    def on_login_error(self, error_message: str):
-        """Manejar error de login"""
-        self.show_status(error_message, 'error')
-        self.set_login_state(True)
-        
-        # Limpiar solo la contraseña y restaurar placeholder
-        self.password_var.set("")
-        self.password_entry.delete(0, tk.END)
-        self.password_entry.insert(0, "Ingresa tu contraseña")
-        self.password_entry.configure(fg='#999999', show='')
-        
-        self.password_entry.focus()
-        self.trigger_callback('login_error', error_message)
+    def bind_success_callback(self, callback):
+        """Vincular callback de éxito"""
+        self._success_callback = callback
+    
+    def bind_error_callback(self, callback):
+        """Vincular callback de error"""
+        self._error_callback = callback
+    
+    def bind_callback(self, event_name, callback):
+        """Vincular callback genérico"""
+        setattr(self, f'_{event_name}_callback', callback)
     
     def reset_form(self):
-        """Resetear formulario completamente"""
-        # Limpiar variables
-        self.username_var.set("")
-        self.password_var.set("")
-        self.remember_var.set(False)
-        
-        # Limpiar campos y restaurar placeholders
-        self.username_entry.delete(0, tk.END)
-        self.username_entry.insert(0, "Ingresa tu usuario")
-        self.username_entry.configure(fg='#999999')
-        
+        """Limpiar formulario"""
+        self.user_entry.delete(0, tk.END)
+        self.user_entry.insert(0, "Ingresa tu usuario")
+        self.user_entry.configure(fg='#aaaaaa')
         self.password_entry.delete(0, tk.END)
-        self.password_entry.insert(0, "Ingresa tu contraseña")
-        self.password_entry.configure(fg='#999999', show='')
-        
-        # Limpiar estado
-        self.clear_status()
-        self.set_login_state(True)
-        
-        # Enfocar campo de usuario
-        self.username_entry.focus()
-    
-    def load_remembered_user(self, username: str):
-        """Cargar usuario recordado"""
-        self.username_var.set(username)
-        self.remember_var.set(True)
-        self.password_entry.focus()
-    
-    def focus_username(self):
-        """Enfocar campo de usuario"""
-        self.username_entry.focus()
-        self.username_entry.select_range(0, tk.END)
-    
-    def focus_password(self):
-        """Enfocar campo de contraseña"""
-        self.password_entry.focus()
-        self.password_entry.select_range(0, tk.END)
-    
-    def get_form_data(self) -> dict:
-        """Obtener datos del formulario"""
-        return {
-            'username': self.username_var.get().strip(),
-            'password': self.password_var.get().strip(),
-            'remember': self.remember_var.get()
-        }
-    
-    def set_form_data(self, data: dict):
-        """Establecer datos del formulario"""
-        self.username_var.set(data.get('username', ''))
-        self.password_var.set(data.get('password', ''))
-        self.remember_var.set(data.get('remember', False))
-    
-    def bind_login_callback(self, callback: Callable):
-        """Registrar callback de login"""
-        self.bind_callback('login_attempt', callback)
-    
-    def bind_success_callback(self, callback: Callable):
-        """Registrar callback de éxito"""
-        self.bind_callback('login_success', callback)
-    
-    def bind_error_callback(self, callback: Callable):
-        """Registrar callback de error"""
-        self.bind_callback('login_error', callback)
-    
-    def on_close(self):
-        """Manejar cierre de ventana"""
-        if self.trigger_callback('before_close'):
-            return
-        
-        self.root.quit()
-        self.root.destroy()
+        self.remember_var.set(False)
+        self.user_entry.focus()
     
     def show(self):
-        """Mostrar ventana de login"""
-        # Actualizar nombre de empresa antes de mostrar
-        self.update_company_name()
+        """Mostrar ventana"""
         self.root.deiconify()
         self.root.lift()
-        self.focus_username()
+        self.root.focus_force()
     
     def hide(self):
-        """Ocultar ventana de login"""
+        """Ocultar ventana"""
         self.root.withdraw()
-    
-    def refresh_company_info(self):
-        """Método público para refrescar información de la empresa"""
-        self.update_company_name()
     
     def run(self):
         """Ejecutar loop principal"""
-        self.focus_username()
         self.root.mainloop()
+    
+    def on_login_success(self, user_data):
+        """Manejar éxito de login"""
+        messagebox.showinfo("Éxito", f"Bienvenido {user_data.get('username', 'Usuario')}")
+        if hasattr(self, '_success_callback') and self._success_callback:
+            self._success_callback(user_data)
+    
+    def on_login_error(self, error_message):
+        """Manejar error de login"""
+        messagebox.showerror("Error", error_message)
+        self.password_entry.delete(0, tk.END)
+        if hasattr(self, '_error_callback') and self._error_callback:
+            self._error_callback(error_message)
+    
+    def load_remembered_user(self, username):
+        """Cargar usuario recordado"""
+        self.user_entry.delete(0, tk.END)
+        self.user_entry.insert(0, username)
+        self.user_entry.configure(fg='#333333')
+        self.remember_var.set(True)
+        self.password_entry.focus()
+    
+    def on_destroy(self):
+        """Limpiar recursos"""
+        self.root.destroy()
