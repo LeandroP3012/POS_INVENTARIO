@@ -481,3 +481,45 @@
 2025-09-29 18:52:03,095 - MainController - INFO - Iniciando aplicación POS
 2025-09-29 18:52:03,095 - MainController - INFO - Mostrando pantalla de login
 2025-09-29 18:52:28,670 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 19:03:31,823 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 19:03:31,838 - MainController - INFO - Sistema POS iniciado
+2025-09-29 19:03:31,838 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 19:03:31,839 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 19:15:34,504 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-29 20:24:53,448 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 20:24:53,501 - MainController - INFO - Sistema POS iniciado
+2025-09-29 20:24:53,501 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 20:24:53,501 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 20:25:08,811 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 20:25:08,877 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 20:25:08,901 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 20:25:08,910 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 20:25:08,932 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 20:25:08,942 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 20:25:08,942 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 20:25:10,474 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 20:25:28,967 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 20:25:28,976 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 20:25:28,976 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 20:25:28,976 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-09-29 20:25:29,072 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 21:18:12,619 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-29 21:18:12,647 - MainController - INFO - Sistema POS iniciado
+2025-09-29 21:18:12,647 - MainController - INFO - Iniciando aplicación POS
+2025-09-29 21:18:12,647 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 21:18:16,906 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-29 21:18:16,966 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:18:16,990 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:18:16,998 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-29 21:18:17,002 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:18:17,011 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 21:18:17,011 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-29 21:18:18,545 - MainController - INFO - Login exitoso para admin: admin
+2025-09-29 21:44:37,246 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-09-29 21:44:37,256 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-09-29 21:44:37,256 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-29 21:44:37,257 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-09-29 21:44:37,372 - MainController - INFO - Mostrando pantalla de login
+2025-09-29 21:44:38,851 - AuthController - INFO - Logout exitoso para: admin
+2025-09-29 21:44:38,853 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'
+2025-09-29 21:44:38,870 - AuthController - INFO - Controlador de autenticación limpiado

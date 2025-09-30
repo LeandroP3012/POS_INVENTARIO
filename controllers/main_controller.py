@@ -280,22 +280,388 @@ class MainController:
         logout_btn.pack(side='left', padx=5)
     
     def _create_main_area(self):
-        """Crear área principal"""
-        main_frame = tk.Frame(self.main_window, bg=self.settings.get_colors()['background'])
-        main_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        """Crear área principal con dashboard moderno"""
+        # Frame principal para el contenido
+        main_frame = tk.Frame(self.main_window, bg='#f8f9fa')
+        main_frame.pack(fill='both', expand=True)
         
-        # Título de bienvenida
-        welcome_label = tk.Label(
-            main_frame,
-            text=f"¡Bienvenido al Sistema POS, {self.current_user.get('full_name', self.current_user.get('username'))}!",
-            bg=self.settings.get_colors()['background'],
-            fg=self.settings.get_colors()['on_background'],
-            font=('Segoe UI', 18, 'bold')
+        # Decidir qué tipo de dashboard mostrar
+        dashboard_type = self._get_dashboard_type()
+        
+        if dashboard_type == 'modules':
+            self._create_modules_dashboard(main_frame)
+        elif dashboard_type == 'stats':
+            self._create_stats_dashboard(main_frame)
+        else:
+            # Dashboard híbrido (por defecto)
+            self._create_hybrid_dashboard(main_frame)
+    
+    def _get_dashboard_type(self):
+        """Obtener tipo de dashboard según preferencias/permisos"""
+        # Por ahora, usar dashboard híbrido por defecto
+        # TODO: Permitir al usuario elegir su dashboard preferido
+        return 'hybrid'
+    
+    def _create_modules_dashboard(self, parent):
+        """Crear dashboard tipo módulos/tarjetas"""
+        from views.dashboard_view import DashboardView
+        
+        self.dashboard_view = DashboardView(self.main_window, self.current_user)
+        
+        # Registrar callbacks para los módulos
+        self.dashboard_view.bind_module_callback('clients', lambda: self._manage_clients())
+        self.dashboard_view.bind_module_callback('products', lambda: self._view_products())
+        self.dashboard_view.bind_module_callback('purchases', lambda: self._manage_purchases())
+        self.dashboard_view.bind_module_callback('quick_sale', lambda: self._new_sale())
+        self.dashboard_view.bind_module_callback('results', lambda: self._daily_sales_report())
+        self.dashboard_view.bind_module_callback('business', lambda: self._system_config())
+        self.dashboard_view.bind_module_callback('support', lambda: self._show_support())
+        self.dashboard_view.bind_module_callback('help', lambda: self._show_manual())
+        self.dashboard_view.bind_module_callback('reports', lambda: self._full_report())
+    
+    def _create_stats_dashboard(self, parent):
+        """Crear dashboard con estadísticas"""
+        from views.stats_dashboard_view import StatsDashboardView
+        
+        self.stats_dashboard = StatsDashboardView(parent, self.current_user)
+    
+    def _create_hybrid_dashboard(self, parent):
+        """Crear dashboard híbrido (estadísticas + accesos rápidos)"""
+        # Header con información del usuario
+        self._create_dashboard_header(parent)
+        
+        # Sección de estadísticas rápidas
+        self._create_quick_stats_section(parent)
+        
+        # Sección de módulos principales
+        self._create_quick_modules_section(parent)
+        
+        # Footer con actividad reciente
+        self._create_activity_footer(parent)
+    
+    def _create_dashboard_header(self, parent):
+        """Crear header del dashboard híbrido"""
+        header_frame = tk.Frame(parent, bg='#2c3e50', height=120)
+        header_frame.pack(fill='x')
+        header_frame.pack_propagate(False)
+        
+        # Contenido del header
+        content_frame = tk.Frame(header_frame, bg='#2c3e50')
+        content_frame.pack(expand=True, fill='both', padx=40, pady=20)
+        
+        # Lado izquierdo - Saludo y fecha
+        left_frame = tk.Frame(content_frame, bg='#2c3e50')
+        left_frame.pack(side='left', fill='both', expand=True)
+        
+        # Saludo personalizado
+        greeting = self._get_time_greeting()
+        user_name = self.current_user.get('full_name', self.current_user.get('username', 'Usuario'))
+        
+        greeting_label = tk.Label(
+            left_frame,
+            text=f"{greeting}, {user_name}",
+            font=('Segoe UI', 20, 'bold'),
+            fg='white',
+            bg='#2c3e50'
         )
-        welcome_label.pack(pady=30)
+        greeting_label.pack(anchor='w')
         
-        # Panel de accesos rápidos
-        self._create_quick_access_panel(main_frame)
+        # Fecha y hora actual
+        from datetime import datetime
+        now = datetime.now()
+        date_str = now.strftime("%A, %d de %B de %Y")
+        time_str = now.strftime("%H:%M")
+        
+        date_label = tk.Label(
+            left_frame,
+            text=f"📅 {date_str} • ⏰ {time_str}",
+            font=('Segoe UI', 12),
+            fg='#bdc3c7',
+            bg='#2c3e50'
+        )
+        date_label.pack(anchor='w', pady=(5, 0))
+        
+        # Lado derecho - Estado del sistema
+        right_frame = tk.Frame(content_frame, bg='#2c3e50')
+        right_frame.pack(side='right')
+        
+        status_label = tk.Label(
+            right_frame,
+            text="🟢 Sistema Activo",
+            font=('Segoe UI', 14, 'bold'),
+            fg='#2ecc71',
+            bg='#2c3e50'
+        )
+        status_label.pack(anchor='e')
+        
+        role_label = tk.Label(
+            right_frame,
+            text=f"Rol: {self.current_user.get('user_type', 'Usuario').title()}",
+            font=('Segoe UI', 12),
+            fg='#bdc3c7',
+            bg='#2c3e50'
+        )
+        role_label.pack(anchor='e', pady=(5, 0))
+    
+    def _create_quick_stats_section(self, parent):
+        """Crear sección de estadísticas rápidas"""
+        stats_frame = tk.Frame(parent, bg='#f8f9fa')
+        stats_frame.pack(fill='x', padx=20, pady=20)
+        
+        # Título de la sección
+        title_label = tk.Label(
+            stats_frame,
+            text="📊 Resumen del Día",
+            font=('Segoe UI', 16, 'bold'),
+            fg='#2c3e50',
+            bg='#f8f9fa'
+        )
+        title_label.pack(pady=(0, 15))
+        
+        # Grid de mini-estadísticas
+        stats_grid = tk.Frame(stats_frame, bg='#f8f9fa')
+        stats_grid.pack(fill='x')
+        
+        # Estadísticas simuladas (en producción vendrían de la BD)
+        quick_stats = [
+            {'title': 'Ventas Hoy', 'value': '$1,247', 'icon': '💰', 'color': '#27ae60'},
+            {'title': 'Transacciones', 'value': '23', 'icon': '🧾', 'color': '#3498db'},
+            {'title': 'Productos Vendidos', 'value': '48', 'icon': '📦', 'color': '#e74c3c'},
+            {'title': 'Promedio Ticket', 'value': '$54', 'icon': '💳', 'color': '#9b59b6'},
+        ]
+        
+        for i, stat in enumerate(quick_stats):
+            self._create_mini_stat_card(stats_grid, stat, i)
+    
+    def _create_mini_stat_card(self, parent, stat_data, index):
+        """Crear mini tarjeta de estadística"""
+        card_frame = tk.Frame(
+            parent,
+            bg='white',
+            relief='solid',
+            bd=1,
+            padx=15,
+            pady=12
+        )
+        card_frame.grid(row=0, column=index, padx=8, sticky='ew')
+        parent.grid_columnconfigure(index, weight=1)
+        
+        # Icono
+        icon_label = tk.Label(
+            card_frame,
+            text=stat_data['icon'],
+            font=('Segoe UI', 16),
+            bg='white'
+        )
+        icon_label.pack()
+        
+        # Valor
+        value_label = tk.Label(
+            card_frame,
+            text=stat_data['value'],
+            font=('Segoe UI', 18, 'bold'),
+            fg=stat_data['color'],
+            bg='white'
+        )
+        value_label.pack(pady=(2, 0))
+        
+        # Título
+        title_label = tk.Label(
+            card_frame,
+            text=stat_data['title'],
+            font=('Segoe UI', 10),
+            fg='#7f8c8d',
+            bg='white'
+        )
+        title_label.pack()
+    
+    def _create_quick_modules_section(self, parent):
+        """Crear sección de módulos de acceso rápido"""
+        modules_frame = tk.Frame(parent, bg='#f8f9fa')
+        modules_frame.pack(fill='both', expand=True, padx=20, pady=(0, 20))
+        
+        # Título
+        title_label = tk.Label(
+            modules_frame,
+            text="🚀 Accesos Rápidos",
+            font=('Segoe UI', 16, 'bold'),
+            fg='#2c3e50',
+            bg='#f8f9fa'
+        )
+        title_label.pack(pady=(0, 15))
+        
+        # Grid de módulos principales
+        modules_grid = tk.Frame(modules_frame, bg='#f8f9fa')
+        modules_grid.pack(fill='both', expand=True)
+        
+        # Módulos principales según permisos
+        modules = self._get_main_modules()
+        
+        # Crear grid 2x3 o 2x4 según módulos disponibles
+        cols = 4 if len(modules) > 6 else 3
+        for i, module in enumerate(modules[:8]):  # Máximo 8 módulos
+            row = i // cols
+            col = i % cols
+            self._create_quick_module_button(modules_grid, module, row, col)
+    
+    def _get_main_modules(self):
+        """Obtener módulos principales según permisos"""
+        modules = [
+            {
+                'title': 'Nueva Venta',
+                'icon': '🛒',
+                'color': '#27ae60',
+                'command': self._new_sale,
+                'permission': None  # Todos
+            },
+            {
+                'title': 'Historial',
+                'icon': '📋',
+                'color': '#3498db',
+                'command': self._sales_history,
+                'permission': None  # Todos
+            }
+        ]
+        
+        # Módulos según permisos
+        if self.auth_controller.has_permission('inventory_view'):
+            modules.append({
+                'title': 'Productos',
+                'icon': '📦',
+                'color': '#e74c3c',
+                'command': self._view_products,
+                'permission': 'inventory_view'
+            })
+        
+        if self.auth_controller.has_permission('reports_basic'):
+            modules.append({
+                'title': 'Reportes',
+                'icon': '📊',
+                'color': '#9b59b6',
+                'command': self._daily_sales_report,
+                'permission': 'reports_basic'
+            })
+        
+        if self.auth_controller.has_permission('users_manage'):
+            modules.append({
+                'title': 'Usuarios',
+                'icon': '👥',
+                'color': '#f39c12',
+                'command': self._manage_users,
+                'permission': 'users_manage'
+            })
+        
+        modules.extend([
+            {
+                'title': 'Configuración',
+                'icon': '⚙️',
+                'color': '#34495e',
+                'command': self._system_config,
+                'permission': None
+            },
+            {
+                'title': 'Ayuda',
+                'icon': '❓',
+                'color': '#e67e22',
+                'command': self._show_manual,
+                'permission': None
+            },
+            {
+                'title': 'Soporte',
+                'icon': '💬',
+                'color': '#1abc9c',
+                'command': self._show_support,
+                'permission': None
+            }
+        ])
+        
+        return modules
+    
+    def _create_quick_module_button(self, parent, module, row, col):
+        """Crear botón de módulo rápido"""
+        btn = tk.Button(
+            parent,
+            text=f"{module['icon']}\n{module['title']}",
+            command=module['command'],
+            bg=module['color'],
+            fg='white',
+            font=('Segoe UI', 11, 'bold'),
+            width=12,
+            height=3,
+            relief='flat',
+            cursor='hand2',
+            borderwidth=0
+        )
+        btn.grid(row=row, column=col, padx=8, pady=8, sticky='nsew')
+        
+        # Configurar expansión
+        parent.grid_rowconfigure(row, weight=1)
+        parent.grid_columnconfigure(col, weight=1)
+        
+        # Efectos hover
+        def on_enter(event):
+            btn.configure(bg=self._darken_color(module['color']))
+        
+        def on_leave(event):
+            btn.configure(bg=module['color'])
+        
+        btn.bind('<Enter>', on_enter)
+        btn.bind('<Leave>', on_leave)
+    
+    def _create_activity_footer(self, parent):
+        """Crear footer con actividad reciente"""
+        footer_frame = tk.Frame(parent, bg='#ecf0f1', height=60)
+        footer_frame.pack(fill='x', side='bottom')
+        footer_frame.pack_propagate(False)
+        
+        content_frame = tk.Frame(footer_frame, bg='#ecf0f1')
+        content_frame.pack(expand=True, fill='both', padx=20, pady=15)
+        
+        # Actividad reciente (izquierda)
+        activity_label = tk.Label(
+            content_frame,
+            text="🔔 Última actividad: Venta #1234 completada (14:32)",
+            font=('Segoe UI', 11),
+            fg='#2c3e50',
+            bg='#ecf0f1'
+        )
+        activity_label.pack(side='left')
+        
+        # Estado del sistema (derecha)
+        system_label = tk.Label(
+            content_frame,
+            text="Sistema POS v1.0 • Base de datos conectada ✅",
+            font=('Segoe UI', 10),
+            fg='#7f8c8d',
+            bg='#ecf0f1'
+        )
+        system_label.pack(side='right')
+    
+    def _get_time_greeting(self):
+        """Obtener saludo según la hora del día"""
+        from datetime import datetime
+        hour = datetime.now().hour
+        
+        if 5 <= hour < 12:
+            return "¡Buenos días"
+        elif 12 <= hour < 18:
+            return "¡Buenas tardes"
+        else:
+            return "¡Buenas noches"
+    
+    def _darken_color(self, color_hex):
+        """Oscurecer un color para efectos hover"""
+        # Remover # si existe
+        hex_color = color_hex.replace('#', '')
+        
+        # Convertir a RGB
+        rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        
+        # Oscurecer (multiplicar por 0.8)
+        darker_rgb = tuple(max(0, int(c * 0.8)) for c in rgb)
+        
+        # Convertir de vuelta a hex
+        return '#{:02x}{:02x}{:02x}'.format(*darker_rgb)
     
     def _create_quick_access_panel(self, parent):
         """Crear panel de accesos rápidos"""
@@ -447,6 +813,18 @@ class MainController:
     def _manage_users(self):
         """Gestionar usuarios"""
         messagebox.showinfo("Gestión de Usuarios", "Módulo en desarrollo")
+    
+    def _manage_clients(self):
+        """Gestionar clientes"""
+        messagebox.showinfo("Gestión de Clientes", "Módulo de clientes en desarrollo")
+    
+    def _manage_purchases(self):
+        """Gestionar compras"""
+        messagebox.showinfo("Gestión de Compras", "Módulo de compras en desarrollo")
+    
+    def _show_support(self):
+        """Mostrar soporte"""
+        messagebox.showinfo("Soporte Técnico", "Chat de soporte en desarrollo\n\nPara asistencia inmediata:\n📧 soporte@pos.com\n📞 +1-800-123-4567")
     
     def _system_config(self):
         """Configuración del sistema"""
