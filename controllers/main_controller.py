@@ -670,6 +670,37 @@ class MainController:
             if not isinstance(widget, tk.Menu):
                 widget.destroy()
     
+    def _check_user_permission(self, permission):
+        """Verificar permisos del usuario"""
+        try:
+            if not self.current_user:
+                return False
+            
+            # Verificar primero si el usuario tiene permisos específicos
+            user_permissions = self.current_user.get('permissions', {})
+            if user_permissions.get(permission):
+                return True
+            
+            # Admin siempre tiene todos los permisos
+            user_type = self.current_user.get('user_type') or self.current_user.get('role')
+            if user_type == 'admin':
+                return True
+            
+            # Mapeo de permisos por rol
+            permissions_map = {
+                'manager': ['users_view', 'stats_view', 'config_view'],
+                'employee': ['stats_view'],
+                'admin': ['users_manage', 'users_view', 'stats_view', 'config_view', 'config_manage']
+            }
+            
+            allowed_permissions = permissions_map.get(user_type, [])
+            
+            return permission in allowed_permissions
+        except Exception as e:
+            print(f"   ❌ Error verificando permisos: {e}")
+            self.logger.error(f"Error verificando permisos: {e}")
+            return False
+    
     def _back_to_dashboard(self):
         """Volver al dashboard principal"""
         try:
@@ -832,7 +863,47 @@ class MainController:
     
     def _manage_users(self):
         """Gestionar usuarios"""
-        messagebox.showinfo("Gestión de Usuarios", "Módulo en desarrollo")
+        try:
+            print("👥 DEBUG: Abriendo gestión de usuarios desde main_controller")
+            print(f"   - main_window tipo: {type(self.main_window)}")
+            print(f"   - current_user: {self.current_user}")
+            
+            # Verificar permisos del usuario
+            if not self._check_user_permission('users_manage'):
+                messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder a la gestión de usuarios")
+                return
+            
+            # Limpiar la ventana principal
+            self._clear_main_content()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Crear contenido de gestión de usuarios en la ventana principal
+            from views.user_management_view import UserManagementView
+            print("   🔄 Creando UserManagementView...")
+            
+            # Pasar el current_user como diccionario con la estructura esperada
+            user_data = {
+                'id': self.current_user.get('id', 0),
+                'username': self.current_user.get('username', ''),
+                'full_name': self.current_user.get('full_name', ''),
+                'email': self.current_user.get('email', ''),
+                'role': self.current_user.get('user_type', 'admin'),  # Mapear user_type a role
+                'permissions': self.current_user.get('permissions', {})
+            }
+            
+            self.users_view = UserManagementView(self.main_window, user_data, embedded=True)
+            print("   ✅ UserManagementView creada exitosamente")
+            
+            # Registrar callbacks
+            self.users_view.bind_callback('back_to_dashboard', self._back_to_dashboard)
+            print("   ✅ Callbacks registrados")
+            
+        except Exception as e:
+            print(f"   ❌ Error en _manage_users: {e}")
+            import traceback
+            traceback.print_exc()
+            self.logger.error(f"Error abriendo gestión de usuarios: {e}")
+            messagebox.showerror("Error", f"Error abriendo la gestión de usuarios:\n{str(e)}")
     
     def _manage_clients(self):
         """Gestionar clientes"""

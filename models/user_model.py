@@ -426,3 +426,76 @@ class UserModel(BaseModel):
         except Exception as e:
             self.logger.error(f"Error buscando usuarios: {e}")
             return []
+    
+    def get_all_users(self) -> List[Dict[str, Any]]:
+        """Obtener todos los usuarios"""
+        if not self.connect():
+            return list(self.default_users.values())
+        
+        try:
+            return self.find_all(order_by='full_name')
+        except Exception as e:
+            self.logger.error(f"Error obteniendo todos los usuarios: {e}")
+            return list(self.default_users.values())
+    
+    def get_user_by_id(self, user_id: int) -> Optional[Dict[str, Any]]:
+        """Obtener usuario por ID"""
+        if not self.connect():
+            # En usuarios por defecto, usar el username como "id"
+            for user in self.default_users.values():
+                if str(user.get('username')) == str(user_id):
+                    return user
+            return None
+        
+        try:
+            return self.find_by_id(user_id)
+        except Exception as e:
+            self.logger.error(f"Error obteniendo usuario por ID {user_id}: {e}")
+            return None
+    
+    def get_user_by_username(self, username: str) -> Optional[Dict[str, Any]]:
+        """Obtener usuario por nombre de usuario (alias para find_by_username)"""
+        return self.find_by_username(username)
+    
+    def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
+        """Obtener usuario por email"""
+        if not self.connect():
+            for user in self.default_users.values():
+                if user.get('email', '').lower() == email.lower():
+                    return user
+            return None
+        
+        try:
+            return self.find_by_field('email', email)
+        except Exception as e:
+            self.logger.error(f"Error obteniendo usuario por email {email}: {e}")
+            return None
+    
+    def get_active_users_by_type(self, user_type: str) -> List[Dict[str, Any]]:
+        """Obtener usuarios activos por tipo"""
+        if not self.connect():
+            return [user for user in self.default_users.values() 
+                   if user.get('user_type') == user_type and user.get('active', True)]
+        
+        try:
+            return self.find_all({'user_type': user_type, 'active': True})
+        except Exception as e:
+            self.logger.error(f"Error obteniendo usuarios activos por tipo: {e}")
+            return []
+    
+    def delete_user(self, user_id: int) -> bool:
+        """Eliminar usuario (eliminar físicamente)"""
+        if not self.connect():
+            self.logger.warning("No se pueden eliminar usuarios por defecto")
+            return False
+        
+        try:
+            # Log de la acción antes de eliminar
+            user = self.get_user_by_id(user_id)
+            if user:
+                self.log_activity('DELETE_USER', user_id, f"Usuario eliminado: {user.get('username')}")
+            
+            return self.delete(user_id)
+        except Exception as e:
+            self.logger.error(f"Error eliminando usuario: {e}")
+            return False

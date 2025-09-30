@@ -1859,3 +1859,72 @@
 2025-09-30 13:03:54,463 - AuthController - INFO - Logout exitoso para: admin
 2025-09-30 13:03:54,535 - AuthController - INFO - Controlador de autenticación limpiado
 2025-09-30 13:03:54,535 - MainController - INFO - Aplicación cerrada correctamente
+2025-09-30 13:11:57,499 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-30 13:11:57,534 - MainController - INFO - Sistema POS iniciado
+2025-09-30 13:11:57,534 - MainController - INFO - Iniciando aplicación POS
+2025-09-30 13:11:57,534 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 13:12:00,792 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 13:12:00,902 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:12:00,902 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:12:00,902 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 13:12:02,913 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:12:02,914 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:12:02,914 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:12:02,915 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 13:12:05,968 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 13:12:17,274 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 13:12:17,275 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 13:12:34,746 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:12:34,746 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:12:34,746 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:12:34,746 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 13:12:34,746 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-09-30 13:12:34,998 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 13:13:14,724 - AuthController - INFO - Logout exitoso para: admin
+2025-09-30 13:13:14,724 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'
+2025-09-30 13:21:27,642 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-30 13:21:27,708 - MainController - INFO - Sistema POS iniciado
+2025-09-30 13:21:27,708 - MainController - INFO - Iniciando aplicación POS
+2025-09-30 13:21:27,709 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 13:21:33,206 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 13:21:33,320 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:21:33,321 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:21:33,321 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 13:21:35,326 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:21:35,327 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:21:35,327 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:21:35,327 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 13:21:38,384 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 13:21:54,659 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-09-30 13:21:54,660 - ConfigController - INFO - Configuración de base de datos cargada
+2025-09-30 13:22:07,767 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:22:07,768 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:22:07,768 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:22:07,768 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 13:22:07,768 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-09-30 13:22:08,004 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 13:22:09,375 - AuthController - INFO - Logout exitoso para: admin
+2025-09-30 13:22:09,376 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'
+2025-09-30 13:27:00,291 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-09-30 13:27:00,338 - MainController - INFO - Sistema POS iniciado
+2025-09-30 13:27:00,338 - MainController - INFO - Iniciando aplicación POS
+2025-09-30 13:27:00,339 - MainController - INFO - Mostrando pantalla de login
+2025-09-30 13:27:12,715 - AuthController - INFO - Intento de login para usuario: admin
+2025-09-30 13:27:12,819 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:27:12,820 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:27:12,820 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-09-30 13:27:14,822 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:27:14,822 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:27:14,823 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:27:14,823 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-09-30 13:27:17,882 - MainController - INFO - Login exitoso para admin: admin
+2025-09-30 13:27:20,851 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:29:05,806 - MainController - INFO - Cerrando aplicación POS
+2025-09-30 13:29:05,806 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:29:05,807 - database - INFO - Intentando reconectar a la base de datos...
+2025-09-30 13:29:05,807 - database - ERROR - Error inesperado: 'database'
+2025-09-30 13:29:05,807 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-09-30 13:29:05,807 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-09-30 13:29:05,932 - AuthController - INFO - Logout exitoso para: admin
+2025-09-30 13:29:05,983 - AuthController - INFO - Controlador de autenticación limpiado
+2025-09-30 13:29:05,983 - MainController - INFO - Aplicación cerrada correctamente
