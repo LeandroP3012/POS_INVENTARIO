@@ -11,6 +11,11 @@ from models.user_model import UserModel
 from models.auth_model import AuthModel
 from views.login_view import LoginView
 
+# Importar el nuevo servicio de permisos
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from services.permission_service import PermissionService
+
 class AuthController:
     """Controlador para gestión de autenticación"""
     
@@ -20,6 +25,9 @@ class AuthController:
         # Modelos
         self.user_model = UserModel()
         self.auth_model = AuthModel()
+        
+        # Servicio de permisos
+        self.permission_service = PermissionService()
         
         # Vista de login (se inicializa cuando se necesita)
         self.login_view = None
@@ -252,7 +260,11 @@ class AuthController:
     
     def has_permission(self, permission: str) -> bool:
         """Verificar si el usuario actual tiene un permiso"""
-        return self.auth_model.has_permission(permission)
+        current_user = self.get_current_user()
+        if not current_user:
+            return False
+        
+        return self.permission_service.check_permission(current_user, permission)
     
     def require_authentication(self) -> bool:
         """Requerir autenticación válida"""

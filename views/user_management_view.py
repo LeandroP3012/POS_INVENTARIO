@@ -10,6 +10,7 @@ import hashlib
 from datetime import datetime
 from views.base_view import BaseView
 from controllers.user_controller import UserController
+from controllers.role_controller import RoleController
 
 
 class UserManagementView(BaseView):
@@ -22,14 +23,17 @@ class UserManagementView(BaseView):
         self.users_data = []
         self.filtered_users = []
         self.selected_user = None
+        self.roles_data = []
         
-        # Inicializar controlador
+        # Inicializar controladores
         self.user_controller = UserController()
+        self.role_controller = RoleController()
         
         # Configurar ventana
         self.setup_user_management_window()
         
         # Cargar datos iniciales
+        self.load_roles_data()
         self.load_users_data()
     
     def setup_user_management_window(self):
@@ -153,12 +157,14 @@ class UserManagementView(BaseView):
         ).pack(side='left', padx=(20, 5))
         
         self.role_filter_var = tk.StringVar(value='Todos')
+        # Obtener valores de roles dinámicamente
+        role_values = ['Todos'] + [role.get('name', '') for role in self.roles_data if role.get('active', True)]
         role_combo = ttk.Combobox(
             search_frame,
             textvariable=self.role_filter_var,
-            values=['Todos', 'admin', 'supervisor', 'cajero'],
+            values=role_values,
             state='readonly',
-            width=12,
+            width=15,
             font=('Segoe UI', 10)
         )
         role_combo.pack(side='left', padx=(0, 10))
@@ -341,6 +347,21 @@ class UserManagementView(BaseView):
             bg='#ecf0f1'
         ).pack(side='right')
     
+    def load_roles_data(self):
+        """Cargar datos de roles desde el controlador"""
+        try:
+            self.roles_data = self.role_controller.get_all_roles()
+        except Exception as e:
+            print(f"Error cargando roles: {str(e)}")
+            # Roles por defecto como fallback
+            self.roles_data = [
+                {'id': 1, 'name': 'Super Admin', 'active': True},
+                {'id': 2, 'name': 'Admin', 'active': True},
+                {'id': 3, 'name': 'Manager', 'active': True},
+                {'id': 4, 'name': 'Employee', 'active': True},
+                {'id': 5, 'name': 'Cashier', 'active': True}
+            ]
+    
     def load_users_data(self):
         """Cargar datos de usuarios desde el controlador"""
         try:
@@ -417,8 +438,16 @@ class UserManagementView(BaseView):
                 search_term in user.get('email', '').lower()
             )
             
-            # Filtro de rol
-            role_match = role_filter == 'Todos' or user.get('user_type', '') == role_filter
+            # Filtro de rol - buscar tanto en user_type como en el nombre del rol
+            user_role = user.get('user_type', '')
+            # Intentar encontrar el rol en el sistema de roles
+            role_name = user_role
+            for role in self.roles_data:
+                if role.get('name', '').lower() == user_role.lower():
+                    role_name = role.get('name', '')
+                    break
+            
+            role_match = role_filter == 'Todos' or user_role == role_filter or role_name == role_filter
             
             if search_match and role_match:
                 self.filtered_users.append(user)
@@ -455,7 +484,7 @@ class UserManagementView(BaseView):
     
     def create_new_user(self):
         """Crear nuevo usuario"""
-        dialog = UserDialog(self.root, "Crear Nuevo Usuario")
+        dialog = UserDialog(self.root, "Crear Nuevo Usuario", None, self.roles_data)
         self.root.wait_window(dialog.dialog)
         
         if dialog.result:
@@ -475,7 +504,7 @@ class UserManagementView(BaseView):
         if not self.selected_user:
             return
         
-        dialog = UserDialog(self.root, "Editar Usuario", self.selected_user)
+        dialog = UserDialog(self.root, "Editar Usuario", self.selected_user, self.roles_data)
         self.root.wait_window(dialog.dialog)
         
         if dialog.result:
@@ -556,11 +585,12 @@ class UserManagementView(BaseView):
 class UserDialog:
     """Diálogo para crear/editar usuarios"""
     
-    def __init__(self, parent, title: str, user_data: Dict = None):
+    def __init__(self, parent, title: str, user_data: Dict = None, roles_data: List = None):
         self.parent = parent
         self.user_data = user_data or {}
         self.result = None
         self.is_edit = bool(user_data)
+        self.roles_data = roles_data or []
         
         # Crear ventana de diálogo
         self.dialog = tk.Toplevel(parent)
@@ -606,7 +636,14 @@ class UserDialog:
         self.username_var = tk.StringVar(value=self.user_data.get('username', ''))
         self.full_name_var = tk.StringVar(value=self.user_data.get('full_name', ''))
         self.email_var = tk.StringVar(value=self.user_data.get('email', ''))
-        self.user_type_var = tk.StringVar(value=self.user_data.get('user_type', 'cajero'))
+        
+        # Para el rol, usar el rol del usuario o el primer rol disponible como default
+        default_role = self.user_data.get('user_type', '')
+        if not default_role and self.roles_data:
+            # Si no hay rol seleccionado, usar el último rol (generalmente Cajero)
+            default_role = self.roles_data[-1].get('name', 'Cajero')
+        
+        self.user_type_var = tk.StringVar(value=default_role)
         self.status_var = tk.StringVar(value='active' if self.user_data.get('status', 'active') == 'active' else 'inactive')
         self.password_var = tk.StringVar()
         self.confirm_password_var = tk.StringVar()
@@ -636,10 +673,15 @@ class UserDialog:
             bg='white'
         ).place(x=0, y=y_pos)
         
+        # Obtener valores de roles dinámicamente
+        role_values = [role.get('name', '') for role in self.roles_data if role.get('active', True)]
+        if not role_values:  # Fallback si no hay roles
+            role_values = ['Admin', 'Manager', 'Employee', 'Cashier']
+        
         user_type_combo = ttk.Combobox(
             content_frame,
             textvariable=self.user_type_var,
-            values=['admin', 'supervisor', 'cajero'],
+            values=role_values,
             state='readonly',
             font=('Segoe UI', 11),
             width=35

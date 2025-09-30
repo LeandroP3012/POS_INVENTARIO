@@ -1,0 +1,452 @@
+// Sistema POS - Diagrama Entidad-Relación
+// Compatible con dbdiagram.io
+// Incluye esquema original + sistema de roles y permisos
+
+// ===== CONFIGURACIÓN DEL SISTEMA =====
+Table system_config {
+  id int [pk, increment]
+  config_key varchar(100) [unique, not null]
+  config_value text
+  config_type enum('string', 'integer', 'float', 'boolean', 'json') [default: 'string']
+  description text
+  is_public boolean [default: false, note: "Si usuarios normales pueden verlo"]
+  is_editable boolean [default: true, note: "Si se puede modificar desde la UI"]
+  category varchar(50) [default: 'general']
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    config_key
+    category
+    config_type
+  }
+}
+
+// ===== SISTEMA DE ROLES Y PERMISOS =====
+Table roles {
+  id int [pk, increment]
+  name varchar(100) [unique, not null]
+  description text
+  permissions json [note: "Permisos del rol en formato JSON"]
+  is_system_role boolean [default: false, note: "Roles del sistema no se pueden eliminar"]
+  active boolean [default: true]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  created_by int
+  
+  indexes {
+    name
+    active
+  }
+}
+
+// ===== USUARIOS =====
+Table users {
+  id int [pk, increment]
+  username varchar(50) [unique, not null]
+  password_hash varchar(255) [not null]
+  email varchar(100) [unique]
+  full_name varchar(100) [not null]
+  phone varchar(20)
+  user_type enum('admin', 'supervisor', 'cashier', 'user') [default: 'user']
+  role_id int [note: "FK hacia tabla roles"]
+  active boolean [default: true]
+  avatar_path varchar(255)
+  preferences json [note: "Preferencias personales del usuario"]
+  permissions json [note: "Permisos específicos del usuario"]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  last_login timestamp [null]
+  failed_attempts int [default: 0]
+  locked_until timestamp [null]
+  created_by int
+  notes text [note: "Notas administrativas"]
+  
+  indexes {
+    username
+    email
+    user_type
+    role_id
+    active
+    last_login
+  }
+}
+
+// ===== CATEGORÍAS =====
+Table categories {
+  id int [pk, increment]
+  name varchar(100) [not null]
+  description text
+  parent_id int [null, note: "Para categorías anidadas"]
+  color varchar(7) [default: '#3498db']
+  icon varchar(50) [default: 'folder']
+  active boolean [default: true]
+  sort_order int [default: 0]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  created_by int
+  
+  indexes {
+    name
+    active
+    parent_id
+    sort_order
+  }
+}
+
+// ===== PROVEEDORES =====
+Table suppliers {
+  id int [pk, increment]
+  code varchar(20) [unique, not null]
+  name varchar(100) [not null]
+  contact_person varchar(100)
+  phone varchar(20)
+  email varchar(100)
+  address text
+  city varchar(50)
+  country varchar(50) [default: 'Peru']
+  tax_id varchar(20) [note: "RUC o documento tributario"]
+  payment_terms varchar(100) [note: "Condiciones de pago"]
+  credit_limit decimal(12,2) [default: 0]
+  active boolean [default: true]
+  notes text
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  created_by int
+  
+  indexes {
+    code
+    name
+    active
+    tax_id
+  }
+}
+
+// ===== PRODUCTOS =====
+Table products {
+  id int [pk, increment]
+  code varchar(50) [unique, not null]
+  barcode varchar(100) [unique]
+  name varchar(200) [not null]
+  description text
+  category_id int
+  supplier_id int
+  brand varchar(100)
+  model varchar(100)
+  
+  // Precios y costos
+  cost_price decimal(12,4) [default: 0, note: "Precio de costo"]
+  sale_price decimal(12,4) [not null, note: "Precio de venta"]
+  wholesale_price decimal(12,4) [note: "Precio mayorista"]
+  min_price decimal(12,4) [note: "Precio mínimo de venta"]
+  
+  // Inventario
+  current_stock int [default: 0]
+  min_stock int [default: 0, note: "Stock mínimo (alerta)"]
+  max_stock int [default: 0, note: "Stock máximo"]
+  reorder_point int [default: 0, note: "Punto de reorden"]
+  
+  // Configuraciones
+  unit varchar(20) [default: 'unidad', note: "Unidad de medida"]
+  weight decimal(8,3) [note: "Peso en kg"]
+  dimensions varchar(50) [note: "Dimensiones"]
+  tax_rate decimal(5,2) [default: 18.00, note: "Tasa de impuesto"]
+  
+  // Estados
+  active boolean [default: true]
+  is_service boolean [default: false, note: "Es un servicio (no maneja stock)"]
+  track_stock boolean [default: true, note: "Controlar inventario"]
+  allow_negative_stock boolean [default: false]
+  
+  // Metadatos
+  image_path varchar(255)
+  tags json [note: "Etiquetas para búsqueda"]
+  attributes json [note: "Atributos personalizados"]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  created_by int
+  
+  indexes {
+    code
+    barcode
+    name
+    category_id
+    supplier_id
+    active
+    current_stock
+    sale_price
+  }
+}
+
+// ===== CLIENTES =====
+Table customers {
+  id int [pk, increment]
+  code varchar(20) [unique, not null]
+  document_type enum('DNI', 'RUC', 'Passport', 'Other') [default: 'DNI']
+  document_number varchar(20) [unique]
+  name varchar(100) [not null]
+  business_name varchar(150) [note: "Razón social para empresas"]
+  email varchar(100)
+  phone varchar(20)
+  mobile varchar(20)
+  address text
+  city varchar(50)
+  district varchar(50)
+  postal_code varchar(10)
+  country varchar(50) [default: 'Peru']
+  
+  // Información comercial
+  customer_type enum('individual', 'business') [default: 'individual']
+  credit_limit decimal(12,2) [default: 0]
+  payment_terms varchar(100) [default: 'Contado']
+  discount_rate decimal(5,2) [default: 0, note: "Descuento personalizado %"]
+  
+  // Programa de fidelidad
+  loyalty_points int [default: 0]
+  total_purchases decimal(12,2) [default: 0]
+  purchase_count int [default: 0]
+  last_purchase_date date
+  
+  // Estados y metadatos
+  active boolean [default: true]
+  vip_status boolean [default: false]
+  birth_date date
+  notes text
+  tags json
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  created_by int
+  
+  indexes {
+    code
+    document_number
+    name
+    email
+    phone
+    customer_type
+    active
+    vip_status
+  }
+}
+
+// ===== VENTAS =====
+Table sales {
+  id int [pk, increment]
+  sale_number varchar(20) [unique, not null]
+  customer_id int
+  user_id int [not null, note: "Usuario que realizó la venta"]
+  sale_date timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  // Montos
+  subtotal decimal(12,2) [not null, default: 0]
+  tax_amount decimal(12,2) [not null, default: 0]
+  discount_amount decimal(12,2) [default: 0]
+  total_amount decimal(12,2) [not null]
+  
+  // Información de pago
+  payment_method enum('cash', 'card', 'transfer', 'credit', 'mixed') [not null]
+  payment_status enum('pending', 'partial', 'paid', 'refunded') [default: 'paid']
+  cash_received decimal(12,2) [default: 0]
+  change_given decimal(12,2) [default: 0]
+  
+  // Estados y metadatos
+  status enum('draft', 'confirmed', 'cancelled', 'refunded') [default: 'confirmed']
+  notes text
+  internal_notes text [note: "Notas internas no visibles al cliente"]
+  
+  // Información fiscal
+  receipt_type enum('ticket', 'boleta', 'factura') [default: 'ticket']
+  tax_rate decimal(5,2) [default: 18.00]
+  
+  // Timestamps
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
+  cancelled_at timestamp [null]
+  cancelled_by int
+  
+  indexes {
+    sale_number
+    customer_id
+    user_id
+    sale_date
+    status
+    payment_status
+    total_amount
+  }
+}
+
+// ===== DETALLES DE VENTAS =====
+Table sale_details {
+  id int [pk, increment]
+  sale_id int [not null]
+  product_id int [not null]
+  quantity decimal(10,3) [not null]
+  unit_price decimal(12,4) [not null]
+  discount_rate decimal(5,2) [default: 0, note: "Descuento % sobre este item"]
+  discount_amount decimal(12,2) [default: 0]
+  tax_rate decimal(5,2) [default: 18.00]
+  tax_amount decimal(12,2) [default: 0]
+  line_total decimal(12,2) [not null]
+  
+  // Información adicional
+  product_code varchar(50) [note: "Código del producto al momento de la venta"]
+  product_name varchar(200) [note: "Nombre del producto al momento de la venta"]
+  notes text [note: "Notas específicas de este item"]
+  
+  indexes {
+    sale_id
+    product_id
+    product_code
+  }
+}
+
+// ===== MOVIMIENTOS DE STOCK =====
+Table stock_movements {
+  id int [pk, increment]
+  product_id int [not null]
+  movement_type enum('in', 'out', 'adjustment', 'transfer') [not null]
+  movement_reason enum('purchase', 'sale', 'return', 'loss', 'found', 'adjustment', 'transfer', 'initial') [not null]
+  reference_type enum('sale', 'purchase', 'adjustment', 'transfer', 'manual') [not null]
+  reference_id int [note: "ID del documento relacionado"]
+  
+  quantity decimal(10,3) [not null]
+  previous_stock decimal(10,3) [not null]
+  new_stock decimal(10,3) [not null]
+  unit_cost decimal(12,4) [default: 0]
+  
+  movement_date timestamp [default: `CURRENT_TIMESTAMP`]
+  user_id int [not null]
+  notes text
+  
+  indexes {
+    product_id
+    movement_date
+    movement_type
+    (reference_type, reference_id)
+    user_id
+  }
+}
+
+// ===== SESIONES DE USUARIOS =====
+Table user_sessions {
+  id int [pk, increment]
+  user_id int [not null]
+  username varchar(50) [not null]
+  user_type varchar(20) [not null]
+  login_time timestamp [default: `CURRENT_TIMESTAMP`]
+  logout_time timestamp [null]
+  login_method varchar(20) [default: 'manual']
+  logout_reason varchar(50) [null]
+  is_active boolean [default: true]
+  permissions json
+  expires_at timestamp [not null]
+  ip_address varchar(45)
+  user_agent text
+  last_activity timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    user_id
+    username
+    is_active
+    expires_at
+    login_time
+    last_activity
+  }
+}
+
+// ===== LOGS DE ACTIVIDAD =====
+Table activity_logs {
+  id int [pk, increment]
+  user_id int
+  activity_type varchar(50) [not null]
+  table_name varchar(50)
+  record_id int
+  description text
+  old_values json [note: "Valores anteriores del registro"]
+  new_values json [note: "Valores nuevos del registro"]
+  ip_address varchar(45)
+  user_agent text
+  session_id varchar(100)
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    user_id
+    activity_type
+    table_name
+    record_id
+    created_at
+    session_id
+  }
+}
+
+// ===== RELACIONES (FOREIGN KEYS) =====
+
+// Relaciones de roles
+Ref: roles.created_by > users.id
+
+// Relaciones de usuarios
+Ref: users.role_id > roles.id
+Ref: users.created_by > users.id
+
+// Relaciones de categorías
+Ref: categories.parent_id > categories.id
+Ref: categories.created_by > users.id
+
+// Relaciones de proveedores
+Ref: suppliers.created_by > users.id
+
+// Relaciones de productos
+Ref: products.category_id > categories.id
+Ref: products.supplier_id > suppliers.id
+Ref: products.created_by > users.id
+
+// Relaciones de clientes
+Ref: customers.created_by > users.id
+
+// Relaciones de ventas
+Ref: sales.customer_id > customers.id
+Ref: sales.user_id > users.id
+Ref: sales.cancelled_by > users.id
+
+// Relaciones de detalles de ventas
+Ref: sale_details.sale_id > sales.id [delete: cascade]
+Ref: sale_details.product_id > products.id
+
+// Relaciones de movimientos de stock
+Ref: stock_movements.product_id > products.id
+Ref: stock_movements.user_id > users.id
+
+// Relaciones de sesiones
+Ref: user_sessions.user_id > users.id [delete: cascade]
+
+// Relaciones de logs
+Ref: activity_logs.user_id > users.id
+
+// ===== NOTAS ADICIONALES =====
+Note: '''
+### Sistema POS Completo con Roles y Permisos
+
+#### Características principales:
+- **Sistema de roles flexible**: 5 roles predefinidos (Super Admin, Admin, Manager, Employee, Cashier)
+- **Permisos granulares**: 60+ permisos específicos organizados en 11 categorías
+- **Gestión de usuarios avanzada**: Control de sesiones, intentos fallidos, bloqueos
+- **Inventario completo**: Productos, categorías, proveedores, movimientos de stock  
+- **Ventas y facturación**: Soporte para múltiples tipos de comprobantes
+- **Auditoría completa**: Logs de actividad y seguimiento de cambios
+- **Configuración flexible**: Sistema de configuraciones personalizables
+
+#### Tablas clave:
+- `roles`: Define roles del sistema con permisos en JSON
+- `users`: Usuarios con referencia a rol asignado  
+- `products`: Inventario con control de stock
+- `sales` + `sale_details`: Sistema completo de ventas
+- `user_sessions`: Control de sesiones activas
+- `activity_logs`: Auditoría de todas las acciones
+
+#### Seguridad:
+- Contraseñas hasheadas con SHA256
+- Control de intentos fallidos y bloqueos temporales
+- Seguimiento de sesiones con expiración
+- Logs detallados de actividad
+- Permisos granulares por módulo y acción
+'''

@@ -17,39 +17,42 @@ class UserModel(BaseModel):
         self.table_name = 'users'
         self.primary_key = 'id'
         
-        # Definir tipos de usuario válidos
+        # Definir tipos de usuario válidos (mantener por compatibilidad)
         self.valid_user_types = ['admin', 'supervisor', 'cashier', 'user']
         
-        # Usuarios por defecto (fallback)
+        # Usuarios por defecto (fallback) - ahora con role_id
         self.default_users = {
             'admin': {
+                'id': 1,
                 'username': 'admin',
                 'password_hash': self.hash_password('123456'),
                 'email': 'admin@sistema-pos.com',
                 'full_name': 'Administrador del Sistema',
-                'user_type': 'admin',
+                'user_type': 'admin',  # Mantener por compatibilidad
+                'role_id': 2,  # Rol Administrador
                 'active': True,
                 'permissions': {
                     'all_modules': True,
                     'super_admin': True,
                     'users_manage': True,
+                    'roles_manage': True,
                     'system_config': True,
                     'reports_full': True
                 }
             },
-            'cajero1': {
-                'username': 'cajero1',
+            'manager': {
+                'id': 2,
+                'username': 'manager',
                 'password_hash': self.hash_password('123456'),
-                'email': 'cajero@sistema-pos.com',
-                'full_name': 'Cajero Principal',
-                'user_type': 'cashier',
+                'email': 'manager@sistema-pos.com',
+                'full_name': 'Gerente Principal',
+                'user_type': 'supervisor',  # Mantener por compatibilidad
+                'role_id': 3,  # Rol Gerente
                 'active': True,
                 'permissions': {
-                    'sales_create': True,
-                    'sales_view': True,
-                    'products_view': True,
-                    'customers_view': True,
-                    'customers_create': True,
+                    'users_view': True,
+                    'inventory_view': True,
+                    'sales_manage': True,
                     'reports_basic': True
                 }
             }
@@ -499,3 +502,222 @@ class UserModel(BaseModel):
         except Exception as e:
             self.logger.error(f"Error eliminando usuario: {e}")
             return False
+    
+    # =============================================================================
+    # MÉTODOS PARA TRABAJAR CON ROLES
+    # =============================================================================
+    
+    def get_user_with_role(self, user_id: int) -> Optional[Dict[str, Any]]:
+        """Obtener usuario con información de su rol"""
+        try:
+            if not self.connect():
+                # Fallback para usuarios por defecto
+                for user in self.default_users.values():
+                    if user.get('id') == user_id:
+                        return self._enrich_user_with_role_info(user)
+                return None
+            
+            # Consulta con JOIN para obtener información del rol
+            query = """
+            SELECT u.*, r.name as role_name, r.code as role_code, 
+                   r.permissions as role_permissions, r.system_role
+            FROM users u
+            LEFT JOIN roles r ON u.role_id = r.id
+            WHERE u.id = %s
+            """
+            
+            result = self.execute_query(query, (user_id,))
+            
+            if result:
+                user_data = result[0]
+                return self._process_user_with_role(user_data)
+            
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"Error obteniendo usuario con rol {user_id}: {e}")
+            return None
+    
+    def get_all_users_with_roles(self) -> List[Dict[str, Any]]:
+        """Obtener todos los usuarios con información de sus roles"""
+        try:
+            if not self.connect():
+                # Fallback para usuarios por defecto
+                users = []
+                for user in self.default_users.values():
+                    users.append(self._enrich_user_with_role_info(user))
+                return users
+            
+            # Consulta con JOIN para obtener información del rol
+            query = """
+            SELECT u.*, r.name as role_name, r.code as role_code, 
+                   r.permissions as role_permissions, r.system_role
+            FROM users u
+            LEFT JOIN roles r ON u.role_id = r.id
+            ORDER BY u.username
+            """
+            
+            result = self.execute_query(query)
+            
+            if result:
+                users = []
+                for user_data in result:
+                    users.append(self._process_user_with_role(user_data))
+                return users
+            
+            return []
+            
+        except Exception as e:
+            self.logger.error(f"Error obteniendo usuarios con roles: {e}")
+            # Fallback para usuarios por defecto
+            users = []
+            for user in self.default_users.values():
+                users.append(self._enrich_user_with_role_info(user))
+            return users
+    
+    def get_user_permissions(self, user_id: int) -> List[str]:
+        """Obtener todos los permisos de un usuario (combinando rol y permisos específicos)"""
+        try:
+            user = self.get_user_with_role(user_id)
+            if not user:
+                return []
+            
+            # Combinar permisos del rol y permisos específicos del usuario
+            permissions = []
+            
+            # Permisos del rol
+            role_permissions = user.get('role_permissions', [])
+            if isinstance(role_permissions, str):
+                import json
+                try:
+                    role_permissions = json.loads(role_permissions)
+                except:
+                    role_permissions = []
+            
+            if role_permissions:
+                permissions.extend(role_permissions)
+            
+            # Permisos específicos del usuario
+            user_permissions = user.get('permissions', {})
+            if isinstance(user_permissions, dict):
+                for perm, granted in user_permissions.items():
+                    if granted and perm not in permissions:
+                        permissions.append(perm)
+            
+            return permissions
+            
+        except Exception as e:
+            self.logger.error(f"Error obteniendo permisos del usuario {user_id}: {e}")
+            return []
+    
+    def user_has_permission(self, user_id: int, permission: str) -> bool:
+        """Verificar si un usuario tiene un permiso específico"""
+        try:
+            permissions = self.get_user_permissions(user_id)
+            
+            # Super admin tiene todos los permisos
+            if '*' in permissions:
+                return True
+            
+            # Verificar permiso exacto
+            if permission in permissions:
+                return True
+            
+            # Verificar permisos con comodín (ej: users.* incluye users.view)
+            for perm in permissions:
+                if perm.endswith('.*'):
+                    module = perm[:-2]
+                    if permission.startswith(f"{module}."):
+                        return True
+            
+            return False
+            
+        except Exception as e:
+            self.logger.error(f"Error verificando permiso {permission} para usuario {user_id}: {e}")
+            return False
+    
+    def assign_role_to_user(self, user_id: int, role_id: int) -> bool:
+        """Asignar rol a usuario"""
+        try:
+            success = self.update(user_id, {'role_id': role_id, 'updated_at': datetime.now()})
+            
+            if success:
+                self.log_activity('ASSIGN_ROLE', user_id, f"Rol {role_id} asignado al usuario")
+                self.logger.info(f"Rol {role_id} asignado al usuario {user_id}")
+            
+            return success
+            
+        except Exception as e:
+            self.logger.error(f"Error asignando rol {role_id} al usuario {user_id}: {e}")
+            return False
+    
+    def get_users_by_role(self, role_id: int) -> List[Dict[str, Any]]:
+        """Obtener usuarios que tienen un rol específico"""
+        try:
+            if not self.connect():
+                # Fallback para usuarios por defecto
+                users = []
+                for user in self.default_users.values():
+                    if user.get('role_id') == role_id:
+                        users.append(self._enrich_user_with_role_info(user))
+                return users
+            
+            conditions = {'role_id': role_id, 'active': True}
+            users_data = self.find_all(conditions)
+            
+            # Enriquecer con información del rol
+            users = []
+            for user_data in users_data:
+                user_with_role = self.get_user_with_role(user_data['id'])
+                if user_with_role:
+                    users.append(user_with_role)
+            
+            return users
+            
+        except Exception as e:
+            self.logger.error(f"Error obteniendo usuarios por rol {role_id}: {e}")
+            return []
+    
+    def _process_user_with_role(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Procesar datos de usuario con información del rol"""
+        # Convertir permisos del rol de JSON string a lista si es necesario
+        if isinstance(user_data.get('role_permissions'), str):
+            import json
+            try:
+                user_data['role_permissions'] = json.loads(user_data['role_permissions'])
+            except:
+                user_data['role_permissions'] = []
+        
+        # Convertir permisos del usuario de JSON string a dict si es necesario
+        if isinstance(user_data.get('permissions'), str):
+            import json
+            try:
+                user_data['permissions'] = json.loads(user_data['permissions'])
+            except:
+                user_data['permissions'] = {}
+        
+        return user_data
+    
+    def _enrich_user_with_role_info(self, user: Dict[str, Any]) -> Dict[str, Any]:
+        """Enriquecer usuario por defecto con información del rol"""
+        user_copy = user.copy()
+        
+        # Agregar información del rol basada en role_id
+        role_id = user.get('role_id')
+        if role_id:
+            # Mapeo de roles por defecto
+            role_info = {
+                1: {'name': 'Super Admin', 'code': 'super_admin', 'permissions': ['*']},
+                2: {'name': 'Administrador', 'code': 'admin', 'permissions': ['users.view', 'users.create', 'users.edit']},
+                3: {'name': 'Gerente', 'code': 'manager', 'permissions': ['users.view', 'sales.create']},
+                4: {'name': 'Empleado', 'code': 'employee', 'permissions': ['sales.create']},
+                5: {'name': 'Cajero', 'code': 'cashier', 'permissions': ['sales.create']}
+            }
+            
+            role = role_info.get(role_id, {})
+            user_copy['role_name'] = role.get('name', 'Sin Rol')
+            user_copy['role_code'] = role.get('code', 'no_role')
+            user_copy['role_permissions'] = role.get('permissions', [])
+            user_copy['system_role'] = True
+        
+        return user_copy

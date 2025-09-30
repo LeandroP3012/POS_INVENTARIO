@@ -8,6 +8,7 @@ import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 from models.user_model import UserModel
+from models.role_model import RoleModel
 
 
 class UserController:
@@ -15,23 +16,29 @@ class UserController:
     
     def __init__(self):
         self.user_model = UserModel()
+        self.role_model = RoleModel()
         self.logger = logging.getLogger(__name__)
     
     def get_all_users(self) -> List[Dict[str, Any]]:
-        """Obtener todos los usuarios"""
+        """Obtener todos los usuarios con sus roles"""
         try:
-            users = self.user_model.get_all_users()
+            # Intentar obtener usuarios con roles integrados
+            users = self.user_model.get_all_users_with_roles()
             
             # Convertir a formato compatible con la vista
             formatted_users = []
             for user in users:
+                # Determinar el rol a mostrar
+                role_name = user.get('role_name', user.get('user_type', ''))
+                
                 formatted_user = {
                     'id': user.get('id'),
                     'username': user.get('username'),
                     'full_name': user.get('full_name'),
                     'email': user.get('email'),
-                    'user_type': user.get('user_type'),
-                    'status': 'active' if user.get('status') == 1 else 'inactive',
+                    'user_type': role_name,  # Usar el nombre del rol
+                    'role_id': user.get('role_id'),
+                    'status': 'active' if user.get('active') else 'inactive',
                     'last_login': user.get('last_login'),
                     'created_at': user.get('created_at'),
                     'phone': user.get('phone'),
@@ -42,8 +49,29 @@ class UserController:
             return formatted_users
             
         except Exception as e:
-            self.logger.error(f"Error obteniendo usuarios: {str(e)}")
-            return []
+            self.logger.error(f"Error obteniendo usuarios con roles: {str(e)}")
+            # Fallback al método original
+            try:
+                users = self.user_model.get_all_users()
+                formatted_users = []
+                for user in users:
+                    formatted_user = {
+                        'id': user.get('id'),
+                        'username': user.get('username'),
+                        'full_name': user.get('full_name'),
+                        'email': user.get('email'),
+                        'user_type': user.get('user_type'),
+                        'status': 'active' if user.get('active') else 'inactive',
+                        'last_login': user.get('last_login'),
+                        'created_at': user.get('created_at'),
+                        'phone': user.get('phone'),
+                        'avatar_path': user.get('avatar_path')
+                    }
+                    formatted_users.append(formatted_user)
+                return formatted_users
+            except Exception as fallback_error:
+                self.logger.error(f"Error en fallback: {str(fallback_error)}")
+                return []
     
     def get_user_by_id(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Obtener usuario por ID"""
@@ -113,6 +141,19 @@ class UserController:
                 self.logger.error(f"Email ya existe: {user_data['email']}")
                 return False
             
+            # Buscar el rol por nombre para obtener el role_id
+            role_id = None
+            role_name = user_data['user_type']
+            
+            try:
+                roles = self.role_model.get_all_roles()
+                for role in roles:
+                    if role.get('name', '').lower() == role_name.lower():
+                        role_id = role.get('id')
+                        break
+            except Exception as role_error:
+                self.logger.warning(f"Error obteniendo roles: {role_error}")
+            
             # Preparar datos para crear usuario
             create_data = {
                 'username': user_data['username'],
@@ -120,7 +161,8 @@ class UserController:
                 'full_name': user_data['full_name'],
                 'email': user_data['email'],
                 'user_type': user_data['user_type'],
-                'status': 1,  # Activo por defecto
+                'role_id': role_id,  # Asignar role_id si se encontró
+                'active': True,  # Activo por defecto
                 'phone': user_data.get('phone', ''),
                 'avatar_path': user_data.get('avatar_path', ''),
                 'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -148,12 +190,27 @@ class UserController:
                 self.logger.error(f"Usuario no encontrado: {user_id}")
                 return False
             
+            # Buscar el rol por nombre para obtener el role_id si cambió
+            role_id = existing_user.get('role_id')
+            new_role_name = user_data.get('user_type')
+            
+            if new_role_name and new_role_name != existing_user.get('user_type'):
+                try:
+                    roles = self.role_model.get_all_roles()
+                    for role in roles:
+                        if role.get('name', '').lower() == new_role_name.lower():
+                            role_id = role.get('id')
+                            break
+                except Exception as role_error:
+                    self.logger.warning(f"Error obteniendo roles: {role_error}")
+            
             # Preparar datos para actualizar
             update_data = {
                 'full_name': user_data.get('full_name', existing_user.get('full_name')),
                 'email': user_data.get('email', existing_user.get('email')),
                 'user_type': user_data.get('user_type', existing_user.get('user_type')),
-                'status': 1 if user_data.get('status', 'active') == 'active' else 0,
+                'role_id': role_id,
+                'active': user_data.get('status', 'active') == 'active',
                 'phone': user_data.get('phone', existing_user.get('phone', '')),
                 'avatar_path': user_data.get('avatar_path', existing_user.get('avatar_path', ''))
             }

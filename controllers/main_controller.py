@@ -683,21 +683,8 @@ class MainController:
             if user_permissions.get(permission):
                 return True
             
-            # Admin siempre tiene todos los permisos
-            user_type = self.current_user.get('user_type') or self.current_user.get('role')
-            if user_type == 'admin':
-                return True
-            
-            # Mapeo de permisos por rol
-            permissions_map = {
-                'manager': ['users_view', 'stats_view', 'config_view'],
-                'employee': ['stats_view'],
-                'admin': ['users_manage', 'users_view', 'roles_manage', 'roles_view', 'stats_view', 'config_view', 'config_manage']
-            }
-            
-            allowed_permissions = permissions_map.get(user_type, [])
-            
-            return permission in allowed_permissions
+            # Usar el servicio de permisos centralizado
+            return self.auth_controller.has_permission(permission)
         except Exception as e:
             print(f"   ❌ Error verificando permisos: {e}")
             self.logger.error(f"Error verificando permisos: {e}")
