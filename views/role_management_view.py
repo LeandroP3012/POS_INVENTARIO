@@ -498,6 +498,8 @@ class RoleManagementView:
     def manage_permissions(self):
         """Gestionar permisos del rol seleccionado"""
         try:
+            print("DEBUG MANAGE_PERMISOS - Iniciando gestión de permisos...")
+            
             selected = self.roles_tree.selection()
             if not selected:
                 messagebox.showwarning("Selección", "Selecciona un rol para gestionar permisos")
@@ -505,6 +507,7 @@ class RoleManagementView:
             
             item = selected[0]
             role_id = int(self.roles_tree.item(item)['values'][0])
+            print(f"DEBUG MANAGE_PERMISOS - Role ID seleccionado: {role_id}")
             
             # Obtener rol completo
             role = self.role_controller.get_role_by_id(role_id)
@@ -512,22 +515,39 @@ class RoleManagementView:
                 messagebox.showerror("Error", "Rol no encontrado")
                 return
             
+            print(f"DEBUG MANAGE_PERMISOS - Rol obtenido: {role['name']}")
+            
             # Mostrar diálogo de permisos
+            print("DEBUG MANAGE_PERMISOS - Abriendo diálogo de permisos...")
             dialog = PermissionsDialog(self.main_frame, role, self.role_controller)
             
+            # Esperar a que el diálogo se cierre
+            self.main_frame.wait_window(dialog.dialog)
+            
+            print(f"DEBUG MANAGE_PERMISOS - Diálogo cerrado, result: {dialog.result}")
+            
             if dialog.result:
+                print(f"DEBUG MANAGE_PERMISOS - Actualizando permisos del rol {role_id} con: {dialog.result}")
+                
                 # Actualizar permisos del rol
                 success, message = self.role_controller.update_role(
                     role_id, {'permissions': dialog.result}, self.current_user
                 )
+                
+                print(f"DEBUG MANAGE_PERMISOS - Resultado update_role: success={success}, message={message}")
                 
                 if success:
                     messagebox.showinfo("Éxito", "Permisos actualizados exitosamente")
                     self.refresh_roles()
                 else:
                     messagebox.showerror("Error", message)
+            else:
+                print("DEBUG MANAGE_PERMISOS - dialog.result es None/vacío, no se actualiza nada")
                     
         except Exception as e:
+            print(f"DEBUG MANAGE_PERMISOS - Excepción: {e}")
+            import traceback
+            traceback.print_exc()
             messagebox.showerror("Error", f"Error gestionando permisos:\n{str(e)}")
     
     def show_context_menu(self, event):
@@ -775,14 +795,21 @@ class PermissionsDialog:
         quick_frame = ttk.Frame(main_frame)
         quick_frame.pack(fill=tk.X, pady=(0, 10))
         
-        ttk.Button(quick_frame, text="✅ Seleccionar Todo", 
-                  command=self.select_all).pack(side=tk.LEFT, padx=(0, 5))
+        select_all_btn = ttk.Button(quick_frame, text="✅ Seleccionar Todo", 
+                  command=self.select_all_safe)
+        select_all_btn.pack(side=tk.LEFT, padx=(0, 5))
+        # Prevenir activación automática por focus/binding
+        select_all_btn.configure(takefocus=False)
         
-        ttk.Button(quick_frame, text="❌ Deseleccionar Todo", 
-                  command=self.deselect_all).pack(side=tk.LEFT, padx=(0, 5))
+        deselect_all_btn = ttk.Button(quick_frame, text="❌ Deseleccionar Todo", 
+                  command=self.deselect_all)
+        deselect_all_btn.pack(side=tk.LEFT, padx=(0, 5))
+        deselect_all_btn.configure(takefocus=False)
         
-        ttk.Button(quick_frame, text="🔄 Restablecer", 
-                  command=self.reset_permissions).pack(side=tk.LEFT)
+        reset_btn = ttk.Button(quick_frame, text="🔄 Restablecer", 
+                  command=self.reset_permissions)
+        reset_btn.pack(side=tk.LEFT)
+        reset_btn.configure(takefocus=False)
         
         # Marco con scroll para permisos
         canvas_frame = ttk.Frame(main_frame)
@@ -822,8 +849,22 @@ class PermissionsDialog:
     def create_permissions_checkboxes(self, parent):
         """Crear checkboxes de permisos organizados por categoría"""
         try:
+            print(f"DEBUG PERMISOS - Rol completo: {self.role}")
             permissions_by_category = self.role_controller.get_permissions_by_category()
             current_permissions = self.role.get('permissions', [])
+            
+            print(f"DEBUG PERMISOS - current_permissions tipo: {type(current_permissions)}")
+            print(f"DEBUG PERMISOS - current_permissions valor: {current_permissions}")
+            
+            # Si los permisos están en formato JSON string, convertir a lista
+            if isinstance(current_permissions, str):
+                try:
+                    import json
+                    current_permissions = json.loads(current_permissions)
+                    print(f"DEBUG PERMISOS - Convertido de JSON: {current_permissions}")
+                except:
+                    print("DEBUG PERMISOS - Error convirtiendo JSON, usando lista vacía")
+                    current_permissions = []
             
             for category, permissions in permissions_by_category.items():
                 # Marco para la categoría
@@ -835,8 +876,15 @@ class PermissionsDialog:
                     var = tk.BooleanVar()
                     
                     # Marcar si el rol ya tiene este permiso
-                    if permission in current_permissions or '*' in current_permissions:
+                    has_permission = permission in current_permissions or '*' in current_permissions
+                    
+                    print(f"DEBUG PERMISOS - Procesando '{permission}': en_lista={permission in current_permissions}, es_admin={'*' in current_permissions}, final={has_permission}")
+                    
+                    if has_permission:
                         var.set(True)
+                        print(f"DEBUG PERMISOS - ✅ MARCANDO '{permission}'")
+                    else:
+                        print(f"DEBUG PERMISOS - ❌ NO marcando '{permission}'")
                     
                     self.permission_vars[permission] = var
                     
@@ -851,21 +899,40 @@ class PermissionsDialog:
                     )
                     checkbox.pack(anchor=tk.W, pady=2)
             
+            # Verificar estado final de los checkboxes
+            marked_count = sum(1 for var in self.permission_vars.values() if var.get())
+            total_count = len(self.permission_vars)
+            print(f"DEBUG PERMISOS - Estado final: {marked_count}/{total_count} checkboxes marcados")
+            
         except Exception as e:
+            print(f"DEBUG PERMISOS - Excepción: {e}")
+            import traceback
+            traceback.print_exc()
             messagebox.showerror("Error", f"Error creando permisos:\n{str(e)}")
     
+    def select_all_safe(self):
+        """Seleccionar todos los permisos (versión segura)"""
+        print("DEBUG PERMISOS - ✅ SELECT_ALL_SAFE llamado manualmente")
+        for var in self.permission_vars.values():
+            var.set(True)
+    
     def select_all(self):
-        """Seleccionar todos los permisos"""
+        """Seleccionar todos los permisos (método original con debug)"""
+        print("DEBUG PERMISOS - ⚠️ SELECT_ALL llamado!")
+        import traceback
+        traceback.print_stack()
         for var in self.permission_vars.values():
             var.set(True)
     
     def deselect_all(self):
         """Deseleccionar todos los permisos"""
+        print("DEBUG PERMISOS - ⚠️ DESELECT_ALL llamado!")
         for var in self.permission_vars.values():
             var.set(False)
     
     def reset_permissions(self):
         """Restablecer permisos originales"""
+        print("DEBUG PERMISOS - ⚠️ RESET_PERMISSIONS llamado!")
         current_permissions = self.role.get('permissions', [])
         
         for permission, var in self.permission_vars.items():
@@ -877,17 +944,29 @@ class PermissionsDialog:
     def save(self):
         """Guardar permisos"""
         try:
+            print("DEBUG SAVE_PERMISOS - Iniciando guardado...")
+            
             # Obtener permisos seleccionados
             selected_permissions = []
             
             for permission, var in self.permission_vars.items():
                 if var.get():
                     selected_permissions.append(permission)
+                    print(f"DEBUG SAVE_PERMISOS - Permiso marcado: {permission}")
+            
+            print(f"DEBUG SAVE_PERMISOS - Total permisos seleccionados: {len(selected_permissions)}")
+            print(f"DEBUG SAVE_PERMISOS - Permisos: {selected_permissions}")
             
             self.result = selected_permissions
+            print(f"DEBUG SAVE_PERMISOS - Result asignado: {self.result}")
+            
             self.dialog.destroy()
+            print("DEBUG SAVE_PERMISOS - Diálogo cerrado")
             
         except Exception as e:
+            print(f"DEBUG SAVE_PERMISOS - Excepción: {e}")
+            import traceback
+            traceback.print_exc()
             messagebox.showerror("Error", f"Error guardando permisos:\n{str(e)}")
     
     def cancel(self):

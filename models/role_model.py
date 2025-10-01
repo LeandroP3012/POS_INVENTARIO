@@ -129,23 +129,38 @@ class RoleModel(BaseModel):
     def get_role_by_id(self, role_id: int) -> Optional[Dict[str, Any]]:
         """Obtener rol por ID"""
         try:
+            print(f"DEBUG GET_ROLE_BY_ID - Buscando rol ID: {role_id}")
+            
             if self.db and self.connect():
                 role = self.find_by_id(role_id)
+                print(f"DEBUG GET_ROLE_BY_ID - Rol desde BD: {role}")
                 
-                if role and isinstance(role.get('permissions'), str):
-                    import json
-                    try:
-                        role['permissions'] = json.loads(role['permissions'])
-                    except:
-                        role['permissions'] = []
-                
-                return role
+                if role:
+                    if isinstance(role.get('permissions'), str):
+                        import json
+                        try:
+                            original_permissions = role['permissions']
+                            role['permissions'] = json.loads(role['permissions'])
+                            print(f"DEBUG GET_ROLE_BY_ID - Permisos JSON '{original_permissions}' -> {role['permissions']}")
+                        except:
+                            print("DEBUG GET_ROLE_BY_ID - Error parseando JSON, usando lista vacía")
+                            role['permissions'] = []
+                    
+                    print(f"DEBUG GET_ROLE_BY_ID - Retornando rol desde BD: {role}")
+                    return role
+                else:
+                    print("DEBUG GET_ROLE_BY_ID - No encontrado en BD, buscando en default_roles")
             else:
-                # Buscar en roles por defecto
-                for role in self.default_roles:
-                    if role['id'] == role_id:
-                        return role.copy()
-                return None
+                print("DEBUG GET_ROLE_BY_ID - No hay conexión BD, buscando en default_roles")
+                
+            # Buscar en roles por defecto
+            for default_role in self.default_roles:
+                if default_role['id'] == role_id:
+                    print(f"DEBUG GET_ROLE_BY_ID - Encontrado en default_roles: {default_role}")
+                    return default_role.copy()
+            
+            print("DEBUG GET_ROLE_BY_ID - No encontrado en ningún lado")
+            return None
                 
         except Exception as e:
             self.logger.error(f"Error obteniendo rol {role_id}: {e}")

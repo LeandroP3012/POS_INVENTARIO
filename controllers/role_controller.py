@@ -104,34 +104,51 @@ class RoleController:
     def update_role(self, role_id: int, role_data: Dict[str, Any], current_user: Dict[str, Any] = None) -> Tuple[bool, str]:
         """Actualizar rol existente"""
         try:
+            print(f"DEBUG UPDATE_ROLE - Actualizando rol ID: {role_id} con datos: {role_data}")
             self.logger.info(f"Actualizando rol ID: {role_id}")
             
             # Verificar permisos del usuario
+            print("DEBUG UPDATE_ROLE - Verificando permisos...")
             if not self._check_permission(current_user, 'roles.edit'):
+                print("DEBUG UPDATE_ROLE - Sin permisos para editar roles")
                 return False, "No tienes permisos para editar roles"
             
+            print("DEBUG UPDATE_ROLE - Permisos verificados")
+            
             # Verificar que el rol existe
+            print("DEBUG UPDATE_ROLE - Verificando que el rol existe...")
             existing_role = self.role_model.get_role_by_id(role_id)
             if not existing_role:
+                print(f"DEBUG UPDATE_ROLE - Rol {role_id} no existe")
                 return False, f"El rol con ID {role_id} no existe"
+            
+            print(f"DEBUG UPDATE_ROLE - Rol existe: {existing_role['name']}")
             
             # Verificar si se puede editar
             if existing_role.get('system_role', False) and existing_role.get('code') == 'super_admin':
+                print("DEBUG UPDATE_ROLE - No se puede editar Super Admin")
                 return False, "No se puede editar el rol Super Admin"
             
             # Validar datos
+            print("DEBUG UPDATE_ROLE - Validando datos...")
             is_valid, errors = self.role_model.validate_role_data(role_data, is_update=True)
+            print(f"DEBUG UPDATE_ROLE - Validación: válido={is_valid}, errores={errors}")
+            
             if not is_valid:
                 error_msg = "Errores de validación: " + ", ".join(errors)
                 self.logger.warning(f"Validación fallida para actualizar rol: {error_msg}")
+                print(f"DEBUG UPDATE_ROLE - Validación fallida: {error_msg}")
                 return False, error_msg
             
             # Actualizar rol
+            print("DEBUG UPDATE_ROLE - Llamando a role_model.update_role()...")
             success = self.role_model.update_role(role_id, role_data)
+            print(f"DEBUG UPDATE_ROLE - Resultado de update_role: {success}")
             
             if success:
                 success_msg = f"Rol actualizado exitosamente"
                 self.logger.info(success_msg)
+                print(f"DEBUG UPDATE_ROLE - Éxito: {success_msg}")
                 return True, success_msg
             else:
                 error_msg = "Error interno al actualizar el rol"
