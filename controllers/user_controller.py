@@ -122,45 +122,77 @@ class UserController:
     def create_user(self, user_data: Dict[str, Any]) -> bool:
         """Crear nuevo usuario"""
         try:
+            print(f"DEBUG CREATE_USER - Datos recibidos: {user_data}")
+            
             # Validar datos requeridos
             required_fields = ['username', 'full_name', 'email', 'user_type', 'password']
             for field in required_fields:
                 if field not in user_data or not user_data[field]:
+                    print(f"DEBUG CREATE_USER - Campo requerido faltante: {field}")
                     self.logger.error(f"Campo requerido faltante: {field}")
                     return False
             
+            print("DEBUG CREATE_USER - Todos los campos requeridos están presentes")
+            
             # Verificar si el usuario ya existe
+            print(f"DEBUG CREATE_USER - Verificando si usuario existe: {user_data['username']}")
             existing_user = self.user_model.get_user_by_username(user_data['username'])
             if existing_user:
+                print(f"DEBUG CREATE_USER - Usuario ya existe: {user_data['username']}")
                 self.logger.error(f"Usuario ya existe: {user_data['username']}")
                 return False
             
             # Verificar si el email ya existe
+            print(f"DEBUG CREATE_USER - Verificando si email existe: {user_data['email']}")
             existing_email = self.user_model.get_user_by_email(user_data['email'])
             if existing_email:
+                print(f"DEBUG CREATE_USER - Email ya existe: {user_data['email']}")
                 self.logger.error(f"Email ya existe: {user_data['email']}")
                 return False
+            
+            print("DEBUG CREATE_USER - Usuario y email únicos, continuando...")
             
             # Buscar el rol por nombre para obtener el role_id
             role_id = None
             role_name = user_data['user_type']
+            print(f"DEBUG CREATE_USER - Buscando rol: {role_name}")
             
             try:
                 roles = self.role_model.get_all_roles()
+                print(f"DEBUG CREATE_USER - Roles encontrados: {len(roles)}")
                 for role in roles:
+                    print(f"DEBUG CREATE_USER - Comparando '{role.get('name', '')}' con '{role_name}'")
                     if role.get('name', '').lower() == role_name.lower():
                         role_id = role.get('id')
+                        print(f"DEBUG CREATE_USER - Rol encontrado, ID: {role_id}")
                         break
+                
+                if role_id is None:
+                    print(f"DEBUG CREATE_USER - Rol no encontrado: {role_name}")
+                    
             except Exception as role_error:
+                print(f"DEBUG CREATE_USER - Error obteniendo roles: {role_error}")
                 self.logger.warning(f"Error obteniendo roles: {role_error}")
             
             # Preparar datos para crear usuario
+            # Usar valores compatibles con el enum user_type de la BD
+            user_type_mapping = {
+                'Super Admin': 'admin',
+                'Administrador': 'admin', 
+                'Gerente': 'manager',
+                'Empleado': 'employee',
+                'Cajero': 'cashier'
+            }
+            
+            db_user_type = user_type_mapping.get(user_data['user_type'], 'employee')
+            print(f"DEBUG CREATE_USER - Mapeando user_type: '{user_data['user_type']}' -> '{db_user_type}'")
+            
             create_data = {
                 'username': user_data['username'],
                 'password_hash': self.hash_password(user_data['password']),
                 'full_name': user_data['full_name'],
                 'email': user_data['email'],
-                'user_type': user_data['user_type'],
+                'user_type': db_user_type,  # Usar valor mapeado compatible con BD
                 'role_id': role_id,  # Asignar role_id si se encontró
                 'active': True,  # Activo por defecto
                 'phone': user_data.get('phone', ''),
@@ -168,16 +200,26 @@ class UserController:
                 'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             
+            print(f"DEBUG CREATE_USER - Datos preparados para crear usuario: {create_data}")
+            
             # Crear usuario
+            print("DEBUG CREATE_USER - Llamando a user_model.create_user()")
             user_id = self.user_model.create_user(create_data)
+            print(f"DEBUG CREATE_USER - Resultado de create_user: {user_id}")
             
             if user_id:
+                print(f"DEBUG CREATE_USER - Usuario creado exitosamente con ID: {user_id}")
                 self.logger.info(f"Usuario creado exitosamente: {user_data['username']} (ID: {user_id})")
                 return True
+            else:
+                print("DEBUG CREATE_USER - create_user devolvió None/False")
             
             return False
             
         except Exception as e:
+            print(f"DEBUG CREATE_USER - Excepción capturada: {str(e)}")
+            import traceback
+            traceback.print_exc()
             self.logger.error(f"Error creando usuario: {str(e)}")
             return False
     

@@ -59,29 +59,41 @@ class RoleController:
     def create_role(self, role_data: Dict[str, Any], current_user: Dict[str, Any] = None) -> Tuple[bool, str, Optional[int]]:
         """Crear nuevo rol"""
         try:
+            print(f"DEBUG CREATE_ROLE - Datos recibidos: {role_data}")
             self.logger.info(f"Creando nuevo rol: {role_data.get('name')}")
             
             # Verificar permisos del usuario
+            print(f"DEBUG CREATE_ROLE - Verificando permisos...")
             if not self._check_permission(current_user, 'roles.create'):
+                print("DEBUG CREATE_ROLE - Sin permisos para crear roles")
                 return False, "No tienes permisos para crear roles", None
             
+            print("DEBUG CREATE_ROLE - Permisos verificados")
+            
             # Validar datos
+            print("DEBUG CREATE_ROLE - Validando datos...")
             is_valid, errors = self.role_model.validate_role_data(role_data)
+            print(f"DEBUG CREATE_ROLE - Validación: válido={is_valid}, errores={errors}")
+            
             if not is_valid:
                 error_msg = "Errores de validación: " + ", ".join(errors)
                 self.logger.warning(f"Validación fallida para crear rol: {error_msg}")
                 return False, error_msg, None
             
             # Crear rol
+            print("DEBUG CREATE_ROLE - Llamando a role_model.create_role()")
             role_id = self.role_model.create_role(role_data)
+            print(f"DEBUG CREATE_ROLE - Resultado de create_role: {role_id}")
             
             if role_id:
                 success_msg = f"Rol '{role_data.get('name')}' creado exitosamente"
                 self.logger.info(success_msg)
+                print(f"DEBUG CREATE_ROLE - Éxito: {success_msg}")
                 return True, success_msg, role_id
             else:
                 error_msg = "Error interno al crear el rol"
                 self.logger.error(error_msg)
+                print(f"DEBUG CREATE_ROLE - Error: {error_msg}")
                 return False, error_msg, None
                 
         except Exception as e:

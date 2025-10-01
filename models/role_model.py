@@ -187,13 +187,20 @@ class RoleModel(BaseModel):
     def create_role(self, role_data: Dict[str, Any]) -> Optional[int]:
         """Crear nuevo rol"""
         try:
+            print(f"DEBUG ROLE_MODEL - create_role llamado con: {role_data}")
+            
             # Validar datos
+            print("DEBUG ROLE_MODEL - Validando datos...")
             is_valid, errors = self.validate_role_data(role_data)
+            print(f"DEBUG ROLE_MODEL - Validación: válido={is_valid}, errores={errors}")
+            
             if not is_valid:
+                print(f"DEBUG ROLE_MODEL - Datos inválidos, errores: {errors}")
                 self.logger.error(f"Datos de rol inválidos: {errors}")
                 return None
             
             # Preparar datos
+            print("DEBUG ROLE_MODEL - Preparando datos...")
             role_data = self.sanitize_input(role_data)
             
             # Convertir permisos a JSON si es necesario
@@ -207,11 +214,21 @@ class RoleModel(BaseModel):
             role_data.setdefault('created_at', datetime.now())
             role_data.setdefault('updated_at', datetime.now())
             
+            print(f"DEBUG ROLE_MODEL - Datos preparados: {role_data}")
+            
             if self.db and self.connect():
+                print("DEBUG ROLE_MODEL - Conectado a BD, llamando a self.create()")
                 role_id = self.create(role_data)
+                print(f"DEBUG ROLE_MODEL - self.create() devolvió: {role_id}")
+                
                 if role_id:
                     self.logger.info(f"Rol creado exitosamente: {role_data.get('name')} (ID: {role_id})")
+                    print(f"DEBUG ROLE_MODEL - Rol creado exitosamente con ID: {role_id}")
                     return role_id
+                else:
+                    print("DEBUG ROLE_MODEL - self.create() devolvió None/False")
+            else:
+                print("DEBUG ROLE_MODEL - No se pudo conectar a la BD")
             
             return None
             

@@ -207,9 +207,15 @@ class UserModel(BaseModel):
     
     def create_user(self, user_data: Dict[str, Any], created_by_id: int = None) -> Optional[int]:
         """Crear nuevo usuario"""
+        print(f"DEBUG USER_MODEL - create_user llamado con: {user_data}")
+        
         # Validar datos
+        print("DEBUG USER_MODEL - Validando datos de usuario...")
         is_valid, errors = self.validate_user_data(user_data)
+        print(f"DEBUG USER_MODEL - Validación: válido={is_valid}, errores={errors}")
+        
         if not is_valid:
+            print(f"DEBUG USER_MODEL - Datos inválidos, errores: {errors}")
             self.logger.error(f"Datos de usuario inválidos: {errors}")
             return None
         
@@ -227,11 +233,21 @@ class UserModel(BaseModel):
             user_data['permissions'] = json.dumps(user_data['permissions'])
         
         try:
+            print("DEBUG USER_MODEL - Llamando a self.create()")
             user_id = self.create(user_data)
+            print(f"DEBUG USER_MODEL - self.create() devolvió: {user_id}")
+            
             if user_id:
+                print(f"DEBUG USER_MODEL - Usuario creado exitosamente con ID: {user_id}")
                 self.log_activity('CREATE_USER', user_id, f"Usuario creado: {user_data.get('username')}", created_by_id)
+            else:
+                print("DEBUG USER_MODEL - self.create() devolvió None/False")
+                
             return user_id
         except Exception as e:
+            print(f"DEBUG USER_MODEL - Excepción en create_user: {e}")
+            import traceback
+            traceback.print_exc()
             self.logger.error(f"Error creando usuario: {e}")
             return None
     
@@ -376,13 +392,28 @@ class UserModel(BaseModel):
             elif len(full_name) > 100:
                 errors.append("El nombre completo no puede tener más de 100 caracteres")
         
-        # Validar user_type
+        # Validar user_type - permite tanto tipos antiguos como nombres de roles nuevos
         if not is_update or 'user_type' in data:
             user_type = data.get('user_type', '').strip()
             if not user_type:
                 errors.append("El tipo de usuario es requerido")
             elif user_type not in self.valid_user_types:
-                errors.append(f"Tipo de usuario inválido. Debe ser uno de: {', '.join(self.valid_user_types)}")
+                # Si no es un tipo válido antiguo, verificar si es un nombre de rol válido
+                try:
+                    from models.role_model import RoleModel
+                    role_model = RoleModel()
+                    roles = role_model.get_all_roles()
+                    valid_role_names = [role.get('name', '') for role in roles if role.get('active', True)]
+                    
+                    if user_type not in valid_role_names:
+                        # Si tampoco es un rol válido, mostrar error
+                        all_valid = self.valid_user_types + valid_role_names
+                        errors.append(f"Tipo de usuario/rol inválido. Debe ser uno de: {', '.join(all_valid)}")
+                except Exception as e:
+                    # Si hay error obteniendo roles, usar solo validación antigua
+                    print(f"DEBUG - Error validando rol: {e}")
+                    if user_type not in self.valid_user_types:
+                        errors.append(f"Tipo de usuario inválido. Debe ser uno de: {', '.join(self.valid_user_types)}")
         
         # Validar contraseña (solo si se proporciona)
         if 'password' in data:

@@ -30,6 +30,10 @@ class RoleManagementView:
         # Callbacks
         self.callbacks = {}
         
+        # Configurar tamaño de ventana si no está embebido
+        if not self.embedded and hasattr(parent, 'geometry'):
+            parent.geometry("1500x1000")
+        
         # Crear interfaz
         self.create_interface()
         
@@ -41,16 +45,16 @@ class RoleManagementView:
         # Marco principal
         if self.embedded:
             self.main_frame = ttk.Frame(self.parent)
-            self.main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+            self.main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         else:
             self.main_frame = self.parent
         
         # Título
         title_frame = ttk.Frame(self.main_frame)
-        title_frame.pack(fill=tk.X, pady=(0, 20))
+        title_frame.pack(fill=tk.X, pady=(0, 30))
         
-        ttk.Label(title_frame, text="🔐 Gestión de Roles y Permisos", 
-                 font=('Arial', 16, 'bold')).pack(side=tk.LEFT)
+        ttk.Label(title_frame, text="🔐 GESTIÓN DE ROLES Y PERMISOS", 
+                 font=('Arial', 26, 'bold')).pack(side=tk.LEFT)
         
         if self.embedded:
             ttk.Button(title_frame, text="← Volver al Dashboard", 
@@ -70,8 +74,8 @@ class RoleManagementView:
     
     def create_stats_frame(self):
         """Crear marco de estadísticas"""
-        stats_frame = ttk.LabelFrame(self.main_frame, text="📊 Estadísticas", padding=10)
-        stats_frame.pack(fill=tk.X, pady=(0, 10))
+        stats_frame = ttk.LabelFrame(self.main_frame, text="📊 ESTADÍSTICAS", padding=20)
+        stats_frame.pack(fill=tk.X, pady=(0, 20))
         
         # Contenedor de estadísticas
         stats_container = ttk.Frame(stats_frame)
@@ -91,34 +95,34 @@ class RoleManagementView:
             stat_frame = ttk.Frame(stats_container)
             stat_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
             
-            value_label = ttk.Label(stat_frame, text="0", font=('Arial', 20, 'bold'), 
+            value_label = ttk.Label(stat_frame, text="0", font=('Arial', 32, 'bold'), 
                                    foreground=color)
-            value_label.pack()
+            value_label.pack(pady=5)
             
-            desc_label = ttk.Label(stat_frame, text=label, font=('Arial', 9))
+            desc_label = ttk.Label(stat_frame, text=label, font=('Arial', 14, 'bold'))
             desc_label.pack()
             
             self.stats_labels[key] = value_label
     
     def create_search_frame(self):
         """Crear marco de búsqueda y filtros"""
-        search_frame = ttk.LabelFrame(self.main_frame, text="🔍 Búsqueda y Filtros", padding=10)
-        search_frame.pack(fill=tk.X, pady=(0, 10))
+        search_frame = ttk.LabelFrame(self.main_frame, text="🔍 BÚSQUEDA Y FILTROS", padding=15)
+        search_frame.pack(fill=tk.X, pady=(0, 20))
         
         # Primera fila: búsqueda
         search_row = ttk.Frame(search_frame)
-        search_row.pack(fill=tk.X, pady=(0, 10))
+        search_row.pack(fill=tk.X, pady=(0, 15))
         
-        ttk.Label(search_row, text="Buscar:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(search_row, text="Buscar:", font=('Arial', 14, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
         
-        search_entry = ttk.Entry(search_row, textvariable=self.search_var, width=30)
-        search_entry.pack(side=tk.LEFT, padx=(0, 10))
+        search_entry = ttk.Entry(search_row, textvariable=self.search_var, width=40, font=('Arial', 14))
+        search_entry.pack(side=tk.LEFT, padx=(0, 15))
         search_entry.bind('<KeyRelease>', lambda e: self.search_roles())
         
-        ttk.Button(search_row, text="🔍 Buscar", 
-                  command=self.search_roles).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(search_row, text="🔍 BUSCAR", 
+                  command=self.search_roles).pack(side=tk.LEFT, padx=(0, 10))
         
-        ttk.Button(search_row, text="🔄 Limpiar", 
+        ttk.Button(search_row, text="🔄 LIMPIAR", 
                   command=self.clear_search).pack(side=tk.LEFT)
         
         # Segunda fila: filtros
@@ -126,21 +130,21 @@ class RoleManagementView:
         filter_row.pack(fill=tk.X)
         
         # Filtro por estado
-        ttk.Label(filter_row, text="Estado:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(filter_row, text="Estado:", font=('Arial', 14, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
         
         active_combo = ttk.Combobox(filter_row, textvariable=self.filter_active_var, 
                                    values=["todos", "activos", "inactivos"], 
-                                   state="readonly", width=12)
-        active_combo.pack(side=tk.LEFT, padx=(0, 20))
+                                   state="readonly", width=18, font=('Arial', 14))
+        active_combo.pack(side=tk.LEFT, padx=(0, 30))
         active_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters())
         
         # Filtro por tipo
-        ttk.Label(filter_row, text="Tipo:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(filter_row, text="Tipo:", font=('Arial', 14, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
         
         type_combo = ttk.Combobox(filter_row, textvariable=self.filter_type_var, 
                                  values=["todos", "sistema", "personalizados"], 
-                                 state="readonly", width=15)
-        type_combo.pack(side=tk.LEFT, padx=(0, 10))
+                                 state="readonly", width=22, font=('Arial', 14))
+        type_combo.pack(side=tk.LEFT, padx=(0, 15))
         type_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters())
     
     def create_action_buttons_frame(self):
@@ -184,18 +188,18 @@ class RoleManagementView:
         # Definir columnas
         columns = ('ID', 'Nombre', 'Código', 'Descripción', 'Tipo', 'Estado', 'Usuarios', 'Permisos')
         
-        self.roles_tree = ttk.Treeview(tree_frame, columns=columns, show='headings', height=15)
+        self.roles_tree = ttk.Treeview(tree_frame, columns=columns, show='headings', height=18)
         
         # Configurar columnas
         column_configs = {
-            'ID': (50, tk.CENTER),
-            'Nombre': (150, tk.W),
-            'Código': (120, tk.W),
-            'Descripción': (250, tk.W),
-            'Tipo': (100, tk.CENTER),
-            'Estado': (80, tk.CENTER),
-            'Usuarios': (80, tk.CENTER),
-            'Permisos': (80, tk.CENTER)
+            'ID': (60, tk.CENTER),
+            'Nombre': (180, tk.W),
+            'Código': (140, tk.W),
+            'Descripción': (300, tk.W),
+            'Tipo': (120, tk.CENTER),
+            'Estado': (100, tk.CENTER),
+            'Usuarios': (100, tk.CENTER),
+            'Permisos': (100, tk.CENTER)
         }
         
         for col in columns:
@@ -335,21 +339,35 @@ class RoleManagementView:
     def create_role(self):
         """Crear nuevo rol"""
         try:
+            print("DEBUG CREATE_ROLE VIEW - Abriendo diálogo...")
             dialog = RoleDialog(self.main_frame, title="Crear Nuevo Rol", 
                                role_controller=self.role_controller)
             
+            # Esperar a que el diálogo termine completamente
+            self.main_frame.wait_window(dialog.dialog)
+            
+            print(f"DEBUG CREATE_ROLE VIEW - Diálogo cerrado, result: {dialog.result}")
+            
             if dialog.result:
+                print("DEBUG CREATE_ROLE VIEW - Llamando al controlador...")
                 success, message, role_id = self.role_controller.create_role(
                     dialog.result, self.current_user
                 )
+                
+                print(f"DEBUG CREATE_ROLE VIEW - Resultado: success={success}, message={message}, role_id={role_id}")
                 
                 if success:
                     messagebox.showinfo("Éxito", message)
                     self.refresh_roles()
                 else:
                     messagebox.showerror("Error", message)
+            else:
+                print("DEBUG CREATE_ROLE VIEW - dialog.result es None/False, no se ejecuta el controlador")
                     
         except Exception as e:
+            print(f"DEBUG CREATE_ROLE VIEW - Excepción: {e}")
+            import traceback
+            traceback.print_exc()
             messagebox.showerror("Error", f"Error creando rol:\n{str(e)}")
     
     def edit_role(self):
@@ -569,7 +587,7 @@ class RoleDialog:
         """Crear ventana de diálogo"""
         self.dialog = tk.Toplevel(self.parent)
         self.dialog.title(self.title)
-        self.dialog.geometry("500x400")
+        self.dialog.geometry("600x500")
         self.dialog.resizable(False, False)
         self.dialog.transient(self.parent)
         self.dialog.grab_set()
@@ -581,27 +599,31 @@ class RoleDialog:
         ))
         
         # Marco principal
-        main_frame = ttk.Frame(self.dialog, padding=20)
+        main_frame = ttk.Frame(self.dialog, padding=30)
         main_frame.pack(fill=tk.BOTH, expand=True)
         
         # Campos del formulario
         # Nombre
-        ttk.Label(main_frame, text="Nombre del Rol:").pack(anchor=tk.W, pady=(0, 5))
-        name_entry = ttk.Entry(main_frame, textvariable=self.name_var, font=('Arial', 11))
-        name_entry.pack(fill=tk.X, pady=(0, 15))
-        name_entry.focus()
+        ttk.Label(main_frame, text="Nombre del Rol:", font=('Arial', 13)).pack(anchor=tk.W, pady=(0, 8))
+        self.name_entry = ttk.Entry(main_frame, textvariable=self.name_var, font=('Arial', 13))
+        self.name_entry.pack(fill=tk.X, pady=(0, 20))
+        self.name_entry.focus()
+        
+        print(f"DEBUG ROLE - Name entry creado, var actual: '{self.name_var.get()}'")
         
         # Código
-        ttk.Label(main_frame, text="Código del Rol:").pack(anchor=tk.W, pady=(0, 5))
-        code_entry = ttk.Entry(main_frame, textvariable=self.code_var, font=('Arial', 11))
-        code_entry.pack(fill=tk.X, pady=(0, 15))
+        ttk.Label(main_frame, text="Código del Rol:", font=('Arial', 13)).pack(anchor=tk.W, pady=(0, 8))
+        self.code_entry = ttk.Entry(main_frame, textvariable=self.code_var, font=('Arial', 13))
+        self.code_entry.pack(fill=tk.X, pady=(0, 20))
+        
+        print(f"DEBUG ROLE - Code entry creado, var actual: '{self.code_var.get()}'")
         
         # Descripción
-        ttk.Label(main_frame, text="Descripción:").pack(anchor=tk.W, pady=(0, 5))
+        ttk.Label(main_frame, text="Descripción:", font=('Arial', 13)).pack(anchor=tk.W, pady=(0, 8))
         desc_frame = ttk.Frame(main_frame)
-        desc_frame.pack(fill=tk.X, pady=(0, 15))
+        desc_frame.pack(fill=tk.X, pady=(0, 20))
         
-        self.desc_text = tk.Text(desc_frame, height=4, font=('Arial', 10), wrap=tk.WORD)
+        self.desc_text = tk.Text(desc_frame, height=5, font=('Arial', 12), wrap=tk.WORD)
         desc_scrollbar = ttk.Scrollbar(desc_frame, orient=tk.VERTICAL, command=self.desc_text.yview)
         self.desc_text.configure(yscrollcommand=desc_scrollbar.set)
         
@@ -614,7 +636,7 @@ class RoleDialog:
         
         # Estado
         ttk.Checkbutton(main_frame, text="Rol Activo", 
-                       variable=self.active_var).pack(anchor=tk.W, pady=(10, 20))
+                       variable=self.active_var).pack(anchor=tk.W, pady=(15, 25))
         
         # Botones
         button_frame = ttk.Frame(main_frame)
@@ -633,11 +655,33 @@ class RoleDialog:
     def save(self):
         """Guardar rol"""
         try:
-            # Obtener valores
-            name = self.name_var.get().strip()
-            code = self.code_var.get().strip()
+            # SISTEMA DE DOBLE CAPTURA - igual que en usuarios
+            print("DEBUG ROLE - Capturando datos del formulario...")
+            
+            # Captura desde StringVar
+            name_from_var = self.name_var.get().strip()
+            code_from_var = self.code_var.get().strip()
+            
+            # Captura desde Entry widgets (fallback)
+            name_from_entry = self.name_entry.get().strip()
+            code_from_entry = self.code_entry.get().strip()
+            
+            print(f"DEBUG ROLE - Name desde StringVar: '{name_from_var}' (len: {len(name_from_var)})")
+            print(f"DEBUG ROLE - Name desde Entry: '{name_from_entry}' (len: {len(name_from_entry)})")
+            print(f"DEBUG ROLE - Code desde StringVar: '{code_from_var}' (len: {len(code_from_var)})")
+            print(f"DEBUG ROLE - Code desde Entry: '{code_from_entry}' (len: {len(code_from_entry)})")
+            
+            # Usar Entry como fallback si StringVar está vacío
+            name = name_from_entry if not name_from_var and name_from_entry else name_from_var
+            code = code_from_entry if not code_from_var and code_from_entry else code_from_var
+            
             description = self.desc_text.get('1.0', tk.END).strip()
             active = self.active_var.get()
+            
+            print(f"VALIDACIÓN FINAL ROLE - Name: '{name}' (len: {len(name)})")
+            print(f"VALIDACIÓN FINAL ROLE - Code: '{code}' (len: {len(code)})")
+            print(f"VALIDACIÓN FINAL ROLE - Description: '{description}' (len: {len(description)})")
+            print(f"VALIDACIÓN FINAL ROLE - Active: {active}")
             
             # Validación básica
             if not name:
@@ -662,13 +706,26 @@ class RoleDialog:
             else:
                 self.result['permissions'] = []
             
-            self.dialog.destroy()
+            print(f"DEBUG ROLE - Resultado final: {self.result}")
+            print("DEBUG ROLE - Cerrando diálogo...")
+            
+            try:
+                self.dialog.destroy()
+                print("DEBUG ROLE - Diálogo cerrado exitosamente")
+            except Exception as e:
+                print(f"DEBUG ROLE - Error cerrando diálogo: {e}")
+                import traceback
+                traceback.print_exc()
             
         except Exception as e:
+            print(f"DEBUG ROLE - Excepción en save(): {e}")
+            import traceback
+            traceback.print_exc()
             messagebox.showerror("Error", f"Error guardando rol:\n{str(e)}")
     
     def cancel(self):
         """Cancelar"""
+        print("DEBUG ROLE - CANCELANDO diálogo")
         self.result = None
         self.dialog.destroy()
 
@@ -692,7 +749,7 @@ class PermissionsDialog:
         """Crear ventana de diálogo"""
         self.dialog = tk.Toplevel(self.parent)
         self.dialog.title(f"Permisos del Rol: {self.role.get('name')}")
-        self.dialog.geometry("700x600")
+        self.dialog.geometry("800x700")
         self.dialog.resizable(True, True)
         self.dialog.transient(self.parent)
         self.dialog.grab_set()
@@ -712,7 +769,7 @@ class PermissionsDialog:
         title_frame.pack(fill=tk.X, pady=(0, 10))
         
         ttk.Label(title_frame, text=f"🔓 Permisos del Rol: {self.role.get('name')}", 
-                 font=('Arial', 14, 'bold')).pack(side=tk.LEFT)
+                 font=('Arial', 16, 'bold')).pack(side=tk.LEFT)
         
         # Botones de selección rápida
         quick_frame = ttk.Frame(main_frame)

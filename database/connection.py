@@ -83,6 +83,8 @@ class DatabaseConnection:
     def connect(self) -> bool:
         """Establecer conexión con la base de datos"""
         try:
+            print(f"DEBUG CONEXIÓN - Config completo: {self.config}")
+            print(f"DEBUG CONEXIÓN - Database: {self.config.get('database', 'NO_ENCONTRADA')}")
             self.connection = mysql.connector.connect(
                 host=self.config['host'],
                 port=self.config['port'],
@@ -105,6 +107,9 @@ class DatabaseConnection:
             return False
         except Exception as e:
             self.logger.error(f"Error inesperado: {e}")
+            print(f"ERROR CONEXIÓN DB: {e}")  # Debug adicional
+            import traceback
+            print(f"TRACEBACK: {traceback.format_exc()}")
             return False
     
     def disconnect(self) -> None:
@@ -156,6 +161,9 @@ class DatabaseConnection:
             return None
         except Exception as e:
             self.logger.error(f"Error inesperado en query: {e}")
+            print(f"ERROR QUERY DB: {e}")  # Debug adicional
+            import traceback
+            print(f"QUERY TRACEBACK: {traceback.format_exc()}")
             return None
     
     def execute_many(self, query: str, data: list) -> bool:
