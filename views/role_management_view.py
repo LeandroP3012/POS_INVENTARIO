@@ -759,8 +759,9 @@ class PermissionsDialog:
         self.role_controller = role_controller
         self.result = None
         
-        # Variables para permisos
+        # Variables para permisos y etiquetas
         self.permission_vars = {}
+        self.permission_labels = {}
         
         # Crear diálogo
         self.create_dialog()
@@ -891,18 +892,63 @@ class PermissionsDialog:
                     # Obtener descripción del permiso
                     description = self.role_controller.get_permission_description(permission)
                     
-                    # Crear checkbox
-                    checkbox = ttk.Checkbutton(
-                        category_frame, 
-                        text=f"{permission} - {description}",
-                        variable=var
+                    # Crear frame para el permiso (sin checkbox tradicional)
+                    checkbox_frame = ttk.Frame(category_frame)
+                    checkbox_frame.pack(fill=tk.X, pady=2)
+                    
+                    # Etiqueta con formato mejorado y clickeable
+                    status_icon = "✅" if var.get() else "⬜"
+                    label_text = f"{status_icon} {permission} - {description}"
+                    
+                    label = tk.Label(
+                        checkbox_frame,
+                        text=label_text,
+                        font=('Arial', 10),
+                        anchor='w',
+                        cursor='hand2',
+                        bg='lightgreen' if var.get() else 'lightgray',
+                        relief='raised',
+                        bd=1,
+                        padx=10,
+                        pady=5
                     )
-                    checkbox.pack(anchor=tk.W, pady=2)
+                    label.pack(fill=tk.X, expand=True)
+                    
+                    # Guardar referencia a la etiqueta
+                    self.permission_labels[permission] = label
+                    
+                    # Hacer la etiqueta clickeable
+                    def toggle_permission(event, v=var):
+                        v.set(not v.get())
+                    
+                    label.bind('<Button-1>', toggle_permission)
+                    
+                    # Actualizar etiqueta cuando cambie el checkbox
+                    def update_label(perm=permission, lbl=label, v=var):
+                        icon = "✅" if v.get() else "⬜"
+                        desc = self.role_controller.get_permission_description(perm)
+                        lbl.config(
+                            text=f"{icon} {perm} - {desc}",
+                            bg='lightgreen' if v.get() else 'lightgray'
+                        )
+                    
+                    var.trace('w', lambda *args, ul=update_label: ul())
             
             # Verificar estado final de los checkboxes
             marked_count = sum(1 for var in self.permission_vars.values() if var.get())
             total_count = len(self.permission_vars)
             print(f"DEBUG PERMISOS - Estado final: {marked_count}/{total_count} checkboxes marcados")
+            
+            # Forzar actualización de la UI después de configurar los valores
+            self.dialog.update_idletasks()
+            self.dialog.update()
+            
+            # Verificar nuevamente después de la actualización
+            final_marked_count = sum(1 for var in self.permission_vars.values() if var.get())
+            print(f"DEBUG PERMISOS - Estado después de update: {final_marked_count}/{total_count} checkboxes marcados")
+            
+            if final_marked_count != marked_count:
+                print(f"DEBUG PERMISOS - ⚠️ CAMBIO DE ESTADO después de update: {marked_count} -> {final_marked_count}")
             
         except Exception as e:
             print(f"DEBUG PERMISOS - Excepción: {e}")
@@ -913,8 +959,18 @@ class PermissionsDialog:
     def select_all_safe(self):
         """Seleccionar todos los permisos (versión segura)"""
         print("DEBUG PERMISOS - ✅ SELECT_ALL_SAFE llamado manualmente")
-        for var in self.permission_vars.values():
+        for permission, var in self.permission_vars.items():
             var.set(True)
+            # Actualizar etiqueta inmediatamente
+            if permission in self.permission_labels:
+                desc = self.role_controller.get_permission_description(permission)
+                self.permission_labels[permission].config(
+                    text=f"✅ {permission} - {desc}",
+                    bg='lightgreen'
+                )
+        
+        # Forzar actualización de UI
+        self.dialog.update_idletasks()
     
     def select_all(self):
         """Seleccionar todos los permisos (método original con debug)"""
@@ -927,19 +983,49 @@ class PermissionsDialog:
     def deselect_all(self):
         """Deseleccionar todos los permisos"""
         print("DEBUG PERMISOS - ⚠️ DESELECT_ALL llamado!")
-        for var in self.permission_vars.values():
+        for permission, var in self.permission_vars.items():
             var.set(False)
+            # Actualizar etiqueta inmediatamente
+            if permission in self.permission_labels:
+                desc = self.role_controller.get_permission_description(permission)
+                self.permission_labels[permission].config(
+                    text=f"⬜ {permission} - {desc}",
+                    bg='lightgray'
+                )
+        
+        # Forzar actualización de UI
+        self.dialog.update_idletasks()
     
     def reset_permissions(self):
         """Restablecer permisos originales"""
         print("DEBUG PERMISOS - ⚠️ RESET_PERMISSIONS llamado!")
         current_permissions = self.role.get('permissions', [])
+        print(f"DEBUG RESET - Permisos originales del rol: {current_permissions}")
+        
+        marked_before = sum(1 for var in self.permission_vars.values() if var.get())
+        print(f"DEBUG RESET - Estado antes: {marked_before}/{len(self.permission_vars)} marcados")
         
         for permission, var in self.permission_vars.items():
-            if permission in current_permissions or '*' in current_permissions:
-                var.set(True)
-            else:
-                var.set(False)
+            should_be_checked = permission in current_permissions or '*' in current_permissions
+            var.set(should_be_checked)
+            
+            # Actualizar etiqueta inmediatamente
+            if permission in self.permission_labels:
+                desc = self.role_controller.get_permission_description(permission)
+                icon = "✅" if should_be_checked else "⬜"
+                self.permission_labels[permission].config(
+                    text=f"{icon} {permission} - {desc}",
+                    bg='lightgreen' if should_be_checked else 'lightgray'
+                )
+            
+        # Forzar actualización de UI
+        self.dialog.update_idletasks()
+        
+        marked_after = sum(1 for var in self.permission_vars.values() if var.get())
+        print(f"DEBUG RESET - Estado después: {marked_after}/{len(self.permission_vars)} marcados")
+        
+        if marked_after != len(current_permissions):
+            print(f"DEBUG RESET - ⚠️ DISCREPANCIA: esperado {len(current_permissions)}, obtenido {marked_after}")
     
     def save(self):
         """Guardar permisos"""

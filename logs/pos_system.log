@@ -3216,3 +3216,208 @@
 2025-10-01 00:49:11,185 - AuthController - INFO - Controlador de autenticación limpiado
 2025-10-01 00:49:11,185 - MainController - INFO - Aplicación cerrada correctamente
 2025-10-01 00:49:11,196 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-03 06:28:21,395 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-03 06:28:21,502 - MainController - INFO - Sistema POS iniciado
+2025-10-03 06:28:21,502 - MainController - INFO - Iniciando aplicación POS
+2025-10-03 06:28:21,503 - MainController - INFO - Mostrando pantalla de login
+2025-10-03 06:28:25,486 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-03 06:28:25,750 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:28:25,781 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:28:25,813 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-03 06:28:27,839 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:28:27,857 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-03 06:28:27,857 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-03 06:28:30,915 - MainController - INFO - Login exitoso para admin: admin
+2025-10-03 06:28:36,210 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 06:28:36,233 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:28:36,237 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 06:28:36,242 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:28:46,388 - controller.RoleController - INFO - Obteniendo rol por ID: 6
+2025-10-03 06:28:46,417 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:29:04,701 - controller.RoleController - INFO - Actualizando rol ID: 6
+2025-10-03 06:29:04,727 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:29:04,743 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:29:04,758 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:29:04,763 - model.RoleModel - INFO - Rol actualizado exitosamente: ID 6
+2025-10-03 06:29:04,763 - controller.RoleController - INFO - Rol actualizado exitosamente
+2025-10-03 06:29:05,930 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 06:29:05,955 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:29:05,960 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 06:29:05,986 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:29:10,551 - controller.RoleController - INFO - Obteniendo rol por ID: 6
+2025-10-03 06:29:10,578 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:30:02,207 - controller.RoleController - INFO - Obteniendo rol por ID: 6
+2025-10-03 06:30:02,220 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:30:08,502 - controller.RoleController - INFO - Actualizando rol ID: 6
+2025-10-03 06:30:08,505 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:30:08,525 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:30:08,541 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:30:08,546 - model.RoleModel - INFO - Rol actualizado exitosamente: ID 6
+2025-10-03 06:30:08,546 - controller.RoleController - INFO - Rol actualizado exitosamente
+2025-10-03 06:30:09,928 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 06:30:09,954 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:30:09,959 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 06:30:09,985 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:32:49,698 - controller.RoleController - INFO - Obteniendo rol por ID: 6
+2025-10-03 06:32:49,724 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:45:30,032 - MainController - INFO - Cerrando aplicación POS
+2025-10-03 06:45:30,058 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:45:30,069 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-03 06:45:30,069 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-03 06:45:30,070 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-03 06:45:30,133 - AuthController - INFO - Logout exitoso para: admin
+2025-10-03 06:45:30,163 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-03 06:45:30,164 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-03 06:45:30,174 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-03 06:45:37,957 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-03 06:45:37,991 - MainController - INFO - Sistema POS iniciado
+2025-10-03 06:45:37,992 - MainController - INFO - Iniciando aplicación POS
+2025-10-03 06:45:37,992 - MainController - INFO - Mostrando pantalla de login
+2025-10-03 06:45:43,745 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-03 06:45:43,923 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:45:43,938 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:45:43,944 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-03 06:45:45,963 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:45:45,970 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-03 06:45:45,971 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-03 06:45:49,006 - MainController - INFO - Login exitoso para admin: admin
+2025-10-03 06:45:59,075 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 06:45:59,092 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:45:59,098 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 06:45:59,103 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 06:46:02,549 - controller.RoleController - INFO - Obteniendo rol por ID: 6
+2025-10-03 06:46:02,553 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:10,341 - MainController - INFO - Cerrando aplicación POS
+2025-10-03 07:00:10,345 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:10,358 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-03 07:00:10,358 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-03 07:00:10,358 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-03 07:00:10,438 - AuthController - INFO - Logout exitoso para: admin
+2025-10-03 07:00:10,491 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-03 07:00:10,491 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-03 07:00:10,504 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-03 07:00:17,977 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-03 07:00:18,014 - MainController - INFO - Sistema POS iniciado
+2025-10-03 07:00:18,014 - MainController - INFO - Iniciando aplicación POS
+2025-10-03 07:00:18,015 - MainController - INFO - Mostrando pantalla de login
+2025-10-03 07:00:23,309 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-03 07:00:23,464 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:23,491 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:23,497 - model.UserModel - WARNING - Contraseña incorrecta para: admin
+2025-10-03 07:00:25,516 - AuthController - WARNING - Error de login: Credenciales incorrectas. Te quedan 2 intentos.
+2025-10-03 07:00:25,517 - MainController - WARNING - Fallo de login: Credenciales incorrectas. Te quedan 2 intentos.
+2025-10-03 07:00:28,598 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-03 07:00:28,726 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:28,756 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:28,764 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-03 07:00:30,768 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:30,778 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-03 07:00:30,778 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-03 07:00:33,808 - MainController - INFO - Login exitoso para admin: admin
+2025-10-03 07:00:40,369 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-03 07:00:40,384 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:40,387 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 07:00:40,415 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:44,049 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 07:00:44,073 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:44,079 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 07:00:44,104 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:00:47,490 - controller.RoleController - INFO - Obteniendo rol por ID: 6
+2025-10-03 07:00:47,503 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:00,005 - controller.RoleController - INFO - Actualizando rol ID: 6
+2025-10-03 07:01:00,008 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:00,015 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:00,021 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:00,025 - model.RoleModel - INFO - Rol actualizado exitosamente: ID 6
+2025-10-03 07:01:00,025 - controller.RoleController - INFO - Rol actualizado exitosamente
+2025-10-03 07:01:01,475 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 07:01:01,487 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:01,491 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 07:01:01,495 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:04,049 - controller.RoleController - INFO - Obteniendo rol por ID: 6
+2025-10-03 07:01:04,078 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:19,362 - controller.RoleController - INFO - Actualizando rol ID: 6
+2025-10-03 07:01:19,380 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:19,385 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:19,390 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:19,393 - model.RoleModel - INFO - Rol actualizado exitosamente: ID 6
+2025-10-03 07:01:19,393 - controller.RoleController - INFO - Rol actualizado exitosamente
+2025-10-03 07:01:20,540 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 07:01:20,561 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:20,565 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 07:01:20,570 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:01:22,642 - controller.RoleController - INFO - Obteniendo rol por ID: 6
+2025-10-03 07:01:22,656 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:06:15,637 - MainController - INFO - Cerrando aplicación POS
+2025-10-03 07:06:15,658 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:06:15,666 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-03 07:06:15,666 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-03 07:06:15,666 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-03 07:06:15,741 - AuthController - INFO - Logout exitoso para: admin
+2025-10-03 07:06:15,776 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-03 07:06:15,776 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-03 07:06:23,727 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-03 07:06:23,761 - MainController - INFO - Sistema POS iniciado
+2025-10-03 07:06:23,761 - MainController - INFO - Iniciando aplicación POS
+2025-10-03 07:06:23,761 - MainController - INFO - Mostrando pantalla de login
+2025-10-03 07:06:38,413 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-03 07:06:38,575 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:06:38,598 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:06:38,605 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-03 07:06:40,629 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:06:40,639 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-03 07:06:40,639 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-03 07:06:43,673 - MainController - INFO - Login exitoso para admin: admin
+2025-10-03 07:06:50,421 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 07:06:50,448 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:06:50,452 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 07:06:50,459 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:03,717 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 07:07:03,720 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:03,723 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 07:07:03,730 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:09,334 - controller.RoleController - INFO - Obteniendo rol por ID: 4
+2025-10-03 07:07:09,361 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:32,953 - controller.RoleController - INFO - Obteniendo rol por ID: 4
+2025-10-03 07:07:32,976 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:46,356 - controller.RoleController - INFO - Actualizando rol ID: 4
+2025-10-03 07:07:46,359 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:46,364 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:46,371 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:46,375 - model.RoleModel - INFO - Rol actualizado exitosamente: ID 4
+2025-10-03 07:07:46,375 - controller.RoleController - INFO - Rol actualizado exitosamente
+2025-10-03 07:07:48,391 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 07:07:48,413 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:48,420 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 07:07:48,444 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:51,313 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 07:07:51,339 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:51,343 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 07:07:51,371 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:52,732 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 07:07:52,737 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:07:52,742 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 07:07:52,746 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:17:14,543 - controller.RoleController - INFO - Obteniendo rol por ID: 3
+2025-10-03 07:17:14,548 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:17:22,963 - controller.RoleController - INFO - Actualizando rol ID: 3
+2025-10-03 07:17:22,982 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:17:22,987 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:17:23,013 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:17:23,017 - model.RoleModel - INFO - Rol actualizado exitosamente: ID 3
+2025-10-03 07:17:23,018 - controller.RoleController - INFO - Rol actualizado exitosamente
+2025-10-03 07:17:24,329 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-03 07:17:24,345 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:17:24,350 - controller.RoleController - INFO - Se obtuvieron 6 roles
+2025-10-03 07:17:24,353 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:17:27,635 - controller.RoleController - INFO - Obteniendo rol por ID: 3
+2025-10-03 07:17:27,656 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:23:45,515 - MainController - INFO - Cerrando aplicación POS
+2025-10-03 07:23:45,519 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-03 07:23:45,526 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-03 07:23:45,526 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-03 07:23:45,526 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-03 07:23:45,596 - AuthController - INFO - Logout exitoso para: admin
+2025-10-03 07:23:45,629 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-03 07:23:45,629 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-03 07:23:45,639 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
