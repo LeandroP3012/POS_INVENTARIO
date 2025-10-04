@@ -191,12 +191,27 @@ class UserModel(BaseModel):
             except:
                 permissions = {}
         
-        return {
+        # Obtener información del rol si existe role_id
+        role_name = None
+        role_id = user.get('role_id')
+        if role_id:
+            try:
+                # Importar aquí para evitar import circular
+                from models.role_model import RoleModel
+                role_model = RoleModel()
+                role_data = role_model.get_role_by_id(role_id)
+                if role_data:
+                    role_name = role_data.get('name')
+            except Exception as e:
+                self.logger.warning(f"Error obteniendo nombre del rol {role_id}: {e}")
+        
+        user_data = {
             'id': user.get('id', 0),
             'username': user.get('username', ''),
             'full_name': user.get('full_name', ''),
             'email': user.get('email', ''),
             'user_type': user.get('user_type', 'user'),
+            'role_id': role_id,
             'permissions': permissions,
             'last_login': user.get('last_login'),
             'phone': user.get('phone'),
@@ -204,6 +219,12 @@ class UserModel(BaseModel):
             'created_at': user.get('created_at'),
             'source': 'database' if user.get('id') else 'local'
         }
+        
+        # Incluir role_name si se encontró
+        if role_name:
+            user_data['role_name'] = role_name
+            
+        return user_data
     
     def create_user(self, user_data: Dict[str, Any], created_by_id: int = None) -> Optional[int]:
         """Crear nuevo usuario"""
