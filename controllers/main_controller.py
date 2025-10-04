@@ -12,6 +12,7 @@ from typing import Dict, Any, Optional
 from controllers.auth_controller import AuthController
 from views.login_view import LoginView
 from config.settings import SystemSettings
+from models.role_model import RoleModel
 
 class MainController:
     """Controlador principal de la aplicación"""
@@ -396,9 +397,12 @@ class MainController:
         )
         status_label.pack(anchor='e')
         
+        # Obtener nombre real del rol
+        role_display_name = self._get_user_role_display_name()
+        
         role_label = tk.Label(
             right_frame,
-            text=f"Rol: {self.current_user.get('user_type', 'Usuario').title()}",
+            text=f"Rol: {role_display_name}",
             font=('Segoe UI', 12),
             fg='#bdc3c7',
             bg='#2c3e50'
@@ -1041,6 +1045,32 @@ Características:
             messagebox.showerror(title, message)
         except:
             print(f"ERROR: {title} - {message}")
+    
+    def _get_user_role_display_name(self) -> str:
+        """Obtener el nombre real del rol del usuario actual para mostrar en el menú"""
+        try:
+            if not self.current_user:
+                return "Usuario"
+            
+            # Si ya tiene role_name en los datos del usuario, usarlo
+            if 'role_name' in self.current_user:
+                return self.current_user['role_name']
+            
+            # Si tiene role_id, buscar el nombre del rol
+            role_id = self.current_user.get('role_id')
+            if role_id:
+                role_model = RoleModel()
+                role_data = role_model.get_role_by_id(role_id)
+                if role_data and 'name' in role_data:
+                    return role_data['name']
+            
+            # Fallback: usar user_type pero capitalizado
+            user_type = self.current_user.get('user_type', 'usuario')
+            return user_type.title()
+            
+        except Exception as e:
+            self.logger.warning(f"Error obteniendo nombre del rol: {e}")
+            return "Usuario"
     
     def shutdown(self):
         """Cerrar aplicación completamente"""

@@ -175,17 +175,27 @@ class UserController:
                 self.logger.warning(f"Error obteniendo roles: {role_error}")
             
             # Preparar datos para crear usuario
-            # Usar valores compatibles con el enum user_type de la BD
-            user_type_mapping = {
-                'Super Admin': 'admin',
-                'Administrador': 'admin', 
-                'Gerente': 'manager',
-                'Empleado': 'employee',
-                'Cajero': 'cashier'
-            }
+            # Sistema simplificado: user_type es solo técnico, permisos vienen del role_id
+            def get_user_type_simplified(role_name):
+                """Sistema simplificado de mapeo de tipos de usuario"""
+                
+                # Solo mapear roles específicos del sistema que necesitan acceso especial
+                system_roles_mapping = {
+                    'Super Admin': 'admin',      # Acceso total al sistema
+                    'Administrador': 'admin',    # Acceso total al sistema
+                }
+                
+                # Si es rol de sistema con acceso especial, usar mapeo específico
+                if role_name in system_roles_mapping:
+                    return system_roles_mapping[role_name]
+                
+                # Para TODOS los demás roles (incluidos roles personalizados):
+                # - Los permisos reales vienen del role_id, no del user_type
+                # - user_type es solo una categoría técnica genérica
+                return 'user'  # Tipo genérico para todos los usuarios normales
             
-            db_user_type = user_type_mapping.get(user_data['user_type'], 'employee')
-            print(f"DEBUG CREATE_USER - Mapeando user_type: '{user_data['user_type']}' -> '{db_user_type}'")
+            db_user_type = get_user_type_simplified(user_data['user_type'])
+            print(f"DEBUG CREATE_USER - Mapeo simplificado: '{user_data['user_type']}' -> '{db_user_type}' (permisos vienen del role_id: {role_id})")
             
             create_data = {
                 'username': user_data['username'],

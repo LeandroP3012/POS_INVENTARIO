@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Dict, Any, Callable
 from views.base_view import BaseView
+from models.role_model import RoleModel
 
 
 class DashboardView(BaseView):
@@ -66,7 +67,7 @@ class DashboardView(BaseView):
         )
         user_label.pack(anchor='e')
         
-        role_text = f"Rol: {self.user_data.get('user_type', 'Usuario').title()}"
+        role_text = f"Rol: {self._get_user_role_display_name()}"
         role_label = tk.Label(
             user_frame,
             text=role_text,
@@ -375,3 +376,29 @@ class DashboardView(BaseView):
         """Mostrar notificación temporal"""
         # TODO: Implementar sistema de notificaciones toast
         pass
+    
+    def _get_user_role_display_name(self) -> str:
+        """Obtener el nombre real del rol del usuario para mostrar en el dashboard"""
+        try:
+            if not self.user_data:
+                return "Usuario"
+            
+            # Si ya tiene role_name en los datos del usuario, usarlo
+            if 'role_name' in self.user_data:
+                return self.user_data['role_name']
+            
+            # Si tiene role_id, buscar el nombre del rol
+            role_id = self.user_data.get('role_id')
+            if role_id:
+                role_model = RoleModel()
+                role_data = role_model.get_role_by_id(role_id)
+                if role_data and 'name' in role_data:
+                    return role_data['name']
+            
+            # Fallback: usar user_type pero capitalizado
+            user_type = self.user_data.get('user_type', 'usuario')
+            return user_type.title()
+            
+        except Exception as e:
+            # En caso de error, usar fallback silencioso
+            return self.user_data.get('user_type', 'Usuario').title()

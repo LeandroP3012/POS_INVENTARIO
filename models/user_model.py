@@ -17,8 +17,8 @@ class UserModel(BaseModel):
         self.table_name = 'users'
         self.primary_key = 'id'
         
-        # Definir tipos de usuario válidos (mantener por compatibilidad)
-        self.valid_user_types = ['admin', 'supervisor', 'cashier', 'user']
+        # Definir tipos de usuario válidos (actualizado con los nuevos tipos)
+        self.valid_user_types = ['admin', 'supervisor', 'manager', 'employee', 'cashier', 'user']
         
         # Usuarios por defecto (fallback) - ahora con role_id
         self.default_users = {
