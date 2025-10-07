@@ -20,7 +20,26 @@ class DatabaseConnection:
         try:
             if os.path.exists(self.config_file):
                 with open(self.config_file, 'r', encoding='utf-8') as file:
-                    return json.load(file)
+                    config = json.load(file)
+                    
+                    # Normalizar formato antiguo al nuevo
+                    if 'name' in config and 'database' not in config:
+                        config['database'] = config['name']
+                    if 'user' in config and 'username' not in config:
+                        config['username'] = config['user']
+                    
+                    # Asegurar que port sea int
+                    if 'port' in config and isinstance(config['port'], str):
+                        config['port'] = int(config['port'])
+                    
+                    # Agregar valores por defecto si no existen
+                    config.setdefault('charset', 'utf8mb4')
+                    config.setdefault('autocommit', True)
+                    config.setdefault('connection_timeout', 10)
+                    config.setdefault('reconnection_attempts', 3)
+                    config.setdefault('ssl_disabled', True)
+                    
+                    return config
             else:
                 # Configuración por defecto
                 default_config = {
@@ -83,8 +102,6 @@ class DatabaseConnection:
     def connect(self) -> bool:
         """Establecer conexión con la base de datos"""
         try:
-            print(f"DEBUG CONEXIÓN - Config completo: {self.config}")
-            print(f"DEBUG CONEXIÓN - Database: {self.config.get('database', 'NO_ENCONTRADA')}")
             self.connection = mysql.connector.connect(
                 host=self.config['host'],
                 port=self.config['port'],
@@ -107,9 +124,6 @@ class DatabaseConnection:
             return False
         except Exception as e:
             self.logger.error(f"Error inesperado: {e}")
-            print(f"ERROR CONEXIÓN DB: {e}")  # Debug adicional
-            import traceback
-            print(f"TRACEBACK: {traceback.format_exc()}")
             return False
     
     def disconnect(self) -> None:

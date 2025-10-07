@@ -1,12 +1,9 @@
 {
+  "max_connections": "10",
+  "timeout": "30",
   "host": "localhost",
-  "port": 3306,
-  "database": "pos_system",
-  "username": "root",
-  "password": "D3v3l0p3r@@$",
-  "charset": "utf8mb4",
-  "autocommit": true,
-  "connection_timeout": 10,
-  "reconnection_attempts": 3,
-  "ssl_disabled": true
+  "port": "3306",
+  "name": "pos_system",
+  "user": "root",
+  "password": "D3v3l0p3r@@$"
 }

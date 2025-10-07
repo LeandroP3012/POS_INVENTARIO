@@ -9,6 +9,9 @@ from typing import Dict, Any, Callable
 from views.base_view import BaseView
 from models.role_model import RoleModel
 from services.permission_service import PermissionService
+import os
+import json
+from PIL import Image, ImageTk
 
 
 class DashboardView(BaseView):
@@ -19,6 +22,7 @@ class DashboardView(BaseView):
         self.user_data = user_data or {}
         self.module_callbacks = {}
         self.permission_service = PermissionService()
+        self.logo_image = None  # Guardar referencia de la imagen
         self.setup_dashboard()
     
     def setup_dashboard(self):
@@ -54,29 +58,29 @@ class DashboardView(BaseView):
         left_frame = tk.Frame(main_content, bg='#ffffff')
         left_frame.pack(side='left', fill='y')
         
-        # Contenedor del logo con efecto circular
-        logo_container = tk.Frame(left_frame, bg='#1e3a8a', width=50, height=50, relief='flat', bd=0)
-        logo_container.pack(side='left', padx=(0, 18), pady=0)
-        logo_container.pack_propagate(False)
+        # Cargar configuración de la empresa
+        company_name, logo_path = self.load_company_config()
         
-        # Logo con efecto 3D
-        logo_label = tk.Label(
-            logo_container,
-            text="🏪",
-            font=('Segoe UI Emoji', 24),
-            fg='white',
-            bg='#1e3a8a'
-        )
-        logo_label.place(relx=0.5, rely=0.5, anchor='center')
+        # Contenedor del logo
+        self.logo_container = tk.Frame(left_frame, bg='#ffffff', width=50, height=50)
+        self.logo_container.pack(side='left', padx=(0, 18), pady=0)
+        self.logo_container.pack_propagate(False)
+        
+        # Intentar cargar logo desde configuración
+        if logo_path and os.path.exists(logo_path):
+            self.load_company_logo(self.logo_container, logo_path)
+        else:
+            # Logo por defecto (emoji)
+            self.create_default_logo(self.logo_container)
         
         # Contenedor de títulos con efectos
         title_frame = tk.Frame(left_frame, bg='#ffffff')
         title_frame.pack(side='left', fill='y', pady=0)
         
-        # Título principal con sombra de texto
+        # Título principal con nombre de la empresa
         main_title = tk.Label(
             title_frame,
-            text="MANAGEMENTPRO POS",
+            text=company_name.upper(),
             font=('Segoe UI', 20, 'bold'),
             fg='#1e293b',
             bg='#ffffff',
@@ -368,10 +372,15 @@ class DashboardView(BaseView):
         # Bind para recentrar cuando cambia el tamaño
         canvas.bind("<Configure>", lambda e: center_content())
         
-        # Bind para scroll con rueda del mouse
+        # Bind para scroll con rueda del mouse - solo en el canvas, no en toda la app
         def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+            # Verificar que el canvas todavía existe antes de hacer scroll
+            if canvas.winfo_exists():
+                canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+        # Binding solo cuando el mouse está sobre el canvas
+        canvas.bind("<Enter>", lambda e: canvas.bind_all("<MouseWheel>", _on_mousewheel))
+        canvas.bind("<Leave>", lambda e: canvas.unbind_all("<MouseWheel>"))
         
         # Centrar después de que todo se haya dibujado
         canvas.after(100, center_content)
@@ -1089,6 +1098,65 @@ class DashboardView(BaseView):
         """Mostrar notificación temporal"""
         # TODO: Implementar sistema de notificaciones toast
         pass
+    
+    def load_company_config(self):
+        """Cargar configuración de la empresa desde system_config.json"""
+        try:
+            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'system_config.json')
+            
+            if os.path.exists(config_path):
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    
+                company_name = config.get('company_name', 'MANAGEMENTPRO POS')
+                logo_path = config.get('logo_path', '')
+                
+                return company_name, logo_path
+        except Exception as e:
+            # Error silencioso, usar valores por defecto
+            pass
+        
+        return 'MANAGEMENTPRO POS', ''
+    
+    def load_company_logo(self, container, logo_path):
+        """Cargar y mostrar el logo de la empresa"""
+        try:
+            # Cargar y redimensionar imagen
+            pil_image = Image.open(logo_path)
+            pil_image = pil_image.resize((50, 50), Image.Resampling.LANCZOS)
+            
+            # Convertir a PhotoImage usando self.root como master
+            logo_image = ImageTk.PhotoImage(pil_image, master=self.root)
+            
+            # Crear label con la imagen
+            logo_label = tk.Label(
+                container,
+                image=logo_image,
+                bg='#ffffff',
+                bd=0
+            )
+            # IMPORTANTE: Mantener referencia de la imagen en el label para evitar garbage collection
+            logo_label.image = logo_image
+            logo_label.place(relx=0.5, rely=0.5, anchor='center')
+            
+        except Exception as e:
+            # Si falla, usar logo por defecto
+            self.create_default_logo(container)
+    
+    def create_default_logo(self, container):
+        """Crear logo por defecto con emoji"""
+        logo_bg = tk.Frame(container, bg='#1e3a8a', width=50, height=50)
+        logo_bg.place(relx=0.5, rely=0.5, anchor='center')
+        logo_bg.pack_propagate(False)
+        
+        logo_label = tk.Label(
+            logo_bg,
+            text="🏪",
+            font=('Segoe UI Emoji', 24),
+            fg='white',
+            bg='#1e3a8a'
+        )
+        logo_label.place(relx=0.5, rely=0.5, anchor='center')
     
     def _user_has_permission(self, permission: str) -> bool:
         """Verificar si el usuario actual tiene un permiso específico"""
