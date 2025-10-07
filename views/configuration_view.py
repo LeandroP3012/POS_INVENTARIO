@@ -17,10 +17,7 @@ class ConfigurationView(BaseView):
     """Vista completa de configuración del sistema"""
     
     def __init__(self, root: tk.Tk, user_data: Dict[str, Any] = None, embedded: bool = False):
-        print(f"🏗️ CONSTRUCTOR ConfigurationView:")
-        print(f"   - root tipo: {type(root)}")
-        print(f"   - user_data: {user_data}")
-        print(f"   - embedded: {embedded}")
+        # Constructor ConfigurationView inicializado
         
         super().__init__(root)
         self.user_data = user_data or {}
@@ -32,26 +29,20 @@ class ConfigurationView(BaseView):
         
         # Inicializar controlador de configuración
         self.config_controller = ConfigurationController()
-        print("   ✅ Controlador de configuración inicializado")
+        # Controlador de configuración inicializado
         
-        # Primero cargar los datos
-        print("🔄 Cargando configuración antes de crear la interfaz...")
+        # Cargar configuración
         self.load_configuration()
-        print(f"   📊 Datos cargados: {len(self.config_data)} elementos")
         
-        # Luego crear la interfaz (que usará los datos cargados)
-        print("🔄 Creando interfaz...")
+        # Crear interfaz
         self.setup_configuration_window()
         
-        # Finalmente actualizar la interfaz con los datos cargados
-        print("🔄 Actualizando interfaz después de crearla...")
+        # Actualizar interfaz con los datos cargados
         self.update_ui_with_config()
         
         # Programar una segunda actualización para asegurar que todo se aplique
         if hasattr(self, 'root'):
             self.root.after(100, self.force_ui_refresh)
-        
-        print("✅ Constructor completado")
     
     def setup_configuration_window(self):
         """Configurar ventana de configuración"""

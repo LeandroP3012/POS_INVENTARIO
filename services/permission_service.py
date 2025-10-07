@@ -64,7 +64,7 @@ class PermissionService:
             return False
     
     def _check_user_permission_detailed(self, user: Dict[str, Any], permission: str) -> bool:
-        """Verificación detallada de permisos"""
+        """Verificación detallada de permisos - SOLO permisos explícitamente asignados"""
         try:
             # 1. Verificar permisos específicos del usuario (tienen prioridad)
             user_permissions = user.get('permissions', {})
@@ -78,13 +78,23 @@ class PermissionService:
                 if user_permissions.get('super_admin') or user_permissions.get('all_modules'):
                     return True
             
-            # 2. Verificar permisos por rol
+            # 2. Verificar permisos por rol (PRIORIDAD PRINCIPAL)
             role_id = user.get('role_id')
             if role_id:
-                return self.role_model.role_has_permission(role_id, permission)
+                has_role_permission = self.role_model.role_has_permission(role_id, permission)
+                if has_role_permission:
+                    return True
+                # Si tiene role_id, NO continuar con fallback legacy
+                # Los roles personalizados solo deben tener permisos explícitamente asignados
+                return False
             
-            # 3. Fallback: verificar por user_type (compatibilidad)
+            # 3. Fallback: verificar por user_type (solo para roles del sistema sin role_id)
             user_type = user.get('user_type', 'user')
+            
+            # Si user_type es 'user' pero no tiene role_id, NO dar permisos por defecto
+            if user_type == 'user':
+                return False
+            
             return self._check_legacy_permission(user_type, permission)
             
         except Exception as e:
@@ -92,7 +102,9 @@ class PermissionService:
             return False
     
     def _check_legacy_permission(self, user_type: str, permission: str) -> bool:
-        """Verificación de permisos por user_type legacy"""
+        """Verificación de permisos por user_type legacy - SOLO roles del sistema"""
+        # SOLO asignar permisos por defecto a roles específicos del sistema
+        # Los roles personalizados (user_type='user') NO deben tener permisos automáticos
         legacy_permissions = {
             'admin': [
                 'users.view', 'users.create', 'users.edit', 'users.delete',
@@ -108,24 +120,33 @@ class PermissionService:
                 'sales.view', 'sales.create', 'sales.reports',
                 'dashboard.view', 'dashboard.stats'
             ],
+            'manager': [
+                'users.view',
+                'inventory.view', 'inventory.reports',
+                'sales.view', 'sales.create', 'sales.reports',
+                'dashboard.view', 'dashboard.stats'
+            ],
+            'employee': [
+                'sales.create', 'sales.view_own',
+                'inventory.view',
+                'dashboard.view'
+            ],
             'cashier': [
                 'sales.create', 'sales.view_own',
                 'cash.register',
                 'dashboard.view'
-            ],
-            'user': [
-                'sales.create', 'sales.view_own',
-                'inventory.view',
-                'dashboard.view'
             ]
+            # NOTA: 'user' NO está incluido intencionalmente
+            # Los usuarios con user_type='user' solo deben tener permisos
+            # que estén explícitamente asignados a través de role_id
         }
-        
-        allowed_permissions = legacy_permissions.get(user_type, [])
         
         # Super admin legacy
         if user_type == 'admin':
             return True
         
+        # Para todos los otros tipos, verificar permisos específicos
+        allowed_permissions = legacy_permissions.get(user_type, [])
         return permission in allowed_permissions
     
     def get_user_permissions(self, user: Dict[str, Any]) -> List[str]:
@@ -156,9 +177,15 @@ class PermissionService:
                 role_permissions = self.role_model.get_role_permissions(role_id)
                 permissions.update(role_permissions)
             
-            # 3. Fallback: permisos por user_type
+            # 3. Fallback: permisos por user_type (solo para roles del sistema)
             if not permissions:
                 user_type = user.get('user_type', 'user')
+                
+                # Si user_type es 'user' y no tiene role_id, NO asignar permisos por defecto
+                if user_type == 'user' and not role_id:
+                    # Los roles personalizados solo deben tener permisos explícitamente asignados
+                    return []
+                
                 legacy_permissions = self._get_legacy_permissions(user_type)
                 permissions.update(legacy_permissions)
             
@@ -169,7 +196,8 @@ class PermissionService:
             return []
     
     def _get_legacy_permissions(self, user_type: str) -> List[str]:
-        """Obtener permisos legacy por user_type"""
+        """Obtener permisos legacy por user_type - SOLO roles del sistema"""
+        # SOLO asignar permisos por defecto a roles específicos del sistema
         legacy_permissions = {
             'admin': ['*'],
             'supervisor': [
@@ -177,12 +205,20 @@ class PermissionService:
                 'sales.view', 'sales.create', 'sales.reports',
                 'dashboard.view', 'dashboard.stats'
             ],
+            'manager': [
+                'users.view', 'inventory.view', 'inventory.reports',
+                'sales.view', 'sales.create', 'sales.reports',
+                'dashboard.view', 'dashboard.stats'
+            ],
+            'employee': [
+                'sales.create', 'sales.view_own', 'inventory.view', 'dashboard.view'
+            ],
             'cashier': [
                 'sales.create', 'sales.view_own', 'cash.register', 'dashboard.view'
-            ],
-            'user': [
-                'sales.create', 'sales.view_own', 'inventory.view', 'dashboard.view'
             ]
+            # NOTA: 'user' NO está incluido intencionalmente
+            # Los usuarios con user_type='user' (roles personalizados) solo deben
+            # tener permisos que estén explícitamente asignados a través de role_id
         }
         
         return legacy_permissions.get(user_type, [])

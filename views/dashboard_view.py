@@ -8,6 +8,7 @@ from tkinter import ttk
 from typing import Dict, Any, Callable
 from views.base_view import BaseView
 from models.role_model import RoleModel
+from services.permission_service import PermissionService
 
 
 class DashboardView(BaseView):
@@ -17,10 +18,12 @@ class DashboardView(BaseView):
         super().__init__(root)
         self.user_data = user_data or {}
         self.module_callbacks = {}
+        self.permission_service = PermissionService()
         self.setup_dashboard()
     
     def setup_dashboard(self):
         """Configurar interfaz del dashboard"""
+        # NO limpiar widgets previos - ya están el menú y toolbar
         self.setup_main_window()
         self.create_header()
         self.create_modules_grid()
@@ -31,329 +34,1039 @@ class DashboardView(BaseView):
         self.root.title("Sistema POS - Dashboard Principal")
         self.root.geometry("1200x800")
         self.root.state('zoomed')
-        self.root.configure(bg='#f8f9fa')
+        self.root.configure(bg='#f1f5f9')
     
     def create_header(self):
-        """Crear header con información del usuario"""
-        header_frame = tk.Frame(self.root, bg='#2c3e50', height=100)
-        header_frame.pack(fill='x')
+        """Crear header moderno con gradientes y efectos visuales"""
+        header_frame = tk.Frame(self.root, bg='#ffffff', height=80)
+        header_frame.pack(fill='x', side='top', pady=0, padx=0)
         header_frame.pack_propagate(False)
         
-        # Contenedor interno para centrar contenido
-        content_frame = tk.Frame(header_frame, bg='#2c3e50')
-        content_frame.pack(expand=True, fill='both', padx=40, pady=20)
+        # Gradiente superior más sutil
+        gradient_frame = tk.Frame(header_frame, bg='#1e3a8a', height=3)
+        gradient_frame.pack(fill='x')
         
-        # Título del sistema
-        title_label = tk.Label(
-            content_frame,
-            text="🏪 ManagementPro POS",
-            font=('Segoe UI', 24, 'bold'),
+        # Contenedor principal con fondo más elegante
+        main_content = tk.Frame(header_frame, bg='#ffffff')
+        main_content.pack(expand=True, fill='both', padx=20, pady=8)
+        
+        # Frame izquierdo con logo animado
+        left_frame = tk.Frame(main_content, bg='#ffffff')
+        left_frame.pack(side='left', fill='y')
+        
+        # Contenedor del logo con efecto circular
+        logo_container = tk.Frame(left_frame, bg='#1e3a8a', width=50, height=50, relief='flat', bd=0)
+        logo_container.pack(side='left', padx=(0, 18), pady=0)
+        logo_container.pack_propagate(False)
+        
+        # Logo con efecto 3D
+        logo_label = tk.Label(
+            logo_container,
+            text="🏪",
+            font=('Segoe UI Emoji', 24),
             fg='white',
-            bg='#2c3e50'
+            bg='#1e3a8a'
         )
-        title_label.pack(side='left')
+        logo_label.place(relx=0.5, rely=0.5, anchor='center')
         
-        # Información del usuario (lado derecho)
-        user_frame = tk.Frame(content_frame, bg='#2c3e50')
-        user_frame.pack(side='right')
+        # Contenedor de títulos con efectos
+        title_frame = tk.Frame(left_frame, bg='#ffffff')
+        title_frame.pack(side='left', fill='y', pady=0)
         
-        welcome_text = f"Bienvenido, {self.user_data.get('full_name', self.user_data.get('username', 'Usuario'))}"
+        # Título principal con sombra de texto
+        main_title = tk.Label(
+            title_frame,
+            text="MANAGEMENTPRO POS",
+            font=('Segoe UI', 20, 'bold'),
+            fg='#1e293b',
+            bg='#ffffff',
+            relief='flat'
+        )
+        main_title.pack(anchor='w')
+        
+        # Subtítulo con color degradado
+        subtitle = tk.Label(
+            title_frame,
+            text="Sistema de Gestión Empresarial",
+            font=('Segoe UI', 10),
+            fg='#64748b',
+            bg='#ffffff'
+        )
+        subtitle.pack(anchor='w', pady=(3, 0))
+        
+        # Panel del usuario con diseño card moderno
+        user_container = tk.Frame(main_content, bg='#ffffff')
+        user_container.pack(side='right', pady=0)
+        
+        # Contenido del user card
+        user_content = tk.Frame(user_container, bg='#ffffff')
+        user_content.pack(padx=15, pady=8)
+        
+        # Información del usuario con iconos modernos
+        welcome_text = f"� {self.user_data.get('full_name', self.user_data.get('username', 'Usuario'))}"
         user_label = tk.Label(
-            user_frame,
+            user_content,
             text=welcome_text,
-            font=('Segoe UI', 14),
-            fg='#ecf0f1',
-            bg='#2c3e50'
+            font=('Segoe UI', 11, 'bold'),
+            fg='#1e293b',
+            bg='#ffffff'
         )
         user_label.pack(anchor='e')
         
-        role_text = f"Rol: {self._get_user_role_display_name()}"
+        # Rol con badge moderno
+        role_text = f"{self._get_user_role_display_name()}"
         role_label = tk.Label(
-            user_frame,
+            user_content,
             text=role_text,
-            font=('Segoe UI', 12),
-            fg='#bdc3c7',
-            bg='#2c3e50'
+            font=('Segoe UI', 9),
+            fg='#64748b',
+            bg='#ffffff'
         )
-        role_label.pack(anchor='e')
+        role_label.pack(anchor='e', pady=(3, 0))
     
     def create_modules_grid(self):
-        """Crear grid de módulos principales"""
-        # Subtitle
-        subtitle_frame = tk.Frame(self.root, bg='#f8f9fa', pady=30)
-        subtitle_frame.pack(fill='x')
+        """Crear grid de módulos con diseño profesional"""
+        # Contenedor principal con fondo limpio
+        main_container = tk.Frame(self.root, bg='#f1f5f9')
+        main_container.pack(fill='both', expand=True, pady=0)
         
-        subtitle_label = tk.Label(
-            subtitle_frame,
-            text="Bienvenido a tu sistema de punto de venta\n¡Comienza a registrar tu información!",
-            font=('Segoe UI', 18, 'bold'),
-            fg='#2c3e50',
-            bg='#f8f9fa',
-            justify='center'
+        # Grid principal de módulos con fondo mejorado
+        modules_frame = tk.Frame(main_container, bg='#f1f5f9')
+        modules_frame.pack(fill='both', expand=True, padx=20, pady=10)
+        
+        # Título de sección con estilo limpio
+        section_title = tk.Label(
+            modules_frame,
+            text="Módulos del Sistema",
+            font=('Segoe UI', 16, 'bold'),
+            fg='#1e293b',
+            bg='#f1f5f9'
         )
-        subtitle_label.pack()
+        section_title.pack(pady=(5, 10), anchor='w')
         
-        # Línea decorativa
-        line_frame = tk.Frame(subtitle_frame, bg='#3498db', height=3)
-        line_frame.pack(fill='x', padx=200, pady=(20, 0))
-        
-        # Grid principal de módulos
-        modules_frame = tk.Frame(self.root, bg='#f8f9fa')
-        modules_frame.pack(fill='both', expand=True, padx=80, pady=40)
-        
-        # Definir módulos con sus colores y permisos
+        # Obtener módulos disponibles
         modules = self.get_available_modules()
         
-        # Crear grid 3x3
-        for i, module in enumerate(modules):
-            row = i // 3
-            col = i % 3
-            
-            self.create_module_card(modules_frame, module, row, col)
+        # Crear layout dinámico con efectos visuales
+        self.create_colorful_modules_grid(modules_frame, modules)
+    
+
     
     def get_available_modules(self):
         """Obtener módulos disponibles según permisos del usuario"""
         base_modules = [
             {
-                'id': 'clients',
-                'title': 'Clientes',
-                'icon': '👥',
-                'color': '#1abc9c',
-                'description': 'Gestionar clientes',
-                'permission': None  # Disponible para todos
+                'id': 'products',
+                'title': 'Registro de Productos',
+                'icon': '📦',
+                'color': '#2563eb',
+                'description': 'Invoices',
+                'permission': 'inventory.view'
             },
             {
-                'id': 'products',
-                'title': 'Productos',
-                'icon': '📦',
-                'color': '#f39c12',
-                'description': 'Inventario y catálogo',
-                'permission': 'inventory_view'
+                'id': 'clients',
+                'title': 'Registro de Clientes',
+                'icon': '👤',
+                'color': '#7c3aed',
+                'description': 'Clients',
+                'permission': 'users.view'
+            },
+            {
+                'id': 'suppliers',
+                'title': 'Registro de Proveedores',
+                'icon': '👥',
+                'color': '#0891b2',
+                'description': 'Application',
+                'permission': 'suppliers.view'
+            },
+            {
+                'id': 'categories',
+                'title': 'Registro de Categorías',
+                'icon': '📁',
+                'color': '#dc2626',
+                'description': 'Reports',
+                'permission': 'categories.view'
+            },
+            {
+                'id': 'expenses',
+                'title': 'Registro de Egresos',
+                'icon': '💰',
+                'color': '#9333ea',
+                'description': 'Reports',
+                'permission': 'expenses.view'
+            },
+            {
+                'id': 'cash_register',
+                'title': 'Registro de Caja',
+                'icon': '💵',
+                'color': '#059669',
+                'description': 'Help',
+                'permission': 'cash.view'
+            },
+            {
+                'id': 'sales_register',
+                'title': 'Ventas - Registrar Ventas',
+                'icon': '🛍️',
+                'color': '#ea580c',
+                'description': 'Reports',
+                'permission': 'sales.create'
             },
             {
                 'id': 'purchases',
-                'title': 'Compras',
-                'icon': '🛍️',
-                'color': '#e74c3c',
-                'description': 'Registro de compras',
-                'permission': 'purchases_manage'
+                'title': 'Compras - Registrar Compras',
+                'icon': '⚙️',
+                'color': '#7c2d12',
+                'description': 'DevComponents',
+                'permission': 'inventory.create'
             },
             {
-                'id': 'quick_sale',
-                'title': 'Venta rápida',
-                'icon': '💰',
-                'color': '#e67e22',
-                'description': 'Ventas directas',
-                'permission': None  # Disponible para todos
-            },
-            {
-                'id': 'results',
-                'title': 'Resultados',
+                'id': 'income_report',
+                'title': 'Informe de Ingresos a Caja',
                 'icon': '📊',
-                'color': '#9b59b6',
-                'description': 'Reportes y análisis',
-                'permission': 'reports_basic'
+                'color': '#c026d3',
+                'description': 'Invoices',
+                'permission': 'sales.reports'
+            },
+            {
+                'id': 'sales_history',
+                'title': 'Ventas Realizadas',
+                'icon': '📋',
+                'color': '#be123c',
+                'description': 'Reports',
+                'permission': 'sales.view'
+            },
+            {
+                'id': 'purchase_history',
+                'title': 'Compras Realizadas',
+                'icon': '📋',
+                'color': '#65a30d',
+                'description': 'Invoices',
+                'permission': 'purchases.view'
+            },
+            {
+                'id': 'monthly_sales',
+                'title': 'Ventas Mensuales',
+                'icon': '📈',
+                'color': '#0369a1',
+                'description': 'Reports',
+                'permission': 'sales.reports'
             },
             {
                 'id': 'business',
                 'title': 'Mi negocio',
                 'icon': '🏢',
-                'color': '#3498db',
+                'color': '#0d9488',
                 'description': 'Configuración general',
-                'permission': 'business_config'
+                'permission': 'system.config'
             },
             {
                 'id': 'support',
                 'title': 'Chat de soporte',
                 'icon': '💬',
-                'color': '#2ecc71',
+                'color': '#15803d',
                 'description': 'Ayuda y soporte',
-                'permission': None  # Disponible para todos
+                'permission': None
             },
             {
                 'id': 'help',
                 'title': 'Ayuda',
                 'icon': '❓',
-                'color': '#e74c3c',
+                'color': '#b91c1c',
                 'description': 'Manual y guías',
-                'permission': None  # Disponible para todos
+                'permission': None
             },
             {
                 'id': 'reports',
                 'title': 'Reportes',
                 'icon': '📋',
-                'color': '#34495e',
+                'color': '#475569',
                 'description': 'Informes detallados',
-                'permission': 'reports_full'
+                'permission': 'reports.sales'
             }
         ]
         
-        # Filtrar módulos según permisos (por ahora devolvemos todos)
-        # TODO: Implementar filtrado real basado en permisos del usuario
-        return base_modules
+        # Filtrar módulos según permisos del usuario
+        # Filtrar módulos según permisos del usuario
+        available_modules = []
+        
+        for module in base_modules:
+            # Si no requiere permiso específico, está disponible para todos
+            if module['permission'] is None:
+                available_modules.append(module)
+                continue
+            
+            # Verificar si el usuario tiene el permiso requerido
+            if self._user_has_permission(module['permission']):
+                available_modules.append(module)
+        
+        return available_modules
     
-    def create_module_card(self, parent, module, row, col):
-        """Crear tarjeta de módulo individual"""
-        # Frame principal de la tarjeta
+    def create_colorful_modules_grid(self, parent, modules):
+        """Crear grid centrado con scroll para muchos módulos"""
+        num_modules = len(modules)
+        
+        if num_modules == 0:
+            self.create_colorful_no_access_message(parent)
+            return
+        
+        # Contenedor principal
+        main_grid_container = tk.Frame(parent, bg='#f1f5f9')
+        main_grid_container.pack(fill='both', expand=True)
+        
+        # Crear Canvas con scrollbar
+        canvas = tk.Canvas(main_grid_container, bg='#f1f5f9', highlightthickness=0)
+        scrollbar = tk.Scrollbar(main_grid_container, orient="vertical", command=canvas.yview)
+        
+        # Frame scrollable principal
+        scrollable_frame = tk.Frame(canvas, bg='#f1f5f9')
+        
+        # Configurar scroll
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        # Configurar exactamente 4 columnas
+        cols_per_row = 4
+        
+        # Frame centrado para los módulos - usando pack con anchor center
+        centered_modules_frame = tk.Frame(scrollable_frame, bg='#f1f5f9')
+        centered_modules_frame.pack(expand=True, pady=20)
+        
+        # Crear grid
+        for i, module in enumerate(modules):
+            row = i // cols_per_row
+            col = i % cols_per_row
+            
+            self.create_fullscreen_module_card(centered_modules_frame, module, row, col)
+        
+        # Crear ventana en el canvas después de crear los módulos
+        def center_content():
+            # Actualizar para obtener el tamaño real
+            scrollable_frame.update_idletasks()
+            
+            # Obtener ancho del canvas y del contenido
+            canvas_width = canvas.winfo_width()
+            content_width = scrollable_frame.winfo_reqwidth()
+            
+            # Calcular posición x para centrar
+            if canvas_width > content_width:
+                x_position = (canvas_width - content_width) // 2
+            else:
+                x_position = 0
+            
+            # Crear o actualizar ventana centrada
+            canvas.delete("all")
+            canvas.create_window(x_position, 0, window=scrollable_frame, anchor="nw")
+        
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack del canvas y scrollbar
+        canvas.pack(side="left", fill="both", expand=True, padx=10, pady=5)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Bind para recentrar cuando cambia el tamaño
+        canvas.bind("<Configure>", lambda e: center_content())
+        
+        # Bind para scroll con rueda del mouse
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
+        # Centrar después de que todo se haya dibujado
+        canvas.after(100, center_content)
+    
+    def create_elegant_no_access_message(self, parent):
+        """Crear mensaje elegante cuando no hay módulos disponibles"""
+        message_container = tk.Frame(parent, bg='#f8f9fa')
+        message_container.pack(expand=True, fill='both')
+        
+        # Espaciado superior
+        tk.Frame(message_container, bg='#f8f9fa', height=80).pack()
+        
+        # Contenedor principal del mensaje
+        main_message = tk.Frame(message_container, bg='white', relief='flat', bd=0)
+        main_message.pack(pady=20, padx=60, fill='x')
+        
+        # Sombra simulada
+        shadow = tk.Frame(message_container, bg='#e8e9ea', height=2)
+        shadow.pack(fill='x', padx=65)
+        
+        # Icono principal
+        icon_frame = tk.Frame(main_message, bg='white')
+        icon_frame.pack(pady=(40, 20))
+        
+        # Círculo de icono
+        icon_circle = tk.Frame(icon_frame, bg='#3498db', width=100, height=100)
+        icon_circle.pack()
+        icon_circle.pack_propagate(False)
+        
+        tk.Label(
+            icon_circle,
+            text="🔐",
+            font=('Segoe UI', 40),
+            bg='#3498db',
+            fg='white'
+        ).place(relx=0.5, rely=0.5, anchor='center')
+        
+        # Título
+        tk.Label(
+            main_message,
+            text="Acceso Restringido",
+            font=('Segoe UI', 24, 'bold'),
+            fg='#2c3e50',
+            bg='white'
+        ).pack(pady=(0, 15))
+        
+        # Descripción
+        tk.Label(
+            main_message,
+            text="Tu cuenta actual no tiene permisos asignados para acceder a los módulos del sistema.\nContacta a tu administrador para solicitar los permisos necesarios.",
+            font=('Segoe UI', 13),
+            fg='#5d6d7e',
+            bg='white',
+            justify='center'
+        ).pack(pady=(0, 30))
+        
+        # Panel de ayuda
+        help_panel = tk.Frame(main_message, bg='#eaf4fd', relief='flat')
+        help_panel.pack(fill='x', pady=(0, 30), padx=40)
+        
+        tk.Label(
+            help_panel,
+            text="� Mientras tanto...",
+            font=('Segoe UI', 14, 'bold'),
+            fg='#2980b9',
+            bg='#eaf4fd'
+        ).pack(pady=(20, 10))
+        
+        tk.Label(
+            help_panel,
+            text="Puedes contactar al soporte técnico o consultar la ayuda del sistema",
+            font=('Segoe UI', 11),
+            fg='#5499c7',
+            bg='#eaf4fd'
+        ).pack(pady=(0, 20))
+    
+    def create_colorful_no_access_message(self, parent):
+        """Crear mensaje colorido cuando no hay módulos disponibles"""
+        # Contenedor principal colorido
+        message_container = tk.Frame(parent, bg='#ecf0f1')
+        message_container.pack(expand=True, fill='both', pady=30)
+        
+        # Panel principal con gradiente
+        main_panel = tk.Frame(message_container, bg='#3498db', relief='raised', bd=3)
+        main_panel.pack(padx=50, pady=20, fill='both', expand=True)
+        
+        # Header del panel
+        header_frame = tk.Frame(main_panel, bg='#2980b9', height=60)
+        header_frame.pack(fill='x')
+        header_frame.pack_propagate(False)
+        
+        tk.Label(
+            header_frame,
+            text="🔐 ACCESO RESTRINGIDO",
+            font=('Segoe UI', 20, 'bold'),
+            fg='white',
+            bg='#2980b9'
+        ).pack(expand=True)
+        
+        # Contenido principal
+        content_frame = tk.Frame(main_panel, bg='#3498db')
+        content_frame.pack(fill='both', expand=True, padx=40, pady=30)
+        
+        # Icono grande
+        tk.Label(
+            content_frame,
+            text="🚫",
+            font=('Segoe UI', 64),
+            fg='white',
+            bg='#3498db'
+        ).pack(pady=(0, 20))
+        
+        # Mensaje principal
+        tk.Label(
+            content_frame,
+            text="Tu cuenta no tiene permisos asignados",
+            font=('Segoe UI', 18, 'bold'),
+            fg='white',
+            bg='#3498db'
+        ).pack(pady=(0, 10))
+        
+        tk.Label(
+            content_frame,
+            text="Contacta a tu administrador para obtener acceso a los módulos del sistema",
+            font=('Segoe UI', 12),
+            fg='#ecf0f1',
+            bg='#3498db',
+            justify='center'
+        ).pack(pady=(0, 20))
+        
+        # Panel de ayuda colorido
+        help_frame = tk.Frame(content_frame, bg='#2ecc71', relief='raised', bd=2)
+        help_frame.pack(fill='x', pady=10)
+        
+        tk.Label(
+            help_frame,
+            text="💬 SOPORTE DISPONIBLE 24/7",
+            font=('Segoe UI', 14, 'bold'),
+            fg='white',
+            bg='#2ecc71'
+        ).pack(pady=15)
+    
+    def create_colorful_info_panel(self, parent):
+        """Crear panel informativo colorido para acceso limitado"""
+        info_panel = tk.Frame(parent, bg='#f39c12', height=80)
+        info_panel.pack(fill='x', pady=(20, 0))
+        info_panel.pack_propagate(False)
+        
+        content = tk.Frame(info_panel, bg='#f39c12')
+        content.pack(expand=True, fill='both', pady=15)
+        
+        # Mensaje informativo
+        tk.Label(
+            content,
+            text="⚡ ACCESO BÁSICO ACTIVO • Solicita más permisos para acceder a funciones adicionales",
+            font=('Segoe UI', 12, 'bold'),
+            fg='white',
+            bg='#f39c12'
+        ).pack()
+    
+    def create_elegant_limited_access_info(self, parent):
+        """Mostrar información elegante cuando el acceso es limitado"""
+        info_container = tk.Frame(parent, bg='#f8f9fa')
+        info_container.pack(pady=(30, 0), fill='x')
+        
+        # Panel informativo elegante
+        info_panel = tk.Frame(info_container, bg='#fff3cd', relief='flat', bd=0)
+        info_panel.pack(fill='x', padx=80)
+        
+        # Línea superior decorativa
+        top_line = tk.Frame(info_panel, bg='#ffc107', height=3)
+        top_line.pack(fill='x')
+        
+        # Contenido del panel
+        content_frame = tk.Frame(info_panel, bg='#fff3cd')
+        content_frame.pack(fill='x', padx=30, pady=20)
+        
+        # Icono y título en línea
+        header_frame = tk.Frame(content_frame, bg='#fff3cd')
+        header_frame.pack(fill='x', pady=(0, 10))
+        
+        tk.Label(
+            header_frame,
+            text="⚡",
+            font=('Segoe UI', 18),
+            bg='#fff3cd',
+            fg='#b7791f'
+        ).pack(side='left', padx=(0, 10))
+        
+        tk.Label(
+            header_frame,
+            text="Acceso Básico Activo",
+            font=('Segoe UI', 14, 'bold'),
+            fg='#b7791f',
+            bg='#fff3cd'
+        ).pack(side='left')
+        
+        # Mensaje descriptivo
+        tk.Label(
+            content_frame,
+            text="Tienes acceso a funciones básicas del sistema. Para acceder a más módulos, solicita permisos adicionales a tu administrador.",
+            font=('Segoe UI', 10),
+            fg='#856404',
+            bg='#fff3cd',
+            wraplength=400,
+            justify='left'
+        ).pack(anchor='w')
+    
+    def create_fullscreen_module_card(self, parent, module, row, col):
+        """Crear tarjeta moderna con diseño limpio"""
+        
+        # Contenedor principal con sombra - tamaño fijo para mejor distribución
+        shadow_container = tk.Frame(parent, bg='#e2e8f0', width=220, height=140)
+        shadow_container.grid(row=row, column=col, padx=12, pady=12)
+        shadow_container.grid_propagate(False)
+        
+        # Frame de la tarjeta con elevación
+        card_container = tk.Frame(shadow_container, bg='#ffffff', relief='flat', bd=0)
+        card_container.pack(fill='both', expand=True, padx=2, pady=2)
+        
+        # Canvas principal con color del módulo
+        canvas = tk.Canvas(
+            card_container,
+            bg=module['color'],
+            highlightthickness=0,
+            relief='flat',
+            bd=0
+        )
+        canvas.pack(fill='both', expand=True)
+        
+        # Función para crear contenido con efectos visuales
+        def on_canvas_configure(event):
+            canvas_width = event.width if hasattr(event, 'width') else 220
+            canvas_height = event.height if hasattr(event, 'height') else 140
+            
+            # Evitar tamaños muy pequeños
+            if canvas_width < 50 or canvas_height < 50:
+                return
+            
+            # Limpiar canvas
+            canvas.delete("all")
+            
+            # Crear fondo del módulo
+            canvas.create_rectangle(0, 0, canvas_width, canvas_height, fill=module['color'], outline='')
+            
+            # Calcular posiciones centradas
+            center_x = canvas_width // 2
+            icon_y = canvas_height * 0.35
+            title_y = canvas_height * 0.72
+            
+            # Tamaños de fuente
+            icon_size = 36
+            title_size = 11
+            
+            # Círculo blanco de fondo para el icono
+            icon_radius = 28
+            canvas.create_oval(
+                center_x - icon_radius, icon_y - icon_radius,
+                center_x + icon_radius, icon_y + icon_radius,
+                fill='white', outline='', width=0
+            )
+            
+            # Icono principal
+            canvas.create_text(
+                center_x, icon_y,
+                text=module['icon'],
+                font=('Segoe UI Emoji', icon_size),
+                fill=module['color'],
+                anchor='center'
+            )
+            
+            # Título principal con buen contraste
+            canvas.create_text(
+                center_x, title_y,
+                text=module['title'],
+                font=('Segoe UI', title_size, 'bold'),
+                fill='white',
+                anchor='center',
+                width=canvas_width - 20
+            )
+        
+        # Bind para redimensionamiento
+        canvas.bind('<Configure>', on_canvas_configure)
+        
+        # Dibujar contenido inicial inmediatamente
+        canvas.after(1, lambda: on_canvas_configure(type('Event', (), {'width': 220, 'height': 140})()))
+        
+        # Sistema de eventos con efectos mejorados
+        self.setup_enhanced_card_events(canvas, module, card_container)
+        
+        return shadow_container
+    
+    def create_card_gradient(self, canvas, base_color, width, height):
+        """Crear efecto de gradiente en la tarjeta"""
+        try:
+            # Convertir color base a RGB
+            hex_color = base_color.lstrip('#')
+            r = int(hex_color[0:2], 16)
+            g = int(hex_color[2:4], 16)
+            b = int(hex_color[4:6], 16)
+            
+            # Crear gradiente vertical
+            num_strips = 20
+            strip_height = height // num_strips
+            
+            for i in range(num_strips):
+                # Calcular color para cada tira
+                factor = i / num_strips
+                new_r = int(r + (255 - r) * factor * 0.1)
+                new_g = int(g + (255 - g) * factor * 0.1)
+                new_b = int(b + (255 - b) * factor * 0.1)
+                
+                strip_color = f"#{new_r:02x}{new_g:02x}{new_b:02x}"
+                
+                canvas.create_rectangle(
+                    0, i * strip_height,
+                    width, (i + 1) * strip_height,
+                    fill=strip_color, outline='', width=0,
+                    tags='gradient'
+                )
+        except:
+            # Fallback: color sólido
+            canvas.create_rectangle(0, 0, width, height, fill=base_color, outline='')
+    
+    def create_card_decorations(self, canvas, width, height):
+        """Crear decoraciones geométricas en la tarjeta"""
+        # Círculos decorativos en las esquinas
+        circle_size = min(width, height) // 8
+        
+        # Círculo superior izquierdo
+        canvas.create_oval(
+            -circle_size//2, -circle_size//2,
+            circle_size//2, circle_size//2,
+            fill='white', outline='', width=0,
+            stipple='gray25', tags='decoration'
+        )
+        
+        # Círculo inferior derecho
+        canvas.create_oval(
+            width - circle_size//2, height - circle_size//2,
+            width + circle_size//2, height + circle_size//2,
+            fill='white', outline='', width=0,
+            stipple='gray25', tags='decoration'
+        )
+        
+        # Líneas decorativas
+        canvas.create_line(
+            0, height * 0.9, width * 0.3, height * 0.9,
+            fill='white', width=2, stipple='gray50', tags='decoration'
+        )
+    
+    def setup_enhanced_card_events(self, canvas, module, card_container):
+        """Sistema de eventos simple - solo click sin efectos hover"""
+        
+        def on_click(event):
+            """Click simple - ejecutar acción del módulo"""
+            try:
+                self.on_module_click(module['id'])
+            except Exception as e:
+                print(f"Error: {e}")
+        
+        # Solo cambiar cursor al pasar sobre el módulo
+        def on_enter(event):
+            canvas.configure(cursor='hand2')
+        
+        def on_leave(event):
+            canvas.configure(cursor='')
+        
+        # Bind eventos simples
+        canvas.bind("<Button-1>", on_click)
+        canvas.bind("<Enter>", on_enter)
+        canvas.bind("<Leave>", on_leave)
+        
+        return canvas
+    
+    def calculate_enhanced_hover_color(self, hex_color):
+        """Calcular color hover con efecto más sutil"""
+        try:
+            hex_color = hex_color.lstrip('#')
+            r = int(hex_color[0:2], 16)
+            g = int(hex_color[2:4], 16)
+            b = int(hex_color[4:6], 16)
+            
+            # Aclarar solo un poco para efecto sutil
+            r = min(255, r + 20)
+            g = min(255, g + 20)
+            b = min(255, b + 20)
+            
+            return f"#{r:02x}{g:02x}{b:02x}"
+        except:
+            return hex_color
+    
+    def calculate_enhanced_click_color(self, hex_color):
+        """Calcular color click con efecto más sutil"""
+        try:
+            hex_color = hex_color.lstrip('#')
+            r = int(hex_color[0:2], 16)
+            g = int(hex_color[2:4], 16)
+            b = int(hex_color[4:6], 16)
+            
+            # Oscurecer solo un poco para efecto sutil
+            r = max(0, r - 20)
+            g = max(0, g - 20)
+            b = max(0, b - 20)
+            
+            return f"#{r:02x}{g:02x}{b:02x}"
+        except:
+            return hex_color
+    
+    def create_colorful_module_card(self, parent, module, row, col):
+        """Método mantenido para compatibilidad - redirige al nuevo método"""
+        return self.create_fullscreen_module_card(parent, module, row, col)
+    
+
+        for child in widget.winfo_children():
+            widgets.extend(self.get_all_card_widgets(child))
+        return widgets
+    
+
+    
+    def setup_professional_card_events(self, canvas, module):
+        """Sistema de eventos profesional usando Canvas - sin interferencias"""
+        
+        # Variables de estado para ESTA tarjeta específica
+        original_color = module['color']
+        hover_color = self.calculate_hover_color(original_color)
+        click_color = self.calculate_click_color(original_color)
+        
+        # Estado interno de la tarjeta
+        card_state = {
+            'is_hovered': False,
+            'is_pressed': False
+        }
+        
+        def on_enter_canvas(event):
+            """Entrada al canvas - cambio visual"""
+            if not card_state['is_hovered']:
+                card_state['is_hovered'] = True
+                canvas.configure(
+                    bg=hover_color,
+                    highlightbackground='#007acc',
+                    highlightthickness=3,
+                    cursor='hand2'
+                )
+        
+        def on_leave_canvas(event):
+            """Salida del canvas - restaurar"""
+            if card_state['is_hovered']:
+                card_state['is_hovered'] = False
+                card_state['is_pressed'] = False
+                canvas.configure(
+                    bg=original_color,
+                    highlightbackground='#cccccc',
+                    highlightthickness=2,
+                    cursor=''
+                )
+        
+        def on_button_press(event):
+            """Presionar botón - efecto visual"""
+            card_state['is_pressed'] = True
+            canvas.configure(
+                bg=click_color,
+                relief='sunken',
+                bd=1
+            )
+        
+        def on_button_release(event):
+            """Soltar botón - ejecutar acción"""
+            if card_state['is_pressed']:
+                card_state['is_pressed'] = False
+                
+                # Restaurar apariencia
+                if card_state['is_hovered']:
+                    canvas.configure(bg=hover_color, relief='raised', bd=3)
+                else:
+                    canvas.configure(bg=original_color, relief='raised', bd=3)
+                
+                # Ejecutar acción del módulo
+                try:
+                    self.open_module(module['action'])
+                except Exception as e:
+                    print(f"Error ejecutando módulo {module['title']}: {e}")
+        
+        # Aplicar eventos SOLO al canvas (sin propagación problemática)
+        canvas.bind("<Enter>", on_enter_canvas)
+        canvas.bind("<Leave>", on_leave_canvas)
+        canvas.bind("<Button-1>", on_button_press)
+        canvas.bind("<ButtonRelease-1>", on_button_release)
+        
+        # Importante: configurar para que el canvas capture todos los eventos
+        canvas.focus_set()
+    
+    def calculate_hover_color(self, hex_color):
+        """Calcular color hover más claro"""
+        try:
+            # Remover # si existe
+            hex_color = hex_color.lstrip('#')
+            
+            # Convertir a RGB
+            r = int(hex_color[0:2], 16)
+            g = int(hex_color[2:4], 16)
+            b = int(hex_color[4:6], 16)
+            
+            # Aclarar (aumentar hacia 255)
+            r = min(255, r + 40)
+            g = min(255, g + 40)
+            b = min(255, b + 40)
+            
+            return f"#{r:02x}{g:02x}{b:02x}"
+        except:
+            return hex_color
+    
+    def calculate_click_color(self, hex_color):
+        """Calcular color click más oscuro"""
+        try:
+            # Remover # si existe
+            hex_color = hex_color.lstrip('#')
+            
+            # Convertir a RGB
+            r = int(hex_color[0:2], 16)
+            g = int(hex_color[2:4], 16)
+            b = int(hex_color[4:6], 16)
+            
+            # Oscurecer (reducir hacia 0)
+            r = max(0, r - 50)
+            g = max(0, g - 50)
+            b = max(0, b - 50)
+            
+            return f"#{r:02x}{g:02x}{b:02x}"
+        except:
+            return hex_color
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    def fill_empty_grid_spaces(self, parent, num_modules, cols_per_row):
+        """Llenar espacios vacíos del grid con tarjetas informativas"""
+        info_cards = [
+            {
+                'icon': '📈',
+                'title': 'Estadísticas',
+                'desc': 'Próximamente',
+                'color': '#95a5a6'
+            },
+            {
+                'icon': '🔔',
+                'title': 'Notificaciones',
+                'desc': 'Sin notificaciones',
+                'color': '#34495e'
+            },
+            {
+                'icon': '⚙️',
+                'title': 'Configuración',
+                'desc': 'Personalizar',
+                'color': '#7f8c8d'
+            },
+            {
+                'icon': '📊',
+                'title': 'Análisis',
+                'desc': 'En desarrollo',
+                'color': '#16a085'
+            },
+            {
+                'icon': '🎯',
+                'title': 'Objetivos',
+                'desc': 'Establecer metas',
+                'color': '#8e44ad'
+            }
+        ]
+        
+        # Calcular cuántos espacios llenar (máximo hasta completar 3 filas)
+        max_cards = 9
+        spaces_to_fill = min(max_cards - num_modules, len(info_cards))
+        
+        for i in range(spaces_to_fill):
+            card_index = num_modules + i
+            row = card_index // cols_per_row
+            col = card_index % cols_per_row
+            
+            info_card = info_cards[i]
+            self.create_info_card(parent, info_card, row, col)
+    
+    def create_info_card(self, parent, info, row, col):
+        """Crear tarjeta informativa para espacios vacíos"""
         card_frame = tk.Frame(
             parent,
-            bg='white',
-            relief='solid',
+            bg='#ecf0f1',
+            relief='groove',
             bd=1,
-            padx=20,
-            pady=20
+            padx=15,
+            pady=15
         )
         card_frame.grid(
             row=row, 
-            col=col, 
-            padx=20, 
-            pady=20, 
+            column=col, 
+            padx=15, 
+            pady=15, 
             sticky='nsew',
             ipadx=10,
             ipady=10
         )
         
-        # Configurar grid weights para responsive
-        parent.grid_rowconfigure(row, weight=1)
-        parent.grid_columnconfigure(col, weight=1)
-        
-        # Contenedor del icono circular
-        icon_container = tk.Frame(card_frame, bg='white')
-        icon_container.pack(pady=(0, 15))
-        
-        # Círculo de color para el icono
-        icon_circle = tk.Frame(
-            icon_container,
-            bg=module['color'],
-            width=80,
-            height=80
-        )
-        icon_circle.pack()
-        icon_circle.pack_propagate(False)
-        
-        # Hacer el círculo redondo (aproximado)
-        icon_circle.configure(relief='solid', bd=2)
-        
-        # Icono dentro del círculo
+        # Icono
         icon_label = tk.Label(
-            icon_circle,
-            text=module['icon'],
+            card_frame,
+            text=info['icon'],
             font=('Segoe UI', 28),
-            bg=module['color'],
-            fg='white'
+            bg='#ecf0f1',
+            fg=info['color']
         )
-        icon_label.place(relx=0.5, rely=0.5, anchor='center')
+        icon_label.pack(pady=(10, 5))
         
-        # Título del módulo
+        # Título
         title_label = tk.Label(
             card_frame,
-            text=module['title'],
-            font=('Segoe UI', 16, 'bold'),
-            fg='#2c3e50',
-            bg='white'
+            text=info['title'],
+            font=('Segoe UI', 14, 'bold'),
+            fg='#34495e',
+            bg='#ecf0f1'
         )
         title_label.pack(pady=(0, 5))
         
-        # Descripción del módulo
+        # Descripción
         desc_label = tk.Label(
             card_frame,
-            text=module['description'],
-            font=('Segoe UI', 11),
+            text=info['desc'],
+            font=('Segoe UI', 10),
             fg='#7f8c8d',
-            bg='white'
+            bg='#ecf0f1'
         )
         desc_label.pack()
-        
-        # Efectos hover
-        self.setup_card_hover_effects(card_frame, icon_circle, module)
-        
-        # Bind click
-        self.setup_card_click(card_frame, module)
-        
-        return card_frame
     
-    def setup_card_hover_effects(self, card_frame, icon_circle, module):
-        """Configurar efectos hover para las tarjetas"""
-        def on_enter(event):
-            card_frame.configure(bg='#f8f9fa', relief='solid', bd=2)
-            icon_circle.configure(bg=self.darken_color(module['color']))
-        
-        def on_leave(event):
-            card_frame.configure(bg='white', relief='solid', bd=1)
-            icon_circle.configure(bg=module['color'])
-        
-        # Aplicar hover a todos los widgets de la tarjeta
-        widgets_to_bind = [card_frame] + list(card_frame.winfo_children())
-        for widget in widgets_to_bind:
-            try:
-                widget.bind('<Enter>', on_enter)
-                widget.bind('<Leave>', on_leave)
-            except:
-                pass  # Algunos widgets pueden no soportar bind
-    
-    def setup_card_click(self, card_frame, module):
-        """Configurar click en las tarjetas"""
-        def on_click(event):
-            self.on_module_click(module['id'])
-        
-        # Aplicar click a todos los widgets de la tarjeta
-        widgets_to_bind = [card_frame] + self.get_all_children(card_frame)
-        for widget in widgets_to_bind:
-            try:
-                widget.bind('<Button-1>', on_click)
-                widget.configure(cursor='hand2')
-            except:
-                pass
-    
-    def get_all_children(self, widget):
-        """Obtener todos los widgets hijos recursivamente"""
-        children = []
-        for child in widget.winfo_children():
-            children.append(child)
-            children.extend(self.get_all_children(child))
-        return children
-    
-    def darken_color(self, color_hex):
+    def darken_color(self, color_hex, factor=0.2):
         """Oscurecer un color hexadecimal para efectos hover"""
-        # Convertir hex a RGB
-        hex_color = color_hex.replace('#', '')
-        rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-        
-        # Oscurecer cada componente
-        darkened = tuple(max(0, int(c * 0.8)) for c in rgb)
-        
-        # Convertir de vuelta a hex
-        return '#{:02x}{:02x}{:02x}'.format(*darkened)
+        try:
+            # Convertir hex a RGB
+            hex_color = color_hex.replace('#', '')
+            rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            
+            # Oscurecer cada componente
+            darkened = tuple(max(0, int(c * (1 - factor))) for c in rgb)
+            
+            # Convertir de vuelta a hex
+            return '#{:02x}{:02x}{:02x}'.format(*darkened)
+        except:
+            # Si hay error, devolver color original
+            return color_hex
     
     def create_status_footer(self):
-        """Crear footer con información de estado"""
-        footer_frame = tk.Frame(self.root, bg='#ecf0f1', height=50)
+        """Crear footer moderno minimalista"""
+        # Footer principal
+        footer_frame = tk.Frame(self.root, bg='#1e293b', height=40)
         footer_frame.pack(fill='x', side='bottom')
         footer_frame.pack_propagate(False)
         
-        # Información del sistema
-        info_frame = tk.Frame(footer_frame, bg='#ecf0f1')
-        info_frame.pack(expand=True, fill='both', padx=20)
+        # Línea superior
+        top_line = tk.Frame(footer_frame, bg='#334155', height=1)
+        top_line.pack(fill='x')
         
-        # Estado del sistema (izquierda)
+        # Contenedor principal del footer
+        main_footer = tk.Frame(footer_frame, bg='#1e293b')
+        main_footer.pack(expand=True, fill='both', padx=20, pady=8)
+        
+        # Panel izquierdo - Estado
+        left_panel = tk.Frame(main_footer, bg='#1e293b')
+        left_panel.pack(side='left', fill='y')
+        
         status_label = tk.Label(
-            info_frame,
-            text="🟢 Sistema funcionando correctamente",
-            font=('Segoe UI', 10),
-            fg='#27ae60',
-            bg='#ecf0f1'
+            left_panel,
+            text="🟢 Sistema Activo",
+            font=('Segoe UI', 9),
+            fg='#94a3b8',
+            bg='#1e293b'
         )
-        status_label.pack(side='left', pady=15)
+        status_label.pack(side='left')
         
-        # Versión (derecha)
+        # Panel derecho - Versión
+        right_panel = tk.Frame(main_footer, bg='#1e293b')
+        right_panel.pack(side='right', fill='y')
+        
         version_label = tk.Label(
-            info_frame,
-            text="Sistema POS v1.0 • 2025",
-            font=('Segoe UI', 10),
-            fg='#7f8c8d',
-            bg='#ecf0f1'
+            right_panel,
+            text="ManagementPro POS v1.0 © 2025",
+            font=('Segoe UI', 9),
+            fg='#64748b',
+            bg='#1e293b'
         )
-        version_label.pack(side='right', pady=15)
+        version_label.pack(side='right')
     
     def bind_module_callback(self, module_id: str, callback: Callable):
         """Registrar callback para un módulo específico"""
@@ -376,6 +1089,18 @@ class DashboardView(BaseView):
         """Mostrar notificación temporal"""
         # TODO: Implementar sistema de notificaciones toast
         pass
+    
+    def _user_has_permission(self, permission: str) -> bool:
+        """Verificar si el usuario actual tiene un permiso específico"""
+        try:
+            if not self.user_data:
+                return False
+            
+            return self.permission_service.check_permission(self.user_data, permission)
+            
+        except Exception as e:
+            # Log silencioso, no imprimir en consola
+            return False
     
     def _get_user_role_display_name(self) -> str:
         """Obtener el nombre real del rol del usuario para mostrar en el dashboard"""

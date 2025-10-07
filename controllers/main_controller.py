@@ -284,26 +284,22 @@ class MainController:
     
     def _create_main_area(self):
         """Crear área principal con dashboard moderno"""
-        # Frame principal para el contenido
-        main_frame = tk.Frame(self.main_window, bg='#f8f9fa')
-        main_frame.pack(fill='both', expand=True)
-        
         # Decidir qué tipo de dashboard mostrar
         dashboard_type = self._get_dashboard_type()
         
         if dashboard_type == 'modules':
-            self._create_modules_dashboard(main_frame)
+            self._create_modules_dashboard(self.main_window)
         elif dashboard_type == 'stats':
-            self._create_stats_dashboard(main_frame)
+            self._create_stats_dashboard(self.main_window)
         else:
             # Dashboard híbrido (por defecto)
-            self._create_hybrid_dashboard(main_frame)
+            self._create_hybrid_dashboard(self.main_window)
     
     def _get_dashboard_type(self):
         """Obtener tipo de dashboard según preferencias/permisos"""
-        # Por ahora, usar dashboard híbrido por defecto
+        # Temporalmente usar dashboard de módulos para probar permisos
         # TODO: Permitir al usuario elegir su dashboard preferido
-        return 'hybrid'
+        return 'modules'
     
     def _create_modules_dashboard(self, parent):
         """Crear dashboard tipo módulos/tarjetas"""
