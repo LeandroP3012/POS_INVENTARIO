@@ -831,8 +831,333 @@ class MainController:
         messagebox.showinfo("Historial", "Módulo de historial en desarrollo")
     
     def _view_products(self):
-        """Ver productos"""
-        messagebox.showinfo("Productos", "Módulo de productos en desarrollo")
+        """Ver productos - Abrir módulo de inventario"""
+        try:
+            print("📦 DEBUG: Abriendo gestión de productos desde main_controller")
+            print(f"   - main_window tipo: {type(self.main_window)}")
+            print(f"   - current_user: {self.current_user}")
+            
+            # Verificar permisos del usuario
+            if not self._check_user_permission('inventory.view'):
+                messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder al módulo de inventario")
+                return
+            
+            # Limpiar la ventana principal
+            self._clear_main_content()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Crear contenido de gestión de productos en la ventana principal
+            from views.product_management_view import ProductManagementView
+            from views.product_form_dialog import ProductFormDialog
+            from controllers.product_controller import ProductController
+            print("   🔄 Creando ProductManagementView...")
+            
+            # Crear controlador de productos
+            self.product_controller = ProductController()
+            
+            # Crear vista
+            self.product_view = ProductManagementView(self.main_window, self.current_user)
+            print("   ✅ ProductManagementView creada exitosamente")
+            
+            # Registrar callbacks
+            self.product_view.bind_callback('refresh', self._load_products)
+            self.product_view.bind_callback('search', self._search_products)
+            self.product_view.bind_callback('create', self._create_product)
+            self.product_view.bind_callback('edit', self._edit_product)
+            self.product_view.bind_callback('delete', self._delete_product)
+            self.product_view.bind_callback('update_stock', self._update_product_stock)
+            self.product_view.bind_callback('export', self._export_products)
+            print("   ✅ Callbacks registrados")
+            
+            # Cargar datos iniciales
+            self._load_products()
+            self._load_product_categories()
+            self._load_product_units()
+            
+        except Exception as e:
+            import traceback
+            print(f"   ❌ ERROR: {e}")
+            traceback.print_exc()
+            messagebox.showerror("Error", f"Error al abrir gestión de productos: {str(e)}")
+    
+    def _load_products(self):
+        """Cargar lista de productos"""
+        try:
+            products = self.product_controller.get_all_products(self.current_user, include_inactive=False)
+            self.product_view.load_products(products)
+        except Exception as e:
+            self.logger.error(f"Error cargando productos: {e}")
+            messagebox.showerror("Error", f"Error al cargar productos: {str(e)}")
+    
+    def _load_product_categories(self):
+        """Cargar categorías"""
+        try:
+            categories = self.product_controller.get_categories(self.current_user)
+            self.product_view.load_categories(categories)
+        except Exception as e:
+            self.logger.error(f"Error cargando categorías: {e}")
+    
+    def _load_product_units(self):
+        """Cargar unidades de medida"""
+        try:
+            units = self.product_controller.get_units(self.current_user)
+            self.product_view.load_units(units)
+        except Exception as e:
+            self.logger.error(f"Error cargando unidades: {e}")
+    
+    def _search_products(self, search_term: str):
+        """Buscar productos"""
+        try:
+            if search_term.strip():
+                products = self.product_controller.search_products(search_term, self.current_user)
+            else:
+                products = self.product_controller.get_all_products(self.current_user)
+            
+            self.product_view.load_products(products)
+        except Exception as e:
+            self.logger.error(f"Error buscando productos: {e}")
+            messagebox.showerror("Error", f"Error en la búsqueda: {str(e)}")
+    
+    def _create_product(self):
+        """Crear nuevo producto"""
+        try:
+            from views.product_form_dialog import ProductFormDialog
+            
+            # Abrir diálogo
+            dialog = ProductFormDialog(
+                self.main_window,
+                product=None,
+                categories=self.product_view.categories,
+                units=self.product_view.units
+            )
+            
+            product_data = dialog.show()
+            
+            if product_data:
+                # Crear producto
+                success, message, product_id = self.product_controller.create_product(
+                    product_data, self.current_user
+                )
+                
+                if success:
+                    messagebox.showinfo("Éxito", message)
+                    self._load_products()
+                else:
+                    messagebox.showerror("Error", message)
+        
+        except Exception as e:
+            self.logger.error(f"Error creando producto: {e}")
+            messagebox.showerror("Error", f"Error al crear producto: {str(e)}")
+    
+    def _edit_product(self, product: Dict[str, Any]):
+        """Editar producto"""
+        try:
+            from views.product_form_dialog import ProductFormDialog
+            
+            # Abrir diálogo con datos del producto
+            dialog = ProductFormDialog(
+                self.main_window,
+                product=product,
+                categories=self.product_view.categories,
+                units=self.product_view.units
+            )
+            
+            product_data = dialog.show()
+            
+            if product_data:
+                # Actualizar producto
+                success, message = self.product_controller.update_product(
+                    product['id'], product_data, self.current_user
+                )
+                
+                if success:
+                    messagebox.showinfo("Éxito", message)
+                    self._load_products()
+                else:
+                    messagebox.showerror("Error", message)
+        
+        except Exception as e:
+            self.logger.error(f"Error editando producto: {e}")
+            messagebox.showerror("Error", f"Error al editar producto: {str(e)}")
+    
+    def _delete_product(self, product_id: int):
+        """Eliminar producto"""
+        try:
+            success, message = self.product_controller.delete_product(product_id, self.current_user)
+            
+            if success:
+                messagebox.showinfo("Éxito", message)
+                self._load_products()
+            else:
+                messagebox.showerror("Error", message)
+        
+        except Exception as e:
+            self.logger.error(f"Error eliminando producto: {e}")
+            messagebox.showerror("Error", f"Error al eliminar producto: {str(e)}")
+    
+    def _update_product_stock(self, product: Dict[str, Any]):
+        """Actualizar stock de producto"""
+        try:
+            # Crear diálogo simple para ajustar stock
+            stock_dialog = tk.Toplevel(self.main_window)
+            stock_dialog.title(f"Ajustar Stock - {product['name']}")
+            stock_dialog.geometry("400x300")
+            stock_dialog.resizable(False, False)
+            stock_dialog.transient(self.main_window)
+            stock_dialog.grab_set()
+            
+            # Centrar ventana
+            stock_dialog.update_idletasks()
+            x = (stock_dialog.winfo_screenwidth() // 2) - 200
+            y = (stock_dialog.winfo_screenheight() // 2) - 150
+            stock_dialog.geometry(f'400x300+{x}+{y}')
+            
+            # Header
+            header = tk.Frame(stock_dialog, bg='#9b59b6', height=60)
+            header.pack(fill='x')
+            header.pack_propagate(False)
+            
+            tk.Label(
+                header,
+                text=f"📊 Ajustar Stock",
+                font=('Segoe UI', 14, 'bold'),
+                bg='#9b59b6',
+                fg='white'
+            ).pack(pady=15)
+            
+            # Contenido
+            content = tk.Frame(stock_dialog, bg='white', padx=30, pady=20)
+            content.pack(fill='both', expand=True)
+            
+            # Stock actual
+            tk.Label(
+                content,
+                text=f"Stock Actual: {product['stock_quantity']}",
+                font=('Segoe UI', 11),
+                bg='white'
+            ).pack(pady=(0, 20))
+            
+            # Tipo de movimiento
+            tk.Label(
+                content,
+                text="Tipo de Ajuste:",
+                font=('Segoe UI', 10, 'bold'),
+                bg='white'
+            ).pack(anchor='w')
+            
+            movement_var = tk.StringVar(value="adjustment")
+            movement_frame = tk.Frame(content, bg='white')
+            movement_frame.pack(fill='x', pady=5)
+            
+            tk.Radiobutton(
+                movement_frame,
+                text="Ajuste Manual",
+                variable=movement_var,
+                value="adjustment",
+                bg='white'
+            ).pack(side='left')
+            
+            # Cantidad
+            tk.Label(
+                content,
+                text="Cantidad:",
+                font=('Segoe UI', 10, 'bold'),
+                bg='white'
+            ).pack(anchor='w', pady=(10, 5))
+            
+            quantity_var = tk.StringVar(value="0")
+            quantity_entry = tk.Entry(
+                content,
+                textvariable=quantity_var,
+                font=('Segoe UI', 11),
+                width=20
+            )
+            quantity_entry.pack(fill='x')
+            
+            tk.Label(
+                content,
+                text="(Positivo para agregar, negativo para quitar)",
+                font=('Segoe UI', 8),
+                bg='white',
+                fg='#7f8c8d'
+            ).pack(anchor='w')
+            
+            # Notas
+            tk.Label(
+                content,
+                text="Notas:",
+                font=('Segoe UI', 10, 'bold'),
+                bg='white'
+            ).pack(anchor='w', pady=(10, 5))
+            
+            notes_text = tk.Text(content, height=3, font=('Segoe UI', 10))
+            notes_text.pack(fill='x')
+            
+            # Botones
+            def on_save():
+                try:
+                    quantity = float(quantity_var.get())
+                    notes = notes_text.get('1.0', tk.END).strip()
+                    
+                    success, message = self.product_controller.update_stock(
+                        product['id'],
+                        quantity,
+                        movement_var.get(),
+                        notes,
+                        self.current_user
+                    )
+                    
+                    if success:
+                        messagebox.showinfo("Éxito", message, parent=stock_dialog)
+                        stock_dialog.destroy()
+                        self._load_products()
+                    else:
+                        messagebox.showerror("Error", message, parent=stock_dialog)
+                
+                except ValueError:
+                    messagebox.showerror("Error", "La cantidad debe ser un número válido", parent=stock_dialog)
+            
+            button_frame = tk.Frame(stock_dialog, bg='#ecf0f1', height=60)
+            button_frame.pack(fill='x', side='bottom')
+            button_frame.pack_propagate(False)
+            
+            tk.Button(
+                button_frame,
+                text="💾 Guardar",
+                font=('Segoe UI', 10, 'bold'),
+                bg='#27ae60',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                command=on_save,
+                padx=20,
+                pady=8
+            ).pack(side='left', padx=20, pady=15)
+            
+            tk.Button(
+                button_frame,
+                text="❌ Cancelar",
+                font=('Segoe UI', 10),
+                bg='#95a5a6',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                command=stock_dialog.destroy,
+                padx=20,
+                pady=8
+            ).pack(side='left', pady=15)
+        
+        except Exception as e:
+            self.logger.error(f"Error actualizando stock: {e}")
+            messagebox.showerror("Error", f"Error al actualizar stock: {str(e)}")
+    
+    def _export_products(self):
+        """Exportar productos a CSV/Excel"""
+        try:
+            messagebox.showinfo("Exportar", "Función de exportación en desarrollo")
+        except Exception as e:
+            self.logger.error(f"Error exportando productos: {e}")
+            messagebox.showerror("Error", f"Error al exportar: {str(e)}")
     
     def _add_product(self):
         """Agregar producto"""
