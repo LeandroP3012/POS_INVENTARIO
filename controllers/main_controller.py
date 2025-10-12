@@ -205,6 +205,7 @@ class MainController:
             inventory_menu = tk.Menu(menubar, tearoff=0)
             menubar.add_cascade(label="Inventario", menu=inventory_menu)
             inventory_menu.add_command(label="Ver Productos", command=self._view_products)
+            inventory_menu.add_command(label="Gestionar Categorías", command=self._view_categories)
             
             if self.auth_controller.has_permission('inventory_manage'):
                 inventory_menu.add_command(label="Agregar Producto", command=self._add_product)
@@ -310,6 +311,8 @@ class MainController:
         # Registrar callbacks para los módulos
         self.dashboard_view.bind_module_callback('clients', lambda: self._manage_clients())
         self.dashboard_view.bind_module_callback('products', lambda: self._view_products())
+        self.dashboard_view.bind_module_callback('categories', lambda: self._view_categories())
+        self.dashboard_view.bind_module_callback('stock_control', lambda: self._view_stock_control())
         self.dashboard_view.bind_module_callback('purchases', lambda: self._manage_purchases())
         self.dashboard_view.bind_module_callback('quick_sale', lambda: self._new_sale())
         self.dashboard_view.bind_module_callback('results', lambda: self._daily_sales_report())
@@ -1158,6 +1161,285 @@ class MainController:
         except Exception as e:
             self.logger.error(f"Error exportando productos: {e}")
             messagebox.showerror("Error", f"Error al exportar: {str(e)}")
+    
+    def _view_categories(self):
+        """Ver y gestionar categorías de productos"""
+        try:
+            print(f"🏷️ DEBUG: Abriendo gestión de categorías desde main_controller")
+            print(f"   - main_window tipo: {type(self.main_window)}")
+            print(f"   - current_user: {self.current_user}")
+            
+            # Limpiar ventana
+            for widget in self.main_window.winfo_children():
+                widget.destroy()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Importar vista y controlador
+            from views.category_management_view import CategoryManagementView
+            from controllers.category_controller import CategoryController
+            
+            # Crear controlador
+            category_controller = CategoryController()
+            
+            # Crear vista
+            print("   🔄 Creando CategoryManagementView...")
+            category_view = CategoryManagementView(self.main_window, self.current_user)
+            print("   ✅ CategoryManagementView creada exitosamente")
+            
+            # Registrar callbacks
+            category_view.register_callbacks(
+                refresh=lambda: self._load_categories(category_view, category_controller),
+                search=lambda term: self._search_categories(category_view, category_controller, term),
+                create=lambda: self._create_category(category_view, category_controller),
+                edit=lambda cat_id: self._edit_category(category_view, category_controller, cat_id),
+                delete=lambda cat_id: self._delete_category(category_view, category_controller, cat_id),
+                back=self._back_to_dashboard  # Agregar callback de volver
+            )
+            print("   ✅ Callbacks registrados")
+            
+            # Cargar categorías
+            self._load_categories(category_view, category_controller)
+            
+        except Exception as e:
+            self.logger.error(f"Error abriendo gestión de categorías: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Error", f"Error al abrir gestión de categorías: {str(e)}")
+    
+    def _load_categories(self, view, controller):
+        """Cargar categorías en la vista"""
+        try:
+            categories = controller.get_all_categories(self.current_user)
+            view.load_categories(categories)
+        except Exception as e:
+            self.logger.error(f"Error cargando categorías: {e}")
+            messagebox.showerror("Error", f"Error al cargar categorías: {str(e)}")
+    
+    def _search_categories(self, view, controller, search_term):
+        """Buscar categorías"""
+        try:
+            categories = controller.search_categories(search_term, self.current_user)
+            view.load_categories(categories)
+        except Exception as e:
+            self.logger.error(f"Error buscando categorías: {e}")
+            messagebox.showerror("Error", f"Error al buscar: {str(e)}")
+    
+    def _create_category(self, view, controller):
+        """Crear nueva categoría"""
+        try:
+            from views.category_form_dialog import CategoryFormDialog
+            
+            # Obtener todas las categorías para el selector de padre
+            categories = controller.get_all_categories(self.current_user)
+            
+            # Mostrar diálogo
+            dialog = CategoryFormDialog(self.main_window, categories=categories)
+            category_data = dialog.show()
+            
+            if category_data:
+                success, message, category_id = controller.create_category(category_data, self.current_user)
+                
+                if success:
+                    messagebox.showinfo("Éxito", message)
+                    self._load_categories(view, controller)
+                else:
+                    messagebox.showerror("Error", message)
+                    
+        except Exception as e:
+            self.logger.error(f"Error creando categoría: {e}")
+            messagebox.showerror("Error", f"Error al crear categoría: {str(e)}")
+    
+    def _edit_category(self, view, controller, category_id):
+        """Editar categoría"""
+        try:
+            from views.category_form_dialog import CategoryFormDialog
+            
+            # Obtener categoría actual
+            category = controller.get_category_by_id(category_id, self.current_user)
+            if not category:
+                messagebox.showerror("Error", "Categoría no encontrada")
+                return
+            
+            # Obtener todas las categorías para el selector de padre
+            categories = controller.get_all_categories(self.current_user, include_inactive=True)
+            
+            # Mostrar diálogo
+            dialog = CategoryFormDialog(self.main_window, category=category, categories=categories)
+            category_data = dialog.show()
+            
+            if category_data:
+                success, message = controller.update_category(category_id, category_data, self.current_user)
+                
+                if success:
+                    messagebox.showinfo("Éxito", message)
+                    self._load_categories(view, controller)
+                else:
+                    messagebox.showerror("Error", message)
+                    
+        except Exception as e:
+            self.logger.error(f"Error editando categoría: {e}")
+            messagebox.showerror("Error", f"Error al editar categoría: {str(e)}")
+    
+    def _delete_category(self, view, controller, category_id):
+        """Eliminar categoría"""
+        try:
+            success, message = controller.delete_category(category_id, self.current_user)
+            
+            if success:
+                messagebox.showinfo("Éxito", message)
+                self._load_categories(view, controller)
+            else:
+                messagebox.showerror("Error", message)
+                
+        except Exception as e:
+            self.logger.error(f"Error eliminando categoría: {e}")
+            messagebox.showerror("Error", f"Error al eliminar: {str(e)}")
+    
+    def _view_stock_control(self):
+        """Ver y controlar stock de productos"""
+        try:
+            print(f"📊 DEBUG: Abriendo control de stock desde main_controller")
+            
+            # Limpiar ventana
+            for widget in self.main_window.winfo_children():
+                widget.destroy()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Importar vista y controlador
+            from views.stock_control_view import StockControlView
+            from controllers.product_controller import ProductController
+            
+            # Crear controlador
+            product_controller = ProductController()
+            
+            # Crear vista
+            print("   🔄 Creando StockControlView...")
+            stock_view = StockControlView(self.main_window, self.current_user)
+            print("   ✅ StockControlView creada exitosamente")
+            
+            # Registrar callbacks
+            stock_view.register_callbacks(
+                refresh=lambda: self._load_stock_products(stock_view, product_controller),
+                search=lambda term: self._search_stock_products(stock_view, product_controller, term),
+                update_stock=lambda data: self._update_product_stock(stock_view, product_controller, data),
+                save_limits=lambda data: self._save_product_limits(stock_view, product_controller, data),
+                back=self._back_to_dashboard
+            )
+            print("   ✅ Callbacks registrados")
+            
+            # Cargar productos
+            self._load_stock_products(stock_view, product_controller)
+            
+        except Exception as e:
+            self.logger.error(f"Error abriendo control de stock: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Error", f"Error al abrir control de stock: {str(e)}")
+    
+    def _load_stock_products(self, view, controller):
+        """Cargar productos para control de stock"""
+        try:
+            products = controller.get_all_products(self.current_user, include_inactive=False)
+            if products:
+                view.load_products(products)
+                print(f"   ✅ {len(products)} productos cargados")
+        except Exception as e:
+            self.logger.error(f"Error cargando productos: {e}")
+            messagebox.showerror("Error", f"Error al cargar productos: {str(e)}")
+    
+    def _search_stock_products(self, view, controller, search_term):
+        """Buscar productos para control de stock"""
+        try:
+            products = controller.search_products(search_term, self.current_user)
+            if products is not None:
+                view.load_products(products)
+        except Exception as e:
+            self.logger.error(f"Error buscando productos: {e}")
+    
+    def _update_product_stock(self, view, controller, update_data):
+        """Actualizar stock de un producto"""
+        try:
+            sku = update_data['sku']
+            movement_type = update_data['movement_type']
+            quantity = update_data['quantity']
+            reason = update_data['reason']
+            min_stock = update_data.get('min_stock', 0)
+            max_stock = update_data.get('max_stock', 0)
+            
+            # Confirmar acción
+            message = f"¿Confirmar {movement_type} de {quantity} unidades?"
+            if not messagebox.askyesno("Confirmar", message):
+                return
+            
+            # Actualizar stock según el tipo de movimiento
+            success, message = controller.update_product_stock(
+                sku=sku,
+                movement_type=movement_type,
+                quantity=quantity,
+                user=self.current_user,
+                reason=reason,
+                min_stock=min_stock,
+                max_stock=max_stock
+            )
+            
+            if success:
+                messagebox.showinfo("Éxito", message)
+                view.clear_form()
+                self._load_stock_products(view, controller)
+            else:
+                messagebox.showerror("Error", message)
+                
+        except Exception as e:
+            self.logger.error(f"Error actualizando stock: {e}")
+            messagebox.showerror("Error", f"Error al actualizar stock: {str(e)}")
+    
+    def _save_product_limits(self, view, controller, limits_data):
+        """Guardar solo los límites de stock (min/max) sin afectar el stock actual"""
+        try:
+            print("\n" + "="*60)
+            print("🔍 DEBUG: Guardando límites en controlador")
+            print("="*60)
+            
+            sku = limits_data['sku']
+            min_stock = limits_data['min_stock']
+            max_stock = limits_data['max_stock']
+            
+            print(f"📦 SKU: {sku}")
+            print(f"📊 Min: {min_stock}, Max: {max_stock}")
+            
+            # Confirmar acción
+            message = f"¿Guardar límites de stock?\nMínimo: {min_stock}\nMáximo: {max_stock}"
+            if not messagebox.askyesno("Confirmar", message):
+                print("❌ Usuario canceló")
+                return
+            
+            print("✅ Usuario confirmó, guardando...")
+            
+            # Guardar límites
+            success, message = controller.save_product_limits(
+                sku=sku,
+                min_stock=min_stock,
+                max_stock=max_stock,
+                user=self.current_user
+            )
+            
+            print(f"📊 Resultado: success={success}, message={message}")
+            
+            if success:
+                messagebox.showinfo("Éxito", message)
+                self._load_stock_products(view, controller)
+                print("✅ Límites guardados y tabla recargada")
+            else:
+                messagebox.showerror("Error", message)
+                print(f"❌ Error: {message}")
+            
+            print("="*60 + "\n")
+                
+        except Exception as e:
+            self.logger.error(f"Error guardando límites: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Error", f"Error al guardar límites: {str(e)}")
     
     def _add_product(self):
         """Agregar producto"""

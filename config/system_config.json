@@ -7,16 +7,16 @@
   "backup_path": "./backups",
   "company_address": "Garcia Villon #568",
   "company_email": "lmqpando@gmail.com",
-  "company_name": "GSC IMPORT",
+  "company_name": "IMPORTACIONES",
   "company_phone": "+51 960724886",
-  "company_rut": "1074872615",
+  "company_rut": "123456789",
   "company_website": "githubLeandroPando3012.com",
   "copies": "2",
   "currency_symbol": "S/",
   "currency": "PEN",
   "include_tax": true,
   "language": "Español",
-  "logo_path": "C:/Users/USER/Downloads/carpeta (1).png",
+  "logo_path": "C:/Users/USER/Downloads/vecteezy_github-logo-git-hub-icon-on-white-background_16833872-removebg-preview.png",
   "min_password_length": "6",
   "paper_size": "A4",
   "print_barcode": false,
@@ -31,5 +31,5 @@
   "show_animations": true,
   "sound_notifications": true,
   "tax_rate": "18",
-  "theme": "Claro"
+  "theme": "Oscuro"
 }

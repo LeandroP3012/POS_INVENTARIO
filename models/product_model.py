@@ -17,6 +17,111 @@ class ProductModel(BaseModel):
         self.logger = logging.getLogger('model.ProductModel')
         self.table_name = 'products'
     
+    def generate_next_sku(self) -> str:
+        """
+        Generar el siguiente SKU disponible
+        Formato: PROD-XXXXXX (soporta hasta 999,999 productos)
+        
+        Returns:
+            Siguiente SKU disponible
+        """
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return "PROD-000001"
+            
+            cursor = connection.cursor()
+            
+            # Obtener el último SKU que sigue el patrón PROD-XXXXXX
+            query = """
+                SELECT sku 
+                FROM products 
+                WHERE sku REGEXP '^PROD-[0-9]{6}$'
+                ORDER BY sku DESC 
+                LIMIT 1
+            """
+            
+            cursor.execute(query)
+            result = cursor.fetchone()
+            cursor.close()
+            
+            if result and result[0]:
+                # Extraer el número del último SKU
+                last_number = int(result[0].split('-')[1])
+                next_number = last_number + 1
+            else:
+                next_number = 1
+            
+            # Formatear con 6 dígitos (padding con ceros)
+            return f"PROD-{next_number:06d}"
+            
+        except Exception as e:
+            self.logger.error(f"Error al generar SKU: {e}")
+            return "PROD-000001"
+    
+    def generate_barcode_from_sku(self, sku: str) -> str:
+        """
+        Generar código de barras basado en el SKU
+        Formato: convierte PROD-XXXXXX a un código numérico de 13 dígitos (EAN-13)
+        
+        Args:
+            sku: SKU del producto
+            
+        Returns:
+            Código de barras generado
+        """
+        try:
+            # Extraer el número del SKU
+            if '-' in sku:
+                number = sku.split('-')[1]
+            else:
+                # Si no tiene el formato esperado, usar hash del SKU
+                number = str(abs(hash(sku)))[:12]
+            
+            # Completar con prefix para EAN-13 (código de país, ej: 775 para Perú)
+            # Formato: 775 + número del SKU (6 dígitos) + padding
+            barcode_base = f"775{number:0>9}"  # 775 + 9 dígitos = 12 dígitos
+            
+            # Calcular dígito verificador EAN-13
+            check_digit = self._calculate_ean13_check_digit(barcode_base)
+            
+            return f"{barcode_base}{check_digit}"
+            
+        except Exception as e:
+            self.logger.error(f"Error al generar código de barras: {e}")
+            # Fallback: generar código basado en timestamp
+            import time
+            return f"775{int(time.time()) % 1000000000:09d}0"
+    
+    def _calculate_ean13_check_digit(self, barcode_12: str) -> int:
+        """
+        Calcular dígito verificador para código EAN-13
+        
+        Args:
+            barcode_12: Primeros 12 dígitos del código
+            
+        Returns:
+            Dígito verificador (0-9)
+        """
+        try:
+            # Sumar dígitos en posiciones impares (multiplicar por 1)
+            odd_sum = sum(int(barcode_12[i]) for i in range(0, 12, 2))
+            
+            # Sumar dígitos en posiciones pares (multiplicar por 3)
+            even_sum = sum(int(barcode_12[i]) * 3 for i in range(1, 12, 2))
+            
+            # Calcular total
+            total = odd_sum + even_sum
+            
+            # Dígito verificador
+            check_digit = (10 - (total % 10)) % 10
+            
+            return check_digit
+            
+        except Exception as e:
+            self.logger.error(f"Error al calcular dígito verificador: {e}")
+            return 0
+    
     def get_connection(self):
         """Obtener conexión a la base de datos"""
         if not self.db:
@@ -413,6 +518,117 @@ class ProductModel(BaseModel):
             
         except Exception as e:
             self.logger.error(f"Error al actualizar stock: {e}")
+            if connection:
+                connection.rollback()
+            return False
+    
+    def update_stock_direct(self, product_id: int, new_stock: float, movement_type: str,
+                          notes: str = '', user_id: int = 1, 
+                          min_stock: float = 0, max_stock: float = 0) -> bool:
+        """
+        Actualizar stock directamente a un valor específico y registrar movimiento
+        
+        Args:
+            product_id: ID del producto
+            new_stock: Nuevo valor de stock
+            movement_type: Tipo de movimiento (entrada, salida, ajuste)
+            notes: Notas adicionales
+            user_id: ID del usuario que realiza el movimiento
+            min_stock: Stock mínimo
+            max_stock: Stock máximo
+        """
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return False
+            
+            cursor = connection.cursor(dictionary=True)
+            
+            # Obtener stock actual
+            cursor.execute("SELECT stock_quantity FROM products WHERE id = %s", (product_id,))
+            result = cursor.fetchone()
+            
+            if not result:
+                self.logger.error(f"Producto {product_id} no encontrado")
+                return False
+            
+            # Convertir Decimal a float para evitar errores de tipo
+            current_stock = float(result['stock_quantity'])
+            quantity = new_stock - current_stock  # Diferencia para el movimiento
+            
+            # Actualizar stock, min_stock y max_stock
+            cursor.execute("""
+                UPDATE products 
+                SET stock_quantity = %s, 
+                    min_stock = %s,
+                    max_stock = %s,
+                    updated_at = NOW() 
+                WHERE id = %s
+            """, (new_stock, min_stock, max_stock, product_id))
+            
+            # Registrar movimiento
+            cursor.execute("""
+                INSERT INTO product_movements (
+                    product_id, movement_type, quantity, 
+                    previous_stock, new_stock, notes, created_by
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (product_id, movement_type, quantity, current_stock, new_stock, notes, user_id))
+            
+            connection.commit()
+            cursor.close()
+            
+            self.logger.info(f"Stock actualizado directamente para producto {product_id}: {current_stock} → {new_stock} (min: {min_stock}, max: {max_stock})")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error al actualizar stock directamente: {e}")
+            if connection:
+                connection.rollback()
+            return False
+    
+    def update_product_limits(self, product_id: int, min_stock: float, max_stock: float) -> bool:
+        """
+        Actualizar solo los límites de stock (min/max) sin afectar el stock actual
+        
+        Args:
+            product_id: ID del producto
+            min_stock: Stock mínimo
+            max_stock: Stock máximo
+        """
+        try:
+            print(f"\n🔍 ProductModel.update_product_limits llamado")
+            print(f"   Product ID: {product_id}")
+            print(f"   Min: {min_stock}, Max: {max_stock}")
+            
+            connection = self.get_connection()
+            if not connection:
+                print(f"   ❌ No hay conexión a BD")
+                return False
+            
+            cursor = connection.cursor()
+            
+            # Actualizar solo min_stock y max_stock
+            cursor.execute("""
+                UPDATE products 
+                SET min_stock = %s,
+                    max_stock = %s,
+                    updated_at = NOW() 
+                WHERE id = %s
+            """, (min_stock, max_stock, product_id))
+            
+            connection.commit()
+            affected_rows = cursor.rowcount
+            cursor.close()
+            
+            print(f"   ✅ Filas afectadas: {affected_rows}")
+            
+            self.logger.info(f"Límites actualizados para producto {product_id}: min={min_stock}, max={max_stock}")
+            return affected_rows > 0
+            
+        except Exception as e:
+            self.logger.error(f"Error al actualizar límites: {e}")
+            import traceback
+            traceback.print_exc()
             if connection:
                 connection.rollback()
             return False

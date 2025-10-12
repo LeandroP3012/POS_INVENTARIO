@@ -175,6 +175,128 @@ class ProductController:
             self.logger.error(f"Error en update_stock: {e}")
             return False, f"Error interno: {str(e)}"
     
+    def update_product_stock(self, sku: str, movement_type: str, quantity: float,
+                           user: Dict[str, Any], reason: str = "", 
+                           min_stock: float = 0, max_stock: float = 0) -> Tuple[bool, str]:
+        """Actualizar stock de producto por SKU con diferentes tipos de movimiento"""
+        try:
+            # Verificar permisos
+            if not self.permission_service.check_permission(user, 'inventory.edit'):
+                self.logger.warning(f"Usuario {user.get('username')} sin permiso inventory.edit")
+                return False, "No tienes permiso para actualizar stock"
+            
+            # Mapear tipos de movimiento del español al inglés (base de datos)
+            movement_type_map = {
+                'entrada': 'purchase',      # Entrada → Purchase
+                'salida': 'sale',           # Salida → Sale
+                'ajuste': 'adjustment'      # Ajuste → Adjustment
+            }
+            
+            db_movement_type = movement_type_map.get(movement_type, movement_type)
+            
+            # Obtener producto por SKU
+            products = self.product_model.search_products(sku)
+            if not products:
+                return False, f"Producto con SKU '{sku}' no encontrado"
+            
+            product = products[0]
+            product_id = product['id']
+            # Convertir Decimal a float para evitar errores de tipo
+            current_stock = float(product['stock_quantity'])
+            
+            # Calcular nuevo stock según tipo de movimiento
+            if movement_type == 'entrada':
+                new_stock = current_stock + quantity
+                notes = f"Entrada de stock: +{quantity}"
+            elif movement_type == 'salida':
+                if current_stock < quantity:
+                    return False, f"Stock insuficiente. Actual: {current_stock}, Solicitado: {quantity}"
+                new_stock = current_stock - quantity
+                notes = f"Salida de stock: -{quantity}"
+            elif movement_type == 'ajuste':
+                new_stock = quantity
+                notes = f"Ajuste manual: {current_stock} → {quantity}"
+            else:
+                return False, f"Tipo de movimiento inválido: {movement_type}"
+            
+            # Agregar razón si existe
+            if reason:
+                notes += f" | Motivo: {reason}"
+            
+            # Actualizar stock en la base de datos (usando tipo mapeado para BD)
+            success = self.product_model.update_stock_direct(
+                product_id=product_id,
+                new_stock=new_stock,
+                movement_type=db_movement_type,  # Usar tipo mapeado
+                notes=notes,
+                user_id=user.get('id', 1),
+                min_stock=min_stock,
+                max_stock=max_stock
+            )
+            
+            if success:
+                self.logger.info(
+                    f"Stock actualizado para {sku}: {current_stock} → {new_stock} "
+                    f"({movement_type}) por {user.get('username')}"
+                )
+                return True, f"Stock actualizado: {current_stock} → {new_stock}"
+            else:
+                return False, "Error al actualizar el stock"
+                
+        except Exception as e:
+            self.logger.error(f"Error en update_product_stock: {e}")
+            return False, f"Error interno: {str(e)}"
+    
+    def save_product_limits(self, sku: str, min_stock: float, max_stock: float,
+                          user: Dict[str, Any]) -> Tuple[bool, str]:
+        """Guardar límites de stock (mín/máx) sin afectar el stock actual"""
+        try:
+            print(f"\n🔍 ProductController.save_product_limits llamado")
+            print(f"   SKU: {sku}")
+            print(f"   Min: {min_stock}, Max: {max_stock}")
+            
+            # Verificar permisos
+            if not self.permission_service.check_permission(user, 'inventory.edit'):
+                self.logger.warning(f"Usuario {user.get('username')} sin permiso inventory.edit")
+                return False, "No tienes permiso para actualizar límites de stock"
+            
+            print(f"   ✅ Permisos verificados")
+            
+            # Obtener producto por SKU
+            products = self.product_model.search_products(sku)
+            if not products:
+                print(f"   ❌ Producto no encontrado")
+                return False, f"Producto con SKU '{sku}' no encontrado"
+            
+            product = products[0]
+            product_id = product['id']
+            
+            print(f"   ✅ Producto encontrado: ID={product_id}")
+            
+            # Actualizar límites
+            success = self.product_model.update_product_limits(
+                product_id=product_id,
+                min_stock=min_stock,
+                max_stock=max_stock
+            )
+            
+            if success:
+                self.logger.info(
+                    f"Límites actualizados para {sku}: min={min_stock}, max={max_stock} "
+                    f"por {user.get('username')}"
+                )
+                print(f"   ✅ Límites actualizados en BD")
+                return True, f"Límites de stock actualizados correctamente"
+            else:
+                print(f"   ❌ Error al actualizar en BD")
+                return False, "Error al actualizar los límites de stock"
+                
+        except Exception as e:
+            self.logger.error(f"Error en save_product_limits: {e}")
+            import traceback
+            traceback.print_exc()
+            return False, f"Error interno: {str(e)}"
+    
     def get_low_stock_products(self, user_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Obtener productos con stock bajo"""
         try:

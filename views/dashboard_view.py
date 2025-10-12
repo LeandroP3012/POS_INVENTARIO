@@ -192,6 +192,14 @@ class DashboardView(BaseView):
                 'permission': 'categories.view'
             },
             {
+                'id': 'stock_control',
+                'title': 'Control de Stock',
+                'icon': '📊',
+                'color': '#f59e0b',
+                'description': 'Actualizar inventario',
+                'permission': 'inventory.edit'
+            },
+            {
                 'id': 'expenses',
                 'title': 'Registro de Egresos',
                 'icon': '💰',
