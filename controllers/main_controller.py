@@ -4,7 +4,7 @@ Maneja la aplicación completa y coordina entre controladores
 """
 
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, font as tkfont
 import logging
 import sys
 import os
@@ -165,8 +165,8 @@ class MainController:
     def _create_main_interface(self):
         """Crear interfaz principal"""
         try:
-            # Crear barra de menú
-            self._create_menu_bar()
+            # Crear barra de navegación personalizada (GRANDE y visible)
+            self._create_custom_navbar()
             
             # Crear barra de herramientas
             self._create_toolbar()
@@ -183,12 +183,26 @@ class MainController:
     
     def _create_menu_bar(self):
         """Crear barra de menú"""
+        # Configurar fuente predeterminada del sistema para menús (Windows)
+        try:
+            default_font = tkfont.nametofont("TkDefaultFont")
+            default_font.configure(size=13, family="Segoe UI", weight="bold")
+            
+            menu_font = tkfont.nametofont("TkMenuFont")
+            menu_font.configure(size=13, family="Segoe UI", weight="bold")
+        except Exception as e:
+            self.logger.warning(f"No se pudo configurar fuente del sistema: {e}")
+        
+        # Configurar fuente predeterminada para todos los menús
+        self.main_window.option_add('*Menu.font', ('Segoe UI', 13, 'bold'))
+        self.main_window.option_add('*Menu*font', ('Segoe UI', 13, 'bold'))
+        
         menubar = tk.Menu(self.main_window)
         self.main_window.config(menu=menubar)
         
         # Menú Archivo
         file_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Archivo", menu=file_menu)
+        menubar.add_cascade(label="Archivo", menu=file_menu, font=('Segoe UI', 13, 'bold'))
         file_menu.add_command(label="Nueva Venta", command=self._new_sale)
         file_menu.add_separator()
         file_menu.add_command(label="Cerrar Sesión", command=self._logout)
@@ -196,14 +210,14 @@ class MainController:
         
         # Menú Ventas
         sales_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Ventas", menu=sales_menu)
+        menubar.add_cascade(label="Ventas", menu=sales_menu, font=('Segoe UI', 13, 'bold'))
         sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
         sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
         
         # Menú Inventario (solo si tiene permisos)
         if self.auth_controller.has_permission('inventory_view'):
             inventory_menu = tk.Menu(menubar, tearoff=0)
-            menubar.add_cascade(label="Inventario", menu=inventory_menu)
+            menubar.add_cascade(label="Inventario", menu=inventory_menu, font=('Segoe UI', 13, 'bold'))
             inventory_menu.add_command(label="Ver Productos", command=self._view_products)
             inventory_menu.add_command(label="Gestionar Categorías", command=self._view_categories)
             
@@ -214,7 +228,7 @@ class MainController:
         # Menú Reportes (solo supervisores y admins)
         if self.auth_controller.has_permission('reports_basic'):
             reports_menu = tk.Menu(menubar, tearoff=0)
-            menubar.add_cascade(label="Reportes", menu=reports_menu)
+            menubar.add_cascade(label="Reportes", menu=reports_menu, font=('Segoe UI', 13, 'bold'))
             reports_menu.add_command(label="Ventas del Día", command=self._daily_sales_report)
             
             if self.auth_controller.has_permission('reports_full'):
@@ -223,7 +237,7 @@ class MainController:
         # Menú Administración (solo admins)
         if self.auth_controller.has_permission('users_manage'):
             admin_menu = tk.Menu(menubar, tearoff=0)
-            menubar.add_cascade(label="Administración", menu=admin_menu)
+            menubar.add_cascade(label="Administración", menu=admin_menu, font=('Segoe UI', 13, 'bold'))
             admin_menu.add_command(label="Gestionar Usuarios", command=self._manage_users)
             admin_menu.add_command(label="Gestionar Roles", command=self._manage_roles)
             admin_menu.add_separator()
@@ -231,7 +245,94 @@ class MainController:
         
         # Menú Ayuda
         help_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Ayuda", menu=help_menu)
+        menubar.add_cascade(label="Ayuda", menu=help_menu, font=('Segoe UI', 13, 'bold'))
+        help_menu.add_command(label="Manual de Usuario", command=self._show_manual)
+        help_menu.add_command(label="Acerca de", command=self._show_about)
+    
+    def _create_custom_navbar(self):
+        """Crear barra de navegación personalizada con botones grandes"""
+        navbar_frame = tk.Frame(self.main_window, bg='#2c3e50', height=50)
+        navbar_frame.pack(fill='x', side='top')
+        navbar_frame.pack_propagate(False)
+        
+        # Estilo de botones
+        btn_style = {
+            'font': ('Segoe UI', 12, 'bold'),
+            'bg': '#2c3e50',
+            'fg': 'white',
+            'activebackground': '#34495e',
+            'activeforeground': 'white',
+            'relief': 'flat',
+            'bd': 0,
+            'padx': 20,
+            'pady': 10,
+            'cursor': 'hand2'
+        }
+        
+        # Contenedor de botones
+        buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
+        buttons_container.pack(side='left', padx=10, pady=5)
+        
+        # Botón Archivo
+        file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
+        file_btn.pack(side='left', padx=2)
+        file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
+        file_btn.config(menu=file_menu)
+        file_menu.add_command(label="Nueva Venta", command=self._new_sale)
+        file_menu.add_separator()
+        file_menu.add_command(label="Cerrar Sesión", command=self._logout)
+        file_menu.add_command(label="Salir", command=self._exit_application)
+        
+        # Botón Ventas
+        sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
+        sales_btn.pack(side='left', padx=2)
+        sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
+        sales_btn.config(menu=sales_menu)
+        sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
+        sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
+        
+        # Botón Inventario
+        if self.auth_controller.has_permission('inventory_view'):
+            inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
+            inv_btn.pack(side='left', padx=2)
+            inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
+            inv_btn.config(menu=inv_menu)
+            inv_menu.add_command(label="Ver Productos", command=self._view_products)
+            inv_menu.add_command(label="Gestionar Categorías", command=self._view_categories)
+            inv_menu.add_command(label="Control de Stock", command=self._view_stock_control)
+            
+            if self.auth_controller.has_permission('inventory_manage'):
+                inv_menu.add_separator()
+                inv_menu.add_command(label="Agregar Producto", command=self._add_product)
+                inv_menu.add_command(label="Gestionar Inventario", command=self._manage_inventory)
+        
+        # Botón Reportes
+        if self.auth_controller.has_permission('reports_basic'):
+            rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
+            rep_btn.pack(side='left', padx=2)
+            rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
+            rep_btn.config(menu=rep_menu)
+            rep_menu.add_command(label="Ventas del Día", command=self._daily_sales_report)
+            
+            if self.auth_controller.has_permission('reports_full'):
+                rep_menu.add_command(label="Reporte Completo", command=self._full_report)
+        
+        # Botón Administración
+        if self.auth_controller.has_permission('users_manage'):
+            admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
+            admin_btn.pack(side='left', padx=2)
+            admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
+            admin_btn.config(menu=admin_menu)
+            admin_menu.add_command(label="Gestionar Usuarios", command=self._manage_users)
+            admin_menu.add_command(label="Gestionar Roles", command=self._manage_roles)
+            admin_menu.add_separator()
+            admin_menu.add_command(label="Configuración", command=self._system_config)
+        
+        # Botón Ayuda
+        help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
+        help_btn.pack(side='left', padx=2)
+        help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 11))
+        help_btn.config(menu=help_menu)
         help_menu.add_command(label="Manual de Usuario", command=self._show_manual)
         help_menu.add_command(label="Acerca de", command=self._show_about)
     
@@ -706,6 +807,14 @@ class MainController:
             self.logger.error(f"Error volviendo al dashboard: {e}")
             messagebox.showerror("Error", f"Error volviendo al dashboard:\n{str(e)}")
     
+    def _show_dashboard(self):
+        """Alias para volver al dashboard (usado por callbacks)"""
+        self._back_to_dashboard()
+    
+    def _show_inventory_management(self):
+        """Ir a Gestión de Inventario (Control de Stock)"""
+        self._view_stock_control()
+    
     def _create_quick_access_panel(self, parent):
         """Crear panel de accesos rápidos"""
         panel_frame = tk.Frame(parent, bg=self.settings.get_colors()['surface'])
@@ -862,14 +971,27 @@ class MainController:
             self.product_view = ProductManagementView(self.main_window, self.current_user)
             print("   ✅ ProductManagementView creada exitosamente")
             
-            # Registrar callbacks
+            # Registrar callbacks - NAVBAR COMPLETO
             self.product_view.bind_callback('refresh', self._load_products)
             self.product_view.bind_callback('search', self._search_products)
             self.product_view.bind_callback('create', self._create_product)
             self.product_view.bind_callback('edit', self._edit_product)
             self.product_view.bind_callback('delete', self._delete_product)
-            self.product_view.bind_callback('update_stock', self._update_product_stock)
             self.product_view.bind_callback('export', self._export_products)
+            # Navegación principal
+            self.product_view.bind_callback('back_to_dashboard', self._show_dashboard)
+            self.product_view.bind_callback('new_sale', self._new_sale)
+            self.product_view.bind_callback('sales_history', self._sales_history)
+            self.product_view.bind_callback('view_products', self._view_products)
+            self.product_view.bind_callback('view_categories', self._view_categories)
+            self.product_view.bind_callback('go_to_inventory', self._show_inventory_management)
+            self.product_view.bind_callback('daily_report', self._daily_sales_report)
+            self.product_view.bind_callback('full_report', self._full_report)
+            self.product_view.bind_callback('manage_users', self._manage_users)
+            self.product_view.bind_callback('manage_roles', self._manage_roles)
+            self.product_view.bind_callback('system_config', self._system_config)
+            self.product_view.bind_callback('show_manual', self._show_manual)
+            self.product_view.bind_callback('show_about', self._show_about)
             print("   ✅ Callbacks registrados")
             
             # Cargar datos iniciales
@@ -1317,13 +1439,25 @@ class MainController:
             stock_view = StockControlView(self.main_window, self.current_user)
             print("   ✅ StockControlView creada exitosamente")
             
-            # Registrar callbacks
+            # Registrar callbacks - NAVBAR COMPLETO
             stock_view.register_callbacks(
                 refresh=lambda: self._load_stock_products(stock_view, product_controller),
                 search=lambda term: self._search_stock_products(stock_view, product_controller, term),
                 update_stock=lambda data: self._update_product_stock(stock_view, product_controller, data),
                 save_limits=lambda data: self._save_product_limits(stock_view, product_controller, data),
-                back=self._back_to_dashboard
+                back=self._back_to_dashboard,
+                # Navegación principal
+                new_sale=self._new_sale,
+                sales_history=self._sales_history,
+                view_products=self._view_products,
+                view_categories=self._view_categories,
+                daily_report=self._daily_sales_report,
+                full_report=self._full_report,
+                manage_users=self._manage_users,
+                manage_roles=self._manage_roles,
+                system_config=self._system_config,
+                show_manual=self._show_manual,
+                show_about=self._show_about
             )
             print("   ✅ Callbacks registrados")
             

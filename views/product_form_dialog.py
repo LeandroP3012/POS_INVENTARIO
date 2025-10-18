@@ -717,29 +717,99 @@ class ProductFormDialog:
         if not self.product:
             return
         
-        self.sku_var.set(self.product.get('sku', ''))
-        self.name_var.set(self.product.get('name', ''))
-        self.description_text.delete('1.0', tk.END)
-        self.description_text.insert('1.0', self.product.get('description', ''))
-        self.barcode_var.set(self.product.get('barcode', ''))
+        print(f"\n🔄 Cargando datos del producto: {self.product.get('sku', 'N/A')}")
         
-        # Categoría
+        # SKU - Cargar en Entry directamente
+        sku_value = self.product.get('sku', '')
+        if hasattr(self, 'sku_entry'):
+            try:
+                self.sku_entry.delete(0, tk.END)
+                self.sku_entry.insert(0, str(sku_value))
+                print(f"   ✅ SKU: {sku_value}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando SKU: {e}")
+        
+        # Nombre - Cargar en Entry directamente
+        name_value = self.product.get('name', '')
+        if hasattr(self, 'name_entry'):
+            try:
+                self.name_entry.delete(0, tk.END)
+                self.name_entry.insert(0, str(name_value))
+                print(f"   ✅ Nombre: {name_value}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando Nombre: {e}")
+        
+        # Descripción - Cargar en Text widget con validación
+        description_value = self.product.get('description', '')
+        if hasattr(self, 'description_text'):
+            try:
+                self.description_text.delete('1.0', tk.END)
+                if description_value:
+                    self.description_text.insert('1.0', str(description_value))
+                print(f"   ✅ Descripción cargada")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando descripción: {e}")
+        
+        # Código de Barras - Cargar en Entry directamente
+        barcode_value = self.product.get('barcode', '')
+        if hasattr(self, 'barcode_entry'):
+            try:
+                self.barcode_entry.delete(0, tk.END)
+                self.barcode_entry.insert(0, str(barcode_value))
+                print(f"   ✅ Barcode: {barcode_value}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando Barcode: {e}")
+        
+        # Categoría - Cargar en Combobox directamente
         category_name = self.product.get('category_name', '')
-        if category_name:
-            self.category_var.set(category_name)
+        if category_name and hasattr(self, 'category_combo'):
+            try:
+                self.category_combo.set(str(category_name))
+                print(f"   ✅ Categoría: {category_name}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando Categoría: {e}")
         
-        # Unidad
+        # Unidad - Cargar en Combobox directamente
         unit_name = self.product.get('unit_name', '')
         unit_symbol = self.product.get('unit_symbol', '')
-        if unit_name:
-            self.unit_var.set(f"{unit_name} ({unit_symbol})")
+        if unit_name and hasattr(self, 'unit_combo'):
+            try:
+                unit_display = f"{unit_name} ({unit_symbol})"
+                self.unit_combo.set(str(unit_display))
+                print(f"   ✅ Unidad: {unit_display}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando Unidad: {e}")
         
-        self.price_var.set(str(self.product.get('price', 0)))
-        self.cost_var.set(str(self.product.get('cost', 0)))
-        self.stock_var.set(str(self.product.get('stock_quantity', 0)))
-        self.min_stock_var.set(str(self.product.get('min_stock', 0)))
-        self.max_stock_var.set(str(self.product.get('max_stock', 0)))
-        self.status_var.set(self.product.get('status', 'active'))
+        # Precio - Cargar en Entry directamente
+        price_value = self.product.get('price', 0)
+        if hasattr(self, 'price_entry'):
+            try:
+                self.price_entry.delete(0, tk.END)
+                self.price_entry.insert(0, str(price_value))
+                print(f"   ✅ Precio: {price_value}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando Precio: {e}")
+        
+        # Costo - Cargar en Entry directamente
+        cost_value = self.product.get('cost', 0)
+        if hasattr(self, 'cost_entry'):
+            try:
+                self.cost_entry.delete(0, tk.END)
+                self.cost_entry.insert(0, str(cost_value))
+                print(f"   ✅ Costo: {cost_value}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando Costo: {e}")
+        
+        # Estado - Cargar en RadioButtons (via StringVar)
+        status_value = self.product.get('status', 'active')
+        if hasattr(self, 'status_var'):
+            try:
+                self.status_var.set(str(status_value))
+                print(f"   ✅ Estado: {status_value}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando Estado: {e}")
+        
+        print(f"✅ Datos del producto cargados completamente\n")
     
     def validate_data(self) -> tuple[bool, str]:
         """Validar datos del formulario"""

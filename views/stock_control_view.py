@@ -36,6 +36,9 @@ class StockControlView(BaseView):
         # Header
         self.create_header()
         
+        # Navbar
+        self.create_navbar()
+        
         # Toolbar
         self.create_toolbar()
         
@@ -51,7 +54,7 @@ class StockControlView(BaseView):
         header.pack(fill='x')
         header.pack_propagate(False)
         
-        # Título
+        # Título (izquierda)
         tk.Label(
             header,
             text="📊 Control de Stock",
@@ -60,28 +63,104 @@ class StockControlView(BaseView):
             fg='white'
         ).pack(side='left', padx=20, pady=15)
         
-        # Botón volver
+        # Botón volver (derecha)
         tk.Button(
             header,
-            text="← Volver",
+            text="⬅️ Volver",
             command=self._on_back,
-            font=('Segoe UI', 10),
+            font=('Segoe UI', 10, 'bold'),
             bg='#34495e',
             fg='white',
             relief='flat',
             cursor='hand2',
             padx=15,
-            pady=5
+            pady=8
         ).pack(side='right', padx=20)
         
-        # Usuario
+        # Usuario (derecha, antes del botón)
         tk.Label(
             header,
             text=f"Usuario: {self.user_data.get('full_name', 'N/A')}",
             font=('Segoe UI', 10),
             bg='#2c3e50',
             fg='#ecf0f1'
-        ).pack(side='right', padx=20)
+        ).pack(side='right', padx=10)
+    
+    def create_navbar(self):
+        """Crear navbar personalizado - GLOBAL para todos los módulos"""
+        navbar_frame = tk.Frame(self.main_frame, bg='#2c3e50', height=50)
+        navbar_frame.pack(fill='x')
+        navbar_frame.pack_propagate(False)
+        
+        # Estilo de botones
+        btn_style = {
+            'font': ('Segoe UI', 12, 'bold'),
+            'bg': '#2c3e50',
+            'fg': 'white',
+            'activebackground': '#34495e',
+            'activeforeground': 'white',
+            'relief': 'flat',
+            'bd': 0,
+            'padx': 20,
+            'pady': 10,
+            'cursor': 'hand2'
+        }
+        
+        # Contenedor de botones
+        buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
+        buttons_container.pack(side='left', padx=10, pady=5)
+        
+        # Botón Archivo
+        file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
+        file_btn.pack(side='left', padx=2)
+        file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
+        file_btn.config(menu=file_menu)
+        file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        file_menu.add_separator()
+        file_menu.add_command(label="Volver al Dashboard", command=self._on_back)
+        
+        # Botón Ventas
+        sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
+        sales_btn.pack(side='left', padx=2)
+        sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
+        sales_btn.config(menu=sales_menu)
+        sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        
+        # Botón Inventario
+        inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
+        inv_btn.pack(side='left', padx=2)
+        inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
+        inv_btn.config(menu=inv_menu)
+        inv_menu.add_command(label="Ver Productos", command=self.callbacks.get('view_products', lambda: None))
+        inv_menu.add_command(label="Gestionar Categorías", command=self.callbacks.get('view_categories', lambda: None))
+        inv_menu.add_command(label="Control de Stock", command=self.callbacks.get('refresh', lambda: None))
+        
+        # Botón Reportes
+        rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
+        rep_btn.pack(side='left', padx=2)
+        rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
+        rep_btn.config(menu=rep_menu)
+        rep_menu.add_command(label="Ventas del Día", command=self.callbacks.get('daily_report', lambda: None))
+        rep_menu.add_command(label="Reporte Completo", command=self.callbacks.get('full_report', lambda: None))
+        
+        # Botón Administración
+        admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
+        admin_btn.pack(side='left', padx=2)
+        admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
+        admin_btn.config(menu=admin_menu)
+        admin_menu.add_command(label="Gestionar Usuarios", command=self.callbacks.get('manage_users', lambda: None))
+        admin_menu.add_command(label="Gestionar Roles", command=self.callbacks.get('manage_roles', lambda: None))
+        admin_menu.add_separator()
+        admin_menu.add_command(label="Configuración", command=self.callbacks.get('system_config', lambda: None))
+        
+        # Botón Ayuda
+        help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
+        help_btn.pack(side='left', padx=2)
+        help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 11))
+        help_btn.config(menu=help_menu)
+        help_menu.add_command(label="Manual de Usuario", command=self.callbacks.get('show_manual', lambda: None))
+        help_menu.add_command(label="Acerca de", command=self.callbacks.get('show_about', lambda: None))
     
     def create_toolbar(self):
         """Crear toolbar con búsqueda"""
@@ -296,45 +375,49 @@ class StockControlView(BaseView):
             font=('Segoe UI', 10, 'bold'),
             bg='white',
             anchor='w'
-        ).pack(fill='x', pady=(0, 10))
+        ).pack(fill='x', pady=(0, 5))
         
         self.movement_type_var = tk.StringVar(value="entrada")
         
-        radio_frame = tk.Frame(content_inner, bg='white')
-        radio_frame.pack(fill='x', pady=(0, 20))
+        self.movement_combo = ttk.Combobox(
+            content_inner,
+            textvariable=self.movement_type_var,
+            values=[
+                "entrada",
+                "salida",
+                "ajuste"
+            ],
+            state='readonly',
+            font=('Segoe UI', 11),
+            width=25
+        )
+        self.movement_combo.pack(fill='x', pady=(0, 5))
+        self.movement_combo.current(0)  # Establecer 'entrada' como selección inicial
         
-        tk.Radiobutton(
-            radio_frame,
-            text="📥 Entrada (Agregar)",
-            variable=self.movement_type_var,
-            value="entrada",
-            font=('Segoe UI', 10),
-            bg='white',
-            activebackground='white',
-            selectcolor='#d4edda'
-        ).pack(anchor='w', pady=5)
+        # Descripción del tipo seleccionado
+        movement_descriptions = {
+            'entrada': '📥 Agregar productos al inventario',
+            'salida': '📤 Restar productos del inventario',
+            'ajuste': '✏️ Establecer cantidad exacta de stock'
+        }
         
-        tk.Radiobutton(
-            radio_frame,
-            text="📤 Salida (Restar)",
-            variable=self.movement_type_var,
-            value="salida",
-            font=('Segoe UI', 10),
+        self.movement_desc_label = tk.Label(
+            content_inner,
+            text=movement_descriptions['entrada'],
+            font=('Segoe UI', 9, 'italic'),
             bg='white',
-            activebackground='white',
-            selectcolor='#f8d7da'
-        ).pack(anchor='w', pady=5)
+            fg='#7f8c8d',
+            anchor='w',
+            wraplength=280
+        )
+        self.movement_desc_label.pack(fill='x', pady=(0, 20))
         
-        tk.Radiobutton(
-            radio_frame,
-            text="✏️ Ajuste Manual",
-            variable=self.movement_type_var,
-            value="ajuste",
-            font=('Segoe UI', 10),
-            bg='white',
-            activebackground='white',
-            selectcolor='#fff3cd'
-        ).pack(anchor='w', pady=5)
+        # Actualizar descripción cuando cambie la selección
+        def on_movement_change(event=None):
+            selected = self.movement_type_var.get()
+            self.movement_desc_label.config(text=movement_descriptions.get(selected, ''))
+        
+        self.movement_combo.bind('<<ComboboxSelected>>', on_movement_change)
         
         # Cantidad
         tk.Label(            content_inner,
@@ -547,23 +630,31 @@ class StockControlView(BaseView):
         
         print(f"✅ Producto seleccionado: {selection[0]}")
         
-        # DEBUG: Leer DIRECTAMENTE del Entry widget
-        print(f"\n📊 VALORES DE ENTRY Y STRINGVAR:")
+        # DEBUG: Leer DIRECTAMENTE de los widgets
+        print(f"\n📊 VALORES DE WIDGETS:")
         quantity_from_entry = self.quantity_entry.get()
         quantity_from_var = self.quantity_var.get()
+        movement_from_combo = self.movement_combo.get()
+        movement_from_var = self.movement_type_var.get()
+        
         print(f"   quantity_entry.get(): '{quantity_from_entry}'")
         print(f"   quantity_var.get(): '{quantity_from_var}'")
+        print(f"   movement_combo.get(): '{movement_from_combo}'")
+        print(f"   movement_type_var.get(): '{movement_from_var}'")
         
         # Validar cantidad
         try:
-            # USAR VALOR DEL ENTRY DIRECTAMENTE (no del StringVar)
+            # USAR VALORES DE LOS WIDGETS DIRECTAMENTE (no de StringVar)
             quantity_str = quantity_from_entry
             quantity = float(quantity_str) if quantity_str.strip() else 0.0
-            movement_type = self.movement_type_var.get()
+            movement_type = movement_from_combo.strip().lower()  # Leer directamente del Combobox
             
             print(f"\n📊 VALORES PROCESADOS:")
             print(f"   Cantidad: {quantity}")
-            print(f"   Tipo de movimiento: {movement_type}")
+            print(f"   Tipo de movimiento: '{movement_type}' (len={len(movement_type)})")
+            print(f"   Es 'entrada': {movement_type == 'entrada'}")
+            print(f"   Es 'salida': {movement_type == 'salida'}")
+            print(f"   Es 'ajuste': {movement_type == 'ajuste'}")
             
             # Validación: Para entrada y salida, debe ser > 0
             # Para ajuste manual, puede ser cualquier valor (incluso 0 o negativo para resetear)

@@ -35,6 +35,9 @@ class ProductManagementView(BaseView):
         # Header
         self.create_header()
         
+        # Navbar personalizado
+        self.create_navbar()
+        
         # Toolbar con búsqueda y acciones
         self.create_toolbar()
         
@@ -45,12 +48,12 @@ class ProductManagementView(BaseView):
         self.create_footer()
     
     def create_header(self):
-        """Crear header"""
+        """Crear header con navegación"""
         header = tk.Frame(self.main_frame, bg='#2c3e50', height=70)
         header.pack(fill='x')
         header.pack_propagate(False)
         
-        # Título
+        # Título (izquierda)
         title_label = tk.Label(
             header,
             text="📦 Gestión de Productos",
@@ -60,7 +63,22 @@ class ProductManagementView(BaseView):
         )
         title_label.pack(side='left', padx=20, pady=15)
         
-        # Usuario actual
+        # Botón de regresar al dashboard (derecha)
+        back_btn = tk.Button(
+            header,
+            text="⬅️ Regresar",
+            font=('Segoe UI', 10, 'bold'),
+            bg='#34495e',
+            fg='white',
+            relief='flat',
+            cursor='hand2',
+            padx=15,
+            pady=8,
+            command=self.on_back_to_dashboard
+        )
+        back_btn.pack(side='right', padx=20, pady=15)
+        
+        # Usuario actual (derecha, antes del botón)
         user_label = tk.Label(
             header,
             text=f"Usuario: {self.user_data.get('full_name', 'N/A')}",
@@ -68,7 +86,83 @@ class ProductManagementView(BaseView):
             bg='#2c3e50',
             fg='#ecf0f1'
         )
-        user_label.pack(side='right', padx=20)
+        user_label.pack(side='right', padx=10)
+    
+    def create_navbar(self):
+        """Crear navbar personalizado con menús - GLOBAL para todos los módulos"""
+        navbar_frame = tk.Frame(self.main_frame, bg='#2c3e50', height=50)
+        navbar_frame.pack(fill='x')
+        navbar_frame.pack_propagate(False)
+        
+        # Estilo de botones
+        btn_style = {
+            'font': ('Segoe UI', 12, 'bold'),
+            'bg': '#2c3e50',
+            'fg': 'white',
+            'activebackground': '#34495e',
+            'activeforeground': 'white',
+            'relief': 'flat',
+            'bd': 0,
+            'padx': 20,
+            'pady': 10,
+            'cursor': 'hand2'
+        }
+        
+        # Contenedor de botones
+        buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
+        buttons_container.pack(side='left', padx=10, pady=5)
+        
+        # Botón Archivo
+        file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
+        file_btn.pack(side='left', padx=2)
+        file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
+        file_btn.config(menu=file_menu)
+        file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        file_menu.add_separator()
+        file_menu.add_command(label="Volver al Dashboard", command=self.callbacks.get('back_to_dashboard', lambda: None))
+        
+        # Botón Ventas
+        sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
+        sales_btn.pack(side='left', padx=2)
+        sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
+        sales_btn.config(menu=sales_menu)
+        sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        
+        # Botón Inventario
+        inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
+        inv_btn.pack(side='left', padx=2)
+        inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
+        inv_btn.config(menu=inv_menu)
+        inv_menu.add_command(label="Ver Productos", command=self.callbacks.get('view_products', lambda: None))
+        inv_menu.add_command(label="Gestionar Categorías", command=self.callbacks.get('view_categories', lambda: None))
+        inv_menu.add_command(label="Control de Stock", command=self.callbacks.get('go_to_inventory', lambda: None))
+        
+        # Botón Reportes
+        rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
+        rep_btn.pack(side='left', padx=2)
+        rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
+        rep_btn.config(menu=rep_menu)
+        rep_menu.add_command(label="Ventas del Día", command=self.callbacks.get('daily_report', lambda: None))
+        rep_menu.add_command(label="Reporte Completo", command=self.callbacks.get('full_report', lambda: None))
+        
+        # Botón Administración
+        admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
+        admin_btn.pack(side='left', padx=2)
+        admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
+        admin_btn.config(menu=admin_menu)
+        admin_menu.add_command(label="Gestionar Usuarios", command=self.callbacks.get('manage_users', lambda: None))
+        admin_menu.add_command(label="Gestionar Roles", command=self.callbacks.get('manage_roles', lambda: None))
+        admin_menu.add_separator()
+        admin_menu.add_command(label="Configuración", command=self.callbacks.get('system_config', lambda: None))
+        
+        # Botón Ayuda
+        help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
+        help_btn.pack(side='left', padx=2)
+        help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 11))
+        help_btn.config(menu=help_menu)
+        help_menu.add_command(label="Manual de Usuario", command=self.callbacks.get('show_manual', lambda: None))
+        help_menu.add_command(label="Acerca de", command=self.callbacks.get('show_about', lambda: None))
     
     def create_toolbar(self):
         """Crear toolbar con búsqueda y botones"""
@@ -118,7 +212,7 @@ class ProductManagementView(BaseView):
             command=self.on_new_product
         ).pack(side='left', padx=5)
         
-        # Botón Actualizar Stock
+        # Botón Actualizar Stock - Dirige a Gestión de Inventario
         tk.Button(
             right_frame,
             text="📊 Actualizar Stock",
@@ -129,7 +223,7 @@ class ProductManagementView(BaseView):
             cursor='hand2',
             padx=15,
             pady=8,
-            command=self.on_update_stock
+            command=self.on_go_to_inventory
         ).pack(side='left', padx=5)
         
         # Botón Exportar
@@ -294,12 +388,19 @@ class ProductManagementView(BaseView):
         scrollbar = ttk.Scrollbar(self.details_content, orient="vertical", command=canvas.yview)
         scrollable_frame = tk.Frame(canvas, bg='white')
         
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
+        # Configurar ventana del canvas para que se expanda
+        canvas_window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        def on_frame_configure(event=None):
+            # Actualizar región de scroll
+            canvas.configure(scrollregion=canvas.bbox("all"))
+        
+        def on_canvas_configure(event):
+            # Ajustar ancho del frame interno al ancho del canvas
+            canvas.itemconfig(canvas_window, width=event.width)
+        
+        scrollable_frame.bind("<Configure>", on_frame_configure)
+        canvas.bind("<Configure>", on_canvas_configure)
         canvas.configure(yscrollcommand=scrollbar.set)
         
         # Información del producto
@@ -430,20 +531,7 @@ class ProductManagementView(BaseView):
         
         tk.Button(
             action_frame,
-            text="📊 Ajustar Stock",
-            font=('Segoe UI', 9),
-            bg='#9b59b6',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            command=self.on_update_stock,
-            width=15,
-            pady=8
-        ).pack(fill='x', pady=2)
-        
-        tk.Button(
-            action_frame,
-            text="🗑️ Eliminar",
+            text="️ Eliminar",
             font=('Segoe UI', 9),
             bg='#e74c3c',
             fg='white',
@@ -526,9 +614,20 @@ class ProductManagementView(BaseView):
                 self.callbacks['delete'](self.selected_product['id'])
     
     def on_update_stock(self):
-        """Actualizar stock"""
-        if self.selected_product and self.callbacks.get('update_stock'):
-            self.callbacks['update_stock'](self.selected_product)
+        """Actualizar stock - OBSOLETO: usar botón "Actualizar Stock" del toolbar"""
+        # Este método ya no se usa porque eliminamos el botón del panel de detalles
+        # El botón del toolbar ahora dirige a Gestión de Inventario
+        pass
+    
+    def on_go_to_inventory(self):
+        """Ir a Gestión de Inventario"""
+        if self.callbacks.get('go_to_inventory'):
+            self.callbacks['go_to_inventory']()
+    
+    def on_back_to_dashboard(self):
+        """Regresar al Dashboard"""
+        if self.callbacks.get('back_to_dashboard'):
+            self.callbacks['back_to_dashboard']()
     
     def on_export(self):
         """Exportar productos"""

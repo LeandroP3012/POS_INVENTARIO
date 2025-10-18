@@ -6208,3 +6208,518 @@
 2025-10-11 20:39:29,596 - AuthController - INFO - Logout exitoso para: admin
 2025-10-11 20:39:29,647 - AuthController - INFO - Controlador de autenticación limpiado
 2025-10-11 20:39:29,648 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 12:19:19,277 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:19:19,420 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:19:19,420 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:19:19,420 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:19:20,541 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:19:30,143 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:19:30,346 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-18 12:19:30,369 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-18 12:19:30,385 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-18 12:19:30,385 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:19:32,404 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-18 12:19:32,405 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-18 12:19:32,420 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-18 12:19:32,420 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:19:32,421 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:19:35,462 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:20:16,826 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:20:16,851 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-18 12:20:16,851 - model.ProductModel - ERROR - No se pudo conectar a la base de datos
+2025-10-18 12:21:00,293 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:21:00,314 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-18 12:21:00,314 - model.ProductModel - ERROR - No se pudo conectar a la base de datos
+2025-10-18 12:21:53,066 - POS_SYSTEM - INFO - Aplicación interrumpida por el usuario
+2025-10-18 12:21:54,816 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:21:54,847 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:21:54,848 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:21:54,848 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:21:55,436 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:22:00,793 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:22:00,992 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:22:01,032 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:22:01,065 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:22:01,070 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:22:03,104 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:22:03,132 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:22:03,132 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:22:03,133 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:22:06,179 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:22:08,988 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:22:09,005 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:22:15,693 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-18 12:22:15,697 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:22:15,705 - controller.RoleController - INFO - Se obtuvieron 9 roles
+2025-10-18 12:22:15,721 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:22:22,014 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:22:22,016 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:28:32,030 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:28:32,062 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:28:32,062 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:28:32,062 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:28:32,638 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:28:40,131 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:28:40,303 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:28:40,322 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:28:40,353 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:28:40,354 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:28:42,377 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:28:42,388 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:28:42,389 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:28:42,390 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:28:45,438 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:28:48,049 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:28:48,050 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:29:22,355 - model.ProductModel - INFO - Stock actualizado directamente para producto 8: 8.0 → 10.0 (min: 0.0, max: 0.0)
+2025-10-18 12:29:22,356 - controller.ProductController - INFO - Stock actualizado para PROD-000003: 8.0 → 10.0 (entrada) por admin
+2025-10-18 12:29:23,575 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:29:23,576 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:32:30,520 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 12:32:30,533 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:32:30,540 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:32:30,540 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 12:32:30,540 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 12:32:30,567 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 12:32:30,591 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 12:32:30,591 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 12:32:34,668 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 12:32:34,686 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:32:34,694 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:32:34,695 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 12:32:34,695 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 12:32:34,727 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 12:32:34,759 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 12:32:34,759 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 12:32:41,857 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:32:41,890 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:32:41,890 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:32:41,891 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:32:42,463 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:32:49,396 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:32:49,564 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:32:49,586 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:32:49,617 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:32:49,618 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:32:51,631 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:32:51,644 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:32:51,644 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:32:51,645 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:32:54,680 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:32:57,721 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:32:57,722 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:33:29,016 - model.ProductModel - INFO - Límites actualizados para producto 8: min=8.0, max=10.0
+2025-10-18 12:33:29,017 - controller.ProductController - INFO - Límites actualizados para PROD-000003: min=8.0, max=10.0 por admin
+2025-10-18 12:33:30,305 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:33:30,306 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:33:45,086 - model.ProductModel - INFO - Stock actualizado directamente para producto 8: 10.0 → 4.0 (min: 8.0, max: 10.0)
+2025-10-18 12:33:45,086 - controller.ProductController - INFO - Stock actualizado para PROD-000003: 10.0 → 4.0 (salida) por admin
+2025-10-18 12:33:46,304 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:33:46,306 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:34:03,719 - model.ProductModel - INFO - Stock actualizado directamente para producto 8: 4.0 → 5.0 (min: 8.0, max: 10.0)
+2025-10-18 12:34:03,720 - controller.ProductController - INFO - Stock actualizado para PROD-000003: 4.0 → 5.0 (ajuste) por admin
+2025-10-18 12:34:05,282 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:34:05,284 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:34:42,151 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:34:42,153 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:35:11,835 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-10-18 12:35:11,836 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-18 12:38:09,248 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 12:38:09,251 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:38:09,258 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:38:09,258 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 12:38:09,258 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 12:38:09,344 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 12:38:09,369 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 12:38:09,370 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 12:38:17,156 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:38:17,225 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:38:17,225 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:38:17,225 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:38:17,902 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:38:23,408 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:38:23,598 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:38:23,627 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:38:23,659 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:38:23,660 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:38:25,680 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:38:25,692 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:38:25,693 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:38:25,695 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:38:28,721 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:43:26,633 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:43:26,690 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:43:26,690 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:43:26,691 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:43:27,287 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:43:29,629 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:43:29,814 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:43:29,820 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:43:29,841 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:43:29,843 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:43:31,879 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:43:31,893 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:43:31,893 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:43:31,894 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:43:34,930 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:45:14,973 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 12:45:14,995 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:45:15,002 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:45:15,002 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 12:45:15,003 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 12:45:15,078 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 12:45:15,102 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 12:45:15,102 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 12:45:15,115 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-18 12:45:17,231 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:45:17,289 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:45:17,289 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:45:17,289 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:45:17,893 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:45:23,621 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 12:45:23,646 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:45:23,655 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:45:23,655 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 12:45:23,655 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 12:45:23,739 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 12:45:23,753 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 12:45:23,753 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 12:45:23,764 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-18 12:45:32,384 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:45:32,539 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:45:32,563 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:45:32,594 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:45:32,596 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:45:34,617 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:45:34,633 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:45:34,633 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:45:34,634 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:45:37,675 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:47:40,581 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:47:40,635 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:47:40,636 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:47:40,636 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:47:41,213 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:47:47,666 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:47:47,838 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:47:47,853 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:47:47,885 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:47:47,886 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:47:49,907 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:47:49,918 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:47:49,918 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:47:49,919 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:47:52,954 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:50:09,775 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 12:50:09,803 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:50:09,811 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:50:09,812 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 12:50:09,812 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 12:50:09,905 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 12:50:09,929 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 12:50:09,929 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 12:50:09,941 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-18 12:50:12,339 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:50:12,402 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:50:12,402 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:50:12,402 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:50:13,049 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:50:16,858 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:50:17,024 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:50:17,029 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:50:17,061 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:50:17,063 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:50:19,081 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:50:19,092 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:50:19,092 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:50:19,094 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:50:22,126 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:52:31,117 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:52:31,178 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:52:31,179 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:52:31,179 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:52:31,792 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:52:34,879 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:52:35,046 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:52:35,068 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:52:35,100 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:52:35,101 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:52:37,133 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:52:37,143 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:52:37,143 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:52:37,144 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:52:40,178 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:52:57,651 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 12:52:57,655 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:52:57,662 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:52:57,663 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 12:52:57,663 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 12:52:57,740 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 12:52:57,755 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 12:52:57,755 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 12:52:57,767 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-18 12:53:56,514 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:53:56,517 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:56:02,622 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 12:56:02,682 - MainController - INFO - Sistema POS iniciado
+2025-10-18 12:56:02,682 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 12:56:02,682 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 12:56:03,352 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 12:56:05,566 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 12:56:05,569 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:56:05,576 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:56:05,576 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 12:56:05,577 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 12:56:05,673 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 12:56:05,697 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 12:56:05,697 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 12:56:05,710 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-18 12:56:10,119 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 12:56:10,290 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:56:10,320 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:56:10,351 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:56:10,352 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 12:56:12,383 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:56:12,395 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:56:12,396 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 12:56:12,397 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 12:56:15,428 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 12:56:21,050 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 12:56:21,051 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 12:56:39,774 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 12:56:39,778 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 12:56:39,785 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 12:56:39,785 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 12:56:39,785 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 12:56:39,844 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 12:56:39,860 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 12:56:39,861 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 13:02:03,288 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 13:02:03,291 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:02:03,299 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 13:02:03,299 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 13:02:03,299 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 13:02:03,346 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 13:02:03,375 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 13:02:03,375 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 13:02:11,843 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 13:02:11,874 - MainController - INFO - Sistema POS iniciado
+2025-10-18 13:02:11,875 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 13:02:11,875 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 13:02:12,495 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 13:02:15,353 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 13:02:15,512 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:02:15,529 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:02:15,559 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:02:15,561 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 13:02:17,578 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:02:17,586 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 13:02:17,587 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 13:02:17,588 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 13:02:20,629 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 13:02:37,039 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:02:37,041 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:03:27,093 - model.ProductModel - INFO - Producto 8 actualizado exitosamente
+2025-10-18 13:03:27,093 - controller.ProductController - INFO - Producto 8 actualizado por admin
+2025-10-18 13:03:29,692 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:03:29,693 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:03:42,345 - model.ProductModel - INFO - Producto 8 actualizado exitosamente
+2025-10-18 13:03:42,346 - controller.ProductController - INFO - Producto 8 actualizado por admin
+2025-10-18 13:03:43,850 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:03:43,852 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:13:48,861 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 13:13:48,924 - MainController - INFO - Sistema POS iniciado
+2025-10-18 13:13:48,925 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 13:13:48,925 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 13:13:49,528 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 13:13:53,975 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 13:13:54,149 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:13:54,153 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:13:54,173 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:13:54,175 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 13:13:56,198 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:13:56,207 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 13:13:56,207 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 13:13:56,208 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 13:13:59,243 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 13:14:40,628 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:14:40,630 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:14:54,530 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:14:54,531 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:21:42,821 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 13:21:42,825 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:21:42,832 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 13:21:42,832 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 13:21:42,832 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 13:21:42,870 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 13:21:42,891 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 13:21:42,892 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 13:21:46,070 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:21:46,071 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:21:54,034 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:21:54,035 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:21:59,749 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:21:59,750 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:28:19,761 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:28:19,763 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:28:31,958 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:28:31,960 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:28:39,056 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:28:39,058 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:29:01,043 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:29:01,045 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:29:17,482 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:29:17,484 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:36:35,092 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 13:36:35,149 - MainController - INFO - Sistema POS iniciado
+2025-10-18 13:36:35,150 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 13:36:35,150 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 13:36:35,731 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 13:36:41,843 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 13:36:42,012 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:36:42,027 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:36:42,059 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:36:42,060 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 13:36:44,081 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:36:44,089 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 13:36:44,089 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 13:36:44,090 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 13:36:47,128 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 13:36:58,293 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:36:58,295 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:37:10,871 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:37:10,873 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:37:54,549 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-18 13:37:54,574 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:37:54,581 - controller.RoleController - INFO - Se obtuvieron 9 roles
+2025-10-18 13:37:54,604 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:38:14,918 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:38:14,920 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:38:23,713 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:38:23,714 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:38:28,878 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-18 13:38:28,896 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:38:28,902 - controller.RoleController - INFO - Se obtuvieron 9 roles
+2025-10-18 13:38:28,927 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:38:34,850 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-10-18 13:38:34,851 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-18 13:39:25,666 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:39:25,668 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:41:14,103 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 13:41:14,104 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 13:41:19,133 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-18 13:41:19,137 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 13:41:19,144 - controller.RoleController - INFO - Se obtuvieron 9 roles
+2025-10-18 13:41:19,173 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:03:20,151 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 14:03:20,155 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:03:20,163 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 14:03:20,163 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 14:03:20,163 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 14:03:20,188 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 14:03:20,209 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 14:03:20,209 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 14:03:22,698 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 14:03:22,756 - MainController - INFO - Sistema POS iniciado
+2025-10-18 14:03:22,757 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 14:03:22,757 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 14:03:23,306 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 14:03:23,456 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 14:03:23,459 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:03:23,465 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 14:03:23,465 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 14:03:23,466 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 14:03:23,508 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 14:03:23,524 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 14:03:23,524 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 14:03:25,858 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 14:03:26,053 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:03:26,083 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:03:26,091 - model.UserModel - WARNING - Contraseña incorrecta para: admin
+2025-10-18 14:03:28,101 - AuthController - WARNING - Error de login: Credenciales incorrectas. Te quedan 2 intentos.
+2025-10-18 14:03:28,102 - MainController - WARNING - Fallo de login: Credenciales incorrectas. Te quedan 2 intentos.
+2025-10-18 14:03:33,354 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 14:03:33,483 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:03:33,498 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:03:33,510 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:03:33,511 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 14:03:35,538 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:03:35,549 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 14:03:35,550 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 14:03:35,551 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 14:03:38,576 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 14:03:43,621 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 14:03:43,623 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 14:03:52,995 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 14:03:52,996 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 14:04:09,766 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 14:04:09,767 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 14:04:17,554 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-18 14:04:17,574 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:04:17,580 - controller.RoleController - INFO - Se obtuvieron 9 roles
+2025-10-18 14:04:17,603 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:04:26,156 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 14:04:26,157 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 14:05:41,438 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 14:05:41,439 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 14:05:45,771 - MainController - ERROR - Error editando producto: wrong # args: should be ".!toplevel.!frame2.!canvas.!frame.!frame.!frame5.!frame.!entry insert index text"
+2025-10-18 14:05:55,358 - MainController - ERROR - Error editando producto: wrong # args: should be ".!toplevel2.!frame2.!canvas.!frame.!frame.!frame5.!frame.!entry insert index text"
+2025-10-18 14:07:32,993 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 14:07:33,015 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:07:33,022 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 14:07:33,023 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 14:07:33,023 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 14:07:33,085 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 14:07:33,119 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 14:07:33,119 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 14:07:40,577 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 14:07:40,635 - MainController - INFO - Sistema POS iniciado
+2025-10-18 14:07:40,635 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 14:07:40,636 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 14:07:41,234 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 14:07:45,105 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 14:07:45,298 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:07:45,327 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:07:45,358 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:07:45,359 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 14:07:47,376 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:07:47,387 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 14:07:47,387 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 14:07:47,388 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 14:07:50,416 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 14:07:58,753 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 14:07:58,754 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 14:08:00,976 - MainController - ERROR - Error editando producto: wrong # args: should be ".!toplevel.!frame2.!canvas.!frame.!frame.!frame5.!frame.!entry insert index text"
+2025-10-18 14:10:08,272 - MainController - INFO - Cerrando aplicación POS
+2025-10-18 14:10:08,275 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:10:08,283 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 14:10:08,283 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 14:10:08,283 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-18 14:10:08,355 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 14:10:08,387 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-18 14:10:08,387 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-18 14:10:15,820 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-18 14:10:15,854 - MainController - INFO - Sistema POS iniciado
+2025-10-18 14:10:15,854 - MainController - INFO - Iniciando aplicación POS
+2025-10-18 14:10:15,855 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 14:10:16,407 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 14:10:24,424 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-18 14:10:24,605 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:10:24,633 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:10:24,665 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:10:24,667 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-18 14:10:26,686 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:10:26,693 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 14:10:26,694 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-18 14:10:26,695 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-18 14:10:29,730 - MainController - INFO - Login exitoso para admin: admin
+2025-10-18 14:10:51,591 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-18 14:10:51,594 - model.ProductModel - INFO - Se obtuvieron 8 productos
+2025-10-18 14:18:12,545 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-18 14:18:12,553 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-18 14:18:12,553 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-18 14:18:12,553 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-10-18 14:18:12,638 - MainController - INFO - Mostrando pantalla de login
+2025-10-18 14:18:12,640 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-18 14:18:17,153 - AuthController - INFO - Logout exitoso para: admin
+2025-10-18 14:18:17,157 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'

@@ -68,6 +68,9 @@ class ConfigurationView(BaseView):
         # Header
         self.create_header()
         
+        # Navbar
+        self.create_navbar()
+        
         # Notebook para las categorías
         self.create_categories_notebook()
         
@@ -83,29 +86,9 @@ class ConfigurationView(BaseView):
         content_frame = tk.Frame(header_frame, bg='#2c3e50')
         content_frame.pack(expand=True, fill='both', padx=30, pady=15)
         
-        # Frame izquierdo para botón de volver y título
-        left_frame = tk.Frame(content_frame, bg='#2c3e50')
-        left_frame.pack(side='left', fill='y')
-        
-        # Botón de volver (solo en modo embebido)
-        if self.embedded:
-            back_button = tk.Button(
-                left_frame,
-                text="← Volver al Dashboard",
-                command=self.go_back_to_dashboard,
-                bg='#34495e',
-                fg='white',
-                font=('Segoe UI', 10, 'bold'),
-                relief='flat',
-                cursor='hand2',
-                padx=15,
-                pady=5
-            )
-            back_button.pack(side='left', padx=(0, 20))
-        
-        # Título
+        # Título (izquierda)
         title_label = tk.Label(
-            left_frame,
+            content_frame,
             text="⚙️ Configuración del Sistema",
             font=('Segoe UI', 20, 'bold'),
             fg='white',
@@ -113,7 +96,23 @@ class ConfigurationView(BaseView):
         )
         title_label.pack(side='left')
         
-        # Usuario actual
+        # Botón de volver (derecha) - solo en modo embebido
+        if self.embedded:
+            back_button = tk.Button(
+                content_frame,
+                text="⬅️ Volver al Dashboard",
+                command=self.go_back_to_dashboard,
+                bg='#34495e',
+                fg='white',
+                font=('Segoe UI', 10, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=8
+            )
+            back_button.pack(side='right', padx=10)
+        
+        # Usuario actual (derecha, antes del botón)
         user_text = f"Usuario: {self.user_data.get('full_name', self.user_data.get('username', 'Admin'))}"
         user_label = tk.Label(
             content_frame,
@@ -123,6 +122,83 @@ class ConfigurationView(BaseView):
             bg='#2c3e50'
         )
         user_label.pack(side='right')
+    
+    def create_navbar(self):
+        """Crear navbar personalizado - GLOBAL para todos los módulos"""
+        navbar_frame = tk.Frame(self.root, bg='#2c3e50', height=50)
+        navbar_frame.pack(fill='x')
+        navbar_frame.pack_propagate(False)
+        
+        # Estilo de botones
+        btn_style = {
+            'font': ('Segoe UI', 12, 'bold'),
+            'bg': '#2c3e50',
+            'fg': 'white',
+            'activebackground': '#34495e',
+            'activeforeground': 'white',
+            'relief': 'flat',
+            'bd': 0,
+            'padx': 20,
+            'pady': 10,
+            'cursor': 'hand2'
+        }
+        
+        # Contenedor de botones
+        buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
+        buttons_container.pack(side='left', padx=10, pady=5)
+        
+        # Botón Archivo
+        file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
+        file_btn.pack(side='left', padx=2)
+        file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
+        file_btn.config(menu=file_menu)
+        file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        file_menu.add_separator()
+        if self.embedded:
+            file_menu.add_command(label="Volver al Dashboard", command=self.go_back_to_dashboard)
+        
+        # Botón Ventas
+        sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
+        sales_btn.pack(side='left', padx=2)
+        sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
+        sales_btn.config(menu=sales_menu)
+        sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        
+        # Botón Inventario
+        inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
+        inv_btn.pack(side='left', padx=2)
+        inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
+        inv_btn.config(menu=inv_menu)
+        inv_menu.add_command(label="Ver Productos", command=self.callbacks.get('view_products', lambda: None))
+        inv_menu.add_command(label="Gestionar Categorías", command=self.callbacks.get('view_categories', lambda: None))
+        inv_menu.add_command(label="Control de Stock", command=self.callbacks.get('stock_control', lambda: None))
+        
+        # Botón Reportes
+        rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
+        rep_btn.pack(side='left', padx=2)
+        rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
+        rep_btn.config(menu=rep_menu)
+        rep_menu.add_command(label="Ventas del Día", command=self.callbacks.get('daily_report', lambda: None))
+        rep_menu.add_command(label="Reporte Completo", command=self.callbacks.get('full_report', lambda: None))
+        
+        # Botón Administración
+        admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
+        admin_btn.pack(side='left', padx=2)
+        admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
+        admin_btn.config(menu=admin_menu)
+        admin_menu.add_command(label="Gestionar Usuarios", command=self.callbacks.get('manage_users', lambda: None))
+        admin_menu.add_command(label="Gestionar Roles", command=self.callbacks.get('manage_roles', lambda: None))
+        admin_menu.add_separator()
+        admin_menu.add_command(label="Configuración del Sistema", command=lambda: None)
+        
+        # Botón Ayuda
+        help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
+        help_btn.pack(side='left', padx=2)
+        help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 11))
+        help_btn.config(menu=help_menu)
+        help_menu.add_command(label="Manual de Usuario", command=self.callbacks.get('show_manual', lambda: None))
+        help_menu.add_command(label="Acerca de", command=self.callbacks.get('show_about', lambda: None))
     
     def create_categories_notebook(self):
         """Crear notebook con categorías de configuración"""
