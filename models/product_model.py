@@ -432,6 +432,39 @@ class ProductModel(BaseModel):
             self.logger.error(f"Error al buscar productos: {e}")
             return []
     
+    def get_by_barcode(self, barcode: str) -> Optional[Dict[str, Any]]:
+        """Buscar producto por código de barras exacto"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return None
+            
+            cursor = connection.cursor(dictionary=True)
+            
+            query = """
+                SELECT 
+                    p.*,
+                    c.name as category_name,
+                    u.name as unit_name,
+                    u.symbol as unit_symbol
+                FROM products p
+                LEFT JOIN categories c ON p.category_id = c.id
+                LEFT JOIN units u ON p.unit_id = u.id
+                WHERE p.barcode = %s
+                AND p.status = 'active'
+                LIMIT 1
+            """
+            
+            cursor.execute(query, (barcode,))
+            product = cursor.fetchone()
+            cursor.close()
+            
+            return product
+            
+        except Exception as e:
+            self.logger.error(f"Error al buscar producto por código de barras: {e}")
+            return None
+    
     def get_low_stock_products(self) -> List[Dict[str, Any]]:
         """Obtener productos con stock bajo"""
         try:

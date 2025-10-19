@@ -1,0 +1,1337 @@
+"""
+Vista de Punto de Venta (POS)
+Sistema de ventas con carrito y procesamiento de pagos
+Autor: Sistema POS
+Fecha: 2025
+"""
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+from datetime import datetime
+from decimal import Decimal
+import logging
+
+class POSView:
+    """Vista del Punto de Venta"""
+    
+    def __init__(self, parent, controller, user_data, on_back=None):
+        self.parent = parent
+        self.controller = controller
+        self.user_data = user_data
+        self.on_back = on_back
+        
+        # Estado del carrito
+        self.cart_items = []
+        self.current_customer = None
+        
+        # Variables de cálculo
+        self.current_total = 0.0
+        
+        # Frame principal
+        self.main_frame = tk.Frame(parent, bg='#ecf0f1')
+        self.main_frame.pack(fill='both', expand=True)
+        
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Configura la interfaz completa"""
+        # Header
+        self.create_header()
+        
+        # Contenedor principal (3 columnas)
+        content_frame = tk.Frame(self.main_frame, bg='#ecf0f1')
+        content_frame.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # Columna izquierda: Búsqueda y productos
+        left_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1)
+        left_frame.pack(side='left', fill='both', expand=True, padx=(0, 5))
+        self.create_search_section(left_frame)
+        
+        # Columna central: Carrito
+        center_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1)
+        center_frame.pack(side='left', fill='both', expand=True, padx=5)
+        self.create_cart_section(center_frame)
+        
+        # Columna derecha: Totales y pago
+        right_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1)
+        right_frame.pack(side='left', fill='both', padx=(5, 0))
+        self.create_totals_section(right_frame)
+    
+    def create_header(self):
+        """Crea el header con información del cajero"""
+        header = tk.Frame(self.main_frame, bg='#2c3e50', height=80)
+        header.pack(fill='x')
+        header.pack_propagate(False)
+        
+        # Título
+        title_label = tk.Label(
+            header,
+            text="💰 PUNTO DE VENTA",
+            font=('Segoe UI', 20, 'bold'),
+            bg='#2c3e50',
+            fg='white'
+        )
+        title_label.pack(side='left', padx=20, pady=10)
+        
+        # Info del usuario
+        user_info = tk.Frame(header, bg='#2c3e50')
+        user_info.pack(side='right', padx=20, pady=10)
+        
+        tk.Label(
+            user_info,
+            text=f"👤 Cajero: {self.user_data.get('full_name', 'Usuario')}",
+            font=('Segoe UI', 10),
+            bg='#2c3e50',
+            fg='white'
+        ).pack()
+        
+        tk.Label(
+            user_info,
+            text=f"📅 {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+            font=('Segoe UI', 9),
+            bg='#2c3e50',
+            fg='#bdc3c7'
+        ).pack()
+        
+        # Botón volver
+        if self.on_back:
+            back_btn = tk.Button(
+                header,
+                text="⬅️ Volver",
+                command=self.on_back,
+                font=('Segoe UI', 10),
+                bg='#34495e',
+                fg='white',
+                relief='flat',
+                padx=15,
+                pady=5,
+                cursor='hand2'
+            )
+            back_btn.pack(side='right', padx=10)
+    
+    def create_search_section(self, parent):
+        """Crea sección de búsqueda de productos"""
+        # Header de búsqueda
+        search_header = tk.Frame(parent, bg='#3498db', height=50)
+        search_header.pack(fill='x')
+        search_header.pack_propagate(False)
+        
+        tk.Label(
+            search_header,
+            text="🔍  BUSCAR PRODUCTOS",
+            font=('Segoe UI', 13, 'bold'),
+            bg='#3498db',
+            fg='white'
+        ).pack(side='left', padx=15, pady=12)
+        
+        # Frame de búsqueda
+        search_frame = tk.Frame(parent, bg='white')
+        search_frame.pack(fill='x', padx=10, pady=10)
+        
+        # Campo de búsqueda con mejor diseño
+        self.search_var = tk.StringVar()
+        self.search_var.trace('w', lambda *args: self.on_search_change())
+        
+        # Variable para controlar el delay de búsqueda
+        self.search_timer = None
+        
+        search_entry = tk.Entry(
+            search_frame,
+            textvariable=self.search_var,
+            font=('Segoe UI', 12),
+            relief='solid',
+            borderwidth=1,
+            highlightthickness=2,
+            highlightcolor='#3498db',
+            highlightbackground='#bdc3c7'
+        )
+        search_entry.pack(fill='x', pady=(0, 5), ipady=5)
+        search_entry.focus()
+        
+        # Bind enter para agregar rápido
+        search_entry.bind('<Return>', lambda e: self.quick_add_product())
+        
+        # Instrucciones mejoradas
+        instruction_frame = tk.Frame(search_frame, bg='#e8f4f8', relief='solid', borderwidth=1)
+        instruction_frame.pack(fill='x', pady=(5, 0), padx=1)
+        
+        tk.Label(
+            instruction_frame,
+            text="💡 Busca por nombre, SKU o código de barras | Enter: Agregar | Doble click: Seleccionar",
+            font=('Segoe UI', 8),
+            bg='#e8f4f8',
+            fg='#2c3e50',
+            anchor='w'
+        ).pack(padx=8, pady=5)
+        
+        # Tabla de productos (Treeview como el carrito)
+        tree_frame = tk.Frame(parent, bg='white')
+        tree_frame.pack(fill='both', expand=True, padx=10, pady=(0, 10))
+        
+        # Scrollbar
+        scrollbar = tk.Scrollbar(tree_frame)
+        scrollbar.pack(side='right', fill='y')
+        
+        # Treeview de productos
+        columns = ('sku', 'name', 'price', 'stock')
+        self.products_tree = ttk.Treeview(
+            tree_frame,
+            columns=columns,
+            show='headings',
+            height=15,
+            yscrollcommand=scrollbar.set
+        )
+        
+        # Configurar columnas
+        self.products_tree.heading('sku', text='SKU')
+        self.products_tree.heading('name', text='Nombre del Producto')
+        self.products_tree.heading('price', text='Precio')
+        self.products_tree.heading('stock', text='Stock')
+        
+        self.products_tree.column('sku', width=120, anchor='w')
+        self.products_tree.column('name', width=300, anchor='w')
+        self.products_tree.column('price', width=100, anchor='e')
+        self.products_tree.column('stock', width=80, anchor='center')
+        
+        self.products_tree.pack(fill='both', expand=True)
+        scrollbar.config(command=self.products_tree.yview)
+        
+        # Estilos para el Treeview
+        style = ttk.Style()
+        style.configure("Treeview",
+            background="#ffffff",
+            foreground="#2c3e50",
+            rowheight=30,
+            fieldbackground="#ffffff",
+            font=('Segoe UI', 10)
+        )
+        style.configure("Treeview.Heading",
+            font=('Segoe UI', 10, 'bold'),
+            background="#3498db",
+            foreground="#ffffff"
+        )
+        style.map('Treeview', background=[('selected', '#3498db')])
+        
+        # Bind doble click y Enter para agregar
+        self.products_tree.bind('<Double-Button-1>', lambda e: self.add_selected_product())
+        self.products_tree.bind('<Return>', lambda e: self.add_selected_product())
+        
+        # Footer con total de productos y botón
+        footer_frame = tk.Frame(parent, bg='white')
+        footer_frame.pack(fill='x', padx=10, pady=(5, 10))
+        
+        # Label de total de productos (izquierda)
+        self.products_count_label = tk.Label(
+            footer_frame,
+            text="📦 Total: 0 productos disponibles",
+            font=('Segoe UI', 9),
+            bg='white',
+            fg='#7f8c8d'
+        )
+        self.products_count_label.pack(side='left')
+        
+        # Leyenda de stock (centro)
+        legend_label = tk.Label(
+            footer_frame,
+            text="🟢 Stock OK  |  🟡 Stock Bajo  |  🔴 Stock Crítico",
+            font=('Segoe UI', 8),
+            bg='white',
+            fg='#7f8c8d'
+        )
+        legend_label.pack(side='left', padx=20)
+        
+        # Botón agregar
+        add_btn = tk.Button(
+            footer_frame,
+            text="➕ Agregar al Carrito",
+            command=self.add_selected_product,
+            font=('Segoe UI', 10, 'bold'),
+            bg='#3498db',
+            fg='white',
+            relief='flat',
+            padx=15,
+            pady=8,
+            cursor='hand2'
+        )
+        add_btn.pack(side='right')
+        
+        # Efecto hover para el botón
+        add_btn.bind('<Enter>', lambda e: add_btn.config(bg='#2980b9'))
+        add_btn.bind('<Leave>', lambda e: add_btn.config(bg='#3498db'))
+        
+        # Inicializar diccionario de productos
+        self.product_data = {}
+        
+        # Cargar productos iniciales (después de que la UI esté lista)
+        self.main_frame.after(100, self.load_initial_products)
+        
+    def create_cart_section(self, parent):
+        """Crea sección del carrito de compras"""
+        # Header del carrito
+        cart_header = tk.Frame(parent, bg='#e74c3c', height=50)
+        cart_header.pack(fill='x')
+        cart_header.pack_propagate(False)
+        
+        tk.Label(
+            cart_header,
+            text="🛒  CARRITO DE COMPRAS",
+            font=('Segoe UI', 13, 'bold'),
+            bg='#e74c3c',
+            fg='white'
+        ).pack(side='left', padx=15, pady=12)
+        
+        self.cart_count_label = tk.Label(
+            cart_header,
+            text="🛒 Carrito vacío",
+            font=('Segoe UI', 10),
+            bg='#e74c3c',
+            fg='white'
+        )
+        self.cart_count_label.pack(side='right', padx=15)
+        
+        # Cliente seleccionado
+        customer_frame = tk.Frame(parent, bg='#ecf0f1')
+        customer_frame.pack(fill='x', padx=10, pady=10)
+        
+        tk.Label(
+            customer_frame,
+            text="👤 Cliente:",
+            font=('Segoe UI', 9, 'bold'),
+            bg='#ecf0f1'
+        ).pack(side='left')
+        
+        self.customer_label = tk.Label(
+            customer_frame,
+            text="Cliente Genérico",
+            font=('Segoe UI', 9),
+            bg='#ecf0f1',
+            fg='#7f8c8d'
+        )
+        self.customer_label.pack(side='left', padx=5)
+        
+        # Botón cambiar cliente
+        tk.Button(
+            customer_frame,
+            text="Cambiar",
+            command=self.select_customer,
+            font=('Segoe UI', 8),
+            bg='#3498db',
+            fg='white',
+            relief='flat',
+            cursor='hand2'
+        ).pack(side='right')
+        
+        # Treeview del carrito
+        tree_frame = tk.Frame(parent, bg='white')
+        tree_frame.pack(fill='both', expand=True, padx=10, pady=(0, 10))
+        
+        # Scrollbar
+        scrollbar = tk.Scrollbar(tree_frame)
+        scrollbar.pack(side='right', fill='y')
+        
+        # Treeview
+        columns = ('Producto', 'Cant.', 'Precio', 'Subtotal')
+        self.cart_tree = ttk.Treeview(
+            tree_frame,
+            columns=columns,
+            show='headings',
+            height=15,
+            yscrollcommand=scrollbar.set
+        )
+        
+        # Configurar columnas
+        self.cart_tree.heading('Producto', text='Producto')
+        self.cart_tree.heading('Cant.', text='Cant.')
+        self.cart_tree.heading('Precio', text='Precio')
+        self.cart_tree.heading('Subtotal', text='Subtotal')
+        
+        self.cart_tree.column('Producto', width=200)
+        self.cart_tree.column('Cant.', width=60, anchor='center')
+        self.cart_tree.column('Precio', width=80, anchor='e')
+        self.cart_tree.column('Subtotal', width=100, anchor='e')
+        
+        self.cart_tree.pack(fill='both', expand=True)
+        scrollbar.config(command=self.cart_tree.yview)
+        
+        # Botones de carrito
+        buttons_frame = tk.Frame(parent, bg='white')
+        buttons_frame.pack(fill='x', padx=10, pady=(0, 10))
+        
+        tk.Button(
+            buttons_frame,
+            text="➖ Quitar",
+            command=self.remove_from_cart,
+            font=('Segoe UI', 9),
+            bg='#e67e22',
+            fg='white',
+            relief='flat',
+            padx=10,
+            cursor='hand2'
+        ).pack(side='left', padx=2)
+        
+        tk.Button(
+            buttons_frame,
+            text="✏️ Editar Cantidad",
+            command=self.edit_quantity,
+            font=('Segoe UI', 9),
+            bg='#3498db',
+            fg='white',
+            relief='flat',
+            padx=10,
+            cursor='hand2'
+        ).pack(side='left', padx=2)
+        
+        tk.Button(
+            buttons_frame,
+            text="🗑️ Vaciar Carrito",
+            command=self.clear_cart,
+            font=('Segoe UI', 9),
+            bg='#c0392b',
+            fg='white',
+            relief='flat',
+            padx=10,
+            cursor='hand2'
+        ).pack(side='right', padx=2)
+    
+    def create_totals_section(self, parent):
+        """Crea sección de totales y pago"""
+        # Header
+        totals_header = tk.Frame(parent, bg='#27ae60', height=50)
+        totals_header.pack(fill='x')
+        totals_header.pack_propagate(False)
+        
+        tk.Label(
+            totals_header,
+            text="💵  TOTALES Y PAGO",
+            font=('Segoe UI', 13, 'bold'),
+            bg='#27ae60',
+            fg='white'
+        ).pack(padx=15, pady=12)
+        
+        # Frame de totales
+        totals_frame = tk.Frame(parent, bg='white')
+        totals_frame.pack(fill='x', padx=15, pady=15)
+        
+        # Subtotal
+        self.create_total_row(totals_frame, "Subtotal:", "0.00", 'subtotal')
+        
+        # Descuento
+        discount_frame = tk.Frame(totals_frame, bg='white')
+        discount_frame.pack(fill='x', pady=5)
+        
+        tk.Label(
+            discount_frame,
+            text="Descuento:",
+            font=('Segoe UI', 11),
+            bg='white'
+        ).pack(side='left')
+        
+        self.discount_var = tk.StringVar(value="0.00")
+        self.discount_entry = tk.Entry(
+            discount_frame,
+            textvariable=self.discount_var,
+            font=('Segoe UI', 11),
+            width=10,
+            justify='right',
+            relief='solid',
+            borderwidth=1,
+            highlightthickness=1,
+            highlightcolor='#3498db',
+            highlightbackground='#bdc3c7'
+        )
+        self.discount_entry.pack(side='right', ipady=2)
+        self.discount_entry.bind('<KeyRelease>', lambda e: self.calculate_totals())
+        
+        # ===== TOGGLE SWITCH IGV =====
+        igv_frame = tk.Frame(totals_frame, bg='white')
+        igv_frame.pack(fill='x', pady=8)
+        
+        # Label IGV
+        tk.Label(
+            igv_frame,
+            text="IGV:",
+            font=('Segoe UI', 11, 'bold'),
+            bg='white'
+        ).pack(side='left')
+        
+        # Variable para el toggle
+        self.include_tax_var = tk.BooleanVar(value=True)
+        
+        # Frame del toggle switch personalizado
+        toggle_frame = tk.Frame(igv_frame, bg='white')
+        toggle_frame.pack(side='left', padx=10)
+        
+        # Canvas para el toggle switch
+        self.toggle_canvas = tk.Canvas(
+            toggle_frame,
+            width=50,
+            height=24,
+            bg='white',
+            highlightthickness=0,
+            cursor='hand2'
+        )
+        self.toggle_canvas.pack(side='left')
+        
+        # Dibujar el toggle switch
+        self.toggle_bg = self.toggle_canvas.create_oval(2, 2, 48, 22, fill='#27ae60', outline='')
+        self.toggle_circle = self.toggle_canvas.create_oval(28, 4, 44, 20, fill='white', outline='')
+        
+        # Bind click en el toggle
+        self.toggle_canvas.bind('<Button-1>', self.toggle_tax)
+        
+        # Label de estado
+        self.tax_status_label = tk.Label(
+            toggle_frame,
+            text="ON",
+            font=('Segoe UI', 9, 'bold'),
+            bg='white',
+            fg='#27ae60'
+        )
+        self.tax_status_label.pack(side='left', padx=5)
+        
+        # Label de monto IGV (a la derecha)
+        self.tax_label = tk.Label(
+            igv_frame,
+            text="S/ 0.00 (18%)",
+            font=('Segoe UI', 11),
+            bg='white',
+            anchor='e'
+        )
+        self.tax_label.pack(side='right')
+        
+        # Separador
+        tk.Frame(totals_frame, bg='#bdc3c7', height=2).pack(fill='x', pady=10)
+        
+        # Total
+        total_frame = tk.Frame(totals_frame, bg='#ecf0f1', relief='solid', borderwidth=1)
+        total_frame.pack(fill='x', pady=5)
+        
+        tk.Label(
+            total_frame,
+            text="TOTAL:",
+            font=('Segoe UI', 14, 'bold'),
+            bg='#ecf0f1'
+        ).pack(side='left', padx=10, pady=10)
+        
+        self.total_label = tk.Label(
+            total_frame,
+            text="S/ 0.00",
+            font=('Segoe UI', 18, 'bold'),
+            bg='#ecf0f1',
+            fg='#27ae60'
+        )
+        self.total_label.pack(side='right', padx=10, pady=10)
+        
+        # Método de pago
+        payment_frame = tk.Frame(parent, bg='white')
+        payment_frame.pack(fill='x', padx=15, pady=(10, 0))
+        
+        tk.Label(
+            payment_frame,
+            text="💳 Método de Pago:",
+            font=('Segoe UI', 10, 'bold'),
+            bg='white'
+        ).pack(anchor='w', pady=(0, 5))
+        
+        self.payment_method_var = tk.StringVar(value='cash')
+        
+        # ComboBox para métodos de pago
+        payment_combo = ttk.Combobox(
+            payment_frame,
+            textvariable=self.payment_method_var,
+            values=['cash', 'card', 'transfer'],
+            state='readonly',
+            font=('Segoe UI', 10),
+            width=20
+        )
+        payment_combo.pack(anchor='w', pady=2)
+        
+        # Función para mostrar texto amigable
+        def format_payment_display(value):
+            mapping = {
+                'cash': '💵 Efectivo',
+                'card': '💳 Tarjeta',
+                'transfer': '🏦 Transferencia'
+            }
+            return mapping.get(value, value)
+        
+        # Configurar el display inicial
+        payment_combo.set('cash')
+        
+        # Personalizar el display (aunque el combobox muestra los valores internos)
+        # Para mejor UX, podríamos usar valores con emojis directamente
+        payment_combo.configure(values=[
+            '💵 Efectivo',
+            '💳 Tarjeta', 
+            '🏦 Transferencia'
+        ])
+        
+        # Función para obtener el valor real
+        def get_payment_value():
+            display = self.payment_method_var.get()
+            mapping = {
+                '💵 Efectivo': 'cash',
+                '💳 Tarjeta': 'card',
+                '🏦 Transferencia': 'transfer'
+            }
+            return mapping.get(display, 'cash')
+        
+        # Guardar la función para usar en process_sale
+        self.get_payment_value = get_payment_value
+        
+        # Establecer valor inicial con emoji
+        payment_combo.set('💵 Efectivo')
+        
+        # Monto pagado (solo para efectivo)
+        paid_frame = tk.Frame(parent, bg='white')
+        paid_frame.pack(fill='x', padx=15, pady=10)
+        
+        tk.Label(
+            paid_frame,
+            text="💰 Monto pagado:",
+            font=('Segoe UI', 11, 'bold'),
+            bg='white'
+        ).pack(side='left')
+        
+        self.paid_var = tk.StringVar(value="0.00")
+        self.paid_entry = tk.Entry(
+            paid_frame,
+            textvariable=self.paid_var,
+            font=('Segoe UI', 12),
+            width=12,
+            justify='right',
+            relief='solid',
+            borderwidth=1,
+            highlightthickness=2,
+            highlightcolor='#27ae60',
+            highlightbackground='#bdc3c7'
+        )
+        self.paid_entry.pack(side='right', ipady=3)
+        
+        # Limpiar valor al hacer focus
+        self.paid_entry.bind('<FocusIn>', self.on_paid_focus_in)
+        self.paid_entry.bind('<KeyRelease>', lambda e: self.calculate_change())
+        
+        # Vuelto
+        change_frame = tk.Frame(parent, bg='#ecf0f1', relief='solid', borderwidth=1)
+        change_frame.pack(fill='x', padx=15, pady=(0, 15))
+        
+        tk.Label(
+            change_frame,
+            text="💵 VUELTO:",
+            font=('Segoe UI', 12, 'bold'),
+            bg='#ecf0f1'
+        ).pack(side='left', padx=10, pady=12)
+        
+        self.change_label = tk.Label(
+            change_frame,
+            text="S/ 0.00",
+            font=('Segoe UI', 13, 'bold'),
+            bg='#ecf0f1',
+            fg='#7f8c8d'
+        )
+        self.change_label.pack(side='right', padx=10, pady=12)
+        
+        # Botón procesar venta
+        self.process_btn = tk.Button(
+            parent,
+            text="✅ PROCESAR VENTA",
+            command=self.process_sale,
+            font=('Segoe UI', 13, 'bold'),
+            bg='#27ae60',
+            fg='white',
+            relief='flat',
+            padx=20,
+            pady=18,
+            cursor='hand2',
+            state='disabled',
+            activebackground='#229954',
+            activeforeground='white',
+            bd=0
+        )
+        self.process_btn.pack(fill='x', padx=15, pady=(0, 15))
+        
+        # Efecto hover
+        self.process_btn.bind('<Enter>', lambda e: self.process_btn.config(bg='#229954') if self.process_btn['state'] == 'normal' else None)
+        self.process_btn.bind('<Leave>', lambda e: self.process_btn.config(bg='#27ae60') if self.process_btn['state'] == 'normal' else None)
+    
+    def create_total_row(self, parent, label, value, attr_name):
+        """Crea una fila de total"""
+        frame = tk.Frame(parent, bg='white')
+        frame.pack(fill='x', pady=5)
+        
+        tk.Label(
+            frame,
+            text=label,
+            font=('Segoe UI', 10),
+            bg='white'
+        ).pack(side='left')
+        
+        label_widget = tk.Label(
+            frame,
+            text=f"S/ {value}",
+            font=('Segoe UI', 10, 'bold'),
+            bg='white'
+        )
+        label_widget.pack(side='right')
+        
+        setattr(self, f'{attr_name}_label', label_widget)
+    
+    # ==========================================
+    # MÉTODOS DE BÚSQUEDA
+    # ==========================================
+    
+    def load_initial_products(self):
+        """Carga los primeros 50 productos al inicio"""
+        try:
+            print("🔍 DEBUG: Cargando productos iniciales...")
+            # Obtener productos activos con stock
+            result = self.controller.search_products_for_sale("")
+            
+            print(f"   - Resultado success: {result.get('success')}")
+            print(f"   - Productos encontrados: {len(result.get('products', []))}")
+            
+            if result['success'] and result['products']:
+                # Mostrar todos los productos encontrados
+                products = result['products']
+                print(f"   - Mostrando {len(products)} productos")
+                self.display_products(products)
+            else:
+                print(f"   ⚠️ No se encontraron productos o hubo un error")
+                if not result['success']:
+                    print(f"   - Error: {result.get('message')}")
+                # Limpiar tabla
+                for item in self.products_tree.get_children():
+                    self.products_tree.delete(item)
+                self.products_count_label.config(
+                    text="📦 No hay productos disponibles con stock",
+                    foreground='#e74c3c'
+                )
+        except Exception as e:
+            print(f"❌ Error cargando productos iniciales: {e}")
+            import traceback
+            traceback.print_exc()
+            for item in self.products_tree.get_children():
+                self.products_tree.delete(item)
+            self.products_count_label.config(
+                text=f"❌ Error: {str(e)}",
+                foreground='#e74c3c'
+            )
+    
+    def on_search_change(self):
+        """Maneja el cambio en la búsqueda con delay para evitar consultas excesivas"""
+        # Cancelar búsqueda anterior si existe
+        if self.search_timer:
+            self.main_frame.after_cancel(self.search_timer)
+        
+        search_text = self.search_var.get().strip()
+        
+        # Si está vacío, mostrar productos iniciales
+        if not search_text:
+            self.search_timer = self.main_frame.after(300, self.load_initial_products)
+            return
+        
+        # Si tiene menos de 2 caracteres, solo filtrar localmente
+        if len(search_text) < 2:
+            return
+        
+        # Buscar después de 300ms de inactividad (evita consultas mientras escribe)
+        self.search_timer = self.main_frame.after(300, lambda: self.perform_search(search_text))
+    
+    def perform_search(self, search_text):
+        """Realiza la búsqueda de productos"""
+        try:
+            # Buscar productos
+            result = self.controller.search_products_for_sale(search_text)
+            
+            if result['success']:
+                if result['products']:
+                    self.display_products(result['products'])
+                else:
+                    # No se encontraron productos - limpiar tabla
+                    for item in self.products_tree.get_children():
+                        self.products_tree.delete(item)
+                    self.products_count_label.config(
+                        text=f"❌ No se encontraron productos para: '{search_text}'",
+                        foreground='#e74c3c'
+                    )
+            else:
+                # Error en la búsqueda
+                for item in self.products_tree.get_children():
+                    self.products_tree.delete(item)
+                self.products_count_label.config(
+                    text=f"⚠️ Error: {result.get('message', 'Error desconocido')}",
+                    foreground='#e74c3c'
+                )
+        except Exception as e:
+            print(f"Error en búsqueda: {e}")
+            for item in self.products_tree.get_children():
+                self.products_tree.delete(item)
+            self.products_count_label.config(
+                text=f"❌ Error al buscar: {str(e)}",
+                foreground='#e74c3c'
+            )
+    
+    def display_products(self, products):
+        """Muestra productos en la tabla Treeview"""
+        print(f"📋 DEBUG: display_products() - Mostrando {len(products)} productos")
+        
+        # Limpiar tabla
+        for item in self.products_tree.get_children():
+            self.products_tree.delete(item)
+        
+        if not products:
+            print("   ⚠️ Lista de productos vacía")
+            return
+        
+        self.product_data = {}
+        
+        for i, product in enumerate(products):
+            # Obtener datos del producto
+            stock_qty = float(product.get('stock_quantity', 0))
+            price = float(product.get('price', 0))
+            sku = product.get('sku', 'N/A')
+            name = product.get('name', 'Sin nombre')
+            
+            # Indicador de stock con emoji
+            if stock_qty <= 5:
+                stock_display = f"🔴 {int(stock_qty)}"
+            elif stock_qty <= 10:
+                stock_display = f"🟡 {int(stock_qty)}"
+            else:
+                stock_display = f"🟢 {int(stock_qty)}"
+            
+            # Insertar en la tabla con colores alternados
+            tags = ('evenrow',) if i % 2 == 0 else ('oddrow',)
+            
+            item_id = self.products_tree.insert('', 'end', 
+                values=(
+                    sku,
+                    name,
+                    f"S/ {price:.2f}",
+                    stock_display
+                ),
+                tags=tags
+            )
+            
+            # Guardar referencia del producto por item_id
+            self.product_data[item_id] = product
+            
+            if i == 0:
+                print(f"   - Primer producto: {sku} - {name}")
+        
+        # Configurar colores alternados
+        self.products_tree.tag_configure('evenrow', background='#f9f9f9')
+        self.products_tree.tag_configure('oddrow', background='#ffffff')
+        
+        # Actualizar contador de productos
+        self.products_count_label.config(
+            text=f"📦 Total: {len(products)} productos disponibles",
+            foreground='#27ae60' if len(products) > 0 else '#7f8c8d'
+        )
+        
+        print(f"   ✅ {len(products)} productos mostrados correctamente")
+    
+    def quick_add_product(self):
+        """Agrega rápido el primer producto de la tabla (Enter en búsqueda)"""
+        children = self.products_tree.get_children()
+        if children:
+            # Seleccionar el primer producto
+            first_item = children[0]
+            self.products_tree.selection_set(first_item)
+            self.products_tree.focus(first_item)
+            self.products_tree.see(first_item)
+            self.add_selected_product()
+    
+    def add_selected_product(self):
+        """Agrega el producto seleccionado al carrito"""
+        selection = self.products_tree.selection()
+        
+        if not selection:
+            messagebox.showwarning("Advertencia", "Selecciona un producto")
+            return
+        
+        item_id = selection[0]
+        product = self.product_data.get(item_id)
+        
+        # Si no hay datos del producto, ignorar
+        if not product:
+            return
+        
+        # Verificar si ya está en el carrito
+        for item in self.cart_items:
+            if item['id'] == product['id']:
+                # Incrementar cantidad
+                if item['quantity'] < product['stock_quantity']:
+                    item['quantity'] += 1
+                    self.update_cart_display()
+                    self.calculate_totals()
+                else:
+                    messagebox.showwarning(
+                        "Stock insuficiente",
+                        f"No hay más stock disponible\nStock actual: {product['stock_quantity']}"
+                    )
+                return
+        
+        # Agregar nuevo item
+        self.cart_items.append({
+            'id': product['id'],
+            'sku': product['sku'],
+            'name': product['name'],
+            'price': float(product['price']),
+            'quantity': 1,
+            'stock_available': float(product['stock_quantity'])
+        })
+        
+        self.update_cart_display()
+        self.calculate_totals()
+        
+        # Limpiar búsqueda
+        self.search_var.set('')
+        # Limpiar tabla de productos
+        for item in self.products_tree.get_children():
+            self.products_tree.delete(item)
+    
+    # ==========================================
+    # MÉTODOS DEL CARRITO
+    # ==========================================
+    
+    def update_cart_display(self):
+        """Actualiza la visualización del carrito con formato mejorado"""
+        # Limpiar árbol
+        for item in self.cart_tree.get_children():
+            self.cart_tree.delete(item)
+        
+        # Agregar items con mejor formato
+        for i, item in enumerate(self.cart_items):
+            subtotal = item['price'] * item['quantity']
+            
+            # Alternar colores de fondo
+            tags = ('evenrow',) if i % 2 == 0 else ('oddrow',)
+            
+            self.cart_tree.insert('', 'end', 
+                values=(
+                    item['name'][:30],  # Truncar nombre largo
+                    f"{item['quantity']:.0f}",
+                    f"S/ {item['price']:.2f}",
+                    f"S/ {subtotal:.2f}"
+                ),
+                tags=tags
+            )
+        
+        # Configurar colores alternados
+        self.cart_tree.tag_configure('evenrow', background='#f0f0f0')
+        self.cart_tree.tag_configure('oddrow', background='#ffffff')
+        
+        # Actualizar contador con emoji
+        total_items = sum(item['quantity'] for item in self.cart_items)
+        if total_items > 0:
+            self.cart_count_label.config(
+                text=f"🛒 {total_items} items",
+                foreground='#27ae60',
+                font=('Segoe UI', 10, 'bold')
+            )
+        else:
+            self.cart_count_label.config(
+                text="🛒 Carrito vacío",
+                foreground='#7f8c8d',
+                font=('Segoe UI', 10)
+            )
+        
+        # Habilitar/deshabilitar botón de procesar
+        if self.cart_items:
+            self.process_btn.config(state='normal')
+        else:
+            self.process_btn.config(state='disabled')
+    
+    def remove_from_cart(self):
+        """Quita un item del carrito"""
+        selection = self.cart_tree.selection()
+        
+        if not selection:
+            messagebox.showwarning("Advertencia", "Selecciona un producto del carrito")
+            return
+        
+        index = self.cart_tree.index(selection[0])
+        self.cart_items.pop(index)
+        
+        self.update_cart_display()
+        self.calculate_totals()
+    
+    def edit_quantity(self):
+        """Edita la cantidad de un item"""
+        selection = self.cart_tree.selection()
+        
+        if not selection:
+            messagebox.showwarning("Advertencia", "Selecciona un producto del carrito")
+            return
+        
+        index = self.cart_tree.index(selection[0])
+        item = self.cart_items[index]
+        
+        # Diálogo para nueva cantidad
+        dialog = tk.Toplevel(self.main_frame)
+        dialog.title("Editar Cantidad")
+        dialog.geometry("300x150")
+        dialog.resizable(False, False)
+        dialog.transient(self.main_frame)
+        dialog.grab_set()
+        
+        tk.Label(
+            dialog,
+            text=f"Producto: {item['name'][:30]}",
+            font=('Segoe UI', 10),
+            wraplength=280
+        ).pack(pady=10)
+        
+        tk.Label(
+            dialog,
+            text=f"Stock disponible: {item['stock_available']}",
+            font=('Segoe UI', 9),
+            fg='#7f8c8d'
+        ).pack()
+        
+        tk.Label(
+            dialog,
+            text="Nueva cantidad:",
+            font=('Segoe UI', 10)
+        ).pack(pady=(10, 5))
+        
+        quantity_var = tk.StringVar(value=str(item['quantity']))
+        quantity_entry = tk.Entry(
+            dialog,
+            textvariable=quantity_var,
+            font=('Segoe UI', 11),
+            justify='center',
+            width=10
+        )
+        quantity_entry.pack()
+        quantity_entry.select_range(0, tk.END)
+        quantity_entry.focus()
+        
+        def save_quantity():
+            try:
+                new_qty = float(quantity_var.get())
+                
+                if new_qty <= 0:
+                    messagebox.showerror("Error", "La cantidad debe ser mayor a 0")
+                    return
+                
+                if new_qty > item['stock_available']:
+                    messagebox.showerror(
+                        "Error",
+                        f"Stock insuficiente\nDisponible: {item['stock_available']}"
+                    )
+                    return
+                
+                item['quantity'] = new_qty
+                self.update_cart_display()
+                self.calculate_totals()
+                dialog.destroy()
+                
+            except ValueError:
+                messagebox.showerror("Error", "Cantidad inválida")
+        
+        tk.Button(
+            dialog,
+            text="Guardar",
+            command=save_quantity,
+            font=('Segoe UI', 10),
+            bg='#27ae60',
+            fg='white',
+            padx=20,
+            pady=5
+        ).pack(pady=10)
+        
+        quantity_entry.bind('<Return>', lambda e: save_quantity())
+    
+    def clear_cart(self):
+        """Vacía el carrito"""
+        if not self.cart_items:
+            return
+        
+        if messagebox.askyesno("Confirmar", "¿Vaciar todo el carrito?"):
+            self.cart_items.clear()
+            self.update_cart_display()
+            self.calculate_totals()
+    
+    # ==========================================
+    # CÁLCULOS
+    # ==========================================
+    
+    def on_paid_focus_in(self, event=None):
+        """Limpia el campo de monto pagado al hacer click"""
+        current_value = self.paid_var.get()
+        print(f"\n🔍 DEBUG on_paid_focus_in:")
+        print(f"   Valor actual en paid_var: '{current_value}'")
+        if current_value == "0.00":
+            self.paid_var.set("")
+            print(f"   ✓ Limpiado a cadena vacía")
+    
+    def toggle_tax(self, event=None):
+        """Alterna el estado del toggle switch de IGV"""
+        # Cambiar estado
+        current = self.include_tax_var.get()
+        self.include_tax_var.set(not current)
+        
+        # Actualizar visual del toggle
+        if self.include_tax_var.get():
+            # ON - Verde
+            self.toggle_canvas.itemconfig(self.toggle_bg, fill='#27ae60')
+            self.toggle_canvas.coords(self.toggle_circle, 28, 4, 44, 20)
+            self.tax_status_label.config(text="ON", fg='#27ae60')
+        else:
+            # OFF - Gris
+            self.toggle_canvas.itemconfig(self.toggle_bg, fill='#95a5a6')
+            self.toggle_canvas.coords(self.toggle_circle, 6, 4, 22, 20)
+            self.tax_status_label.config(text="OFF", fg='#95a5a6')
+        
+        # Recalcular totales inmediatamente
+        self.calculate_totals()
+    
+    def calculate_totals(self):
+        """Calcula los totales de la venta con formato mejorado"""
+        if not self.cart_items:
+            self.subtotal_label.config(
+                text="S/ 0.00",
+                foreground='#7f8c8d',
+                font=('Segoe UI', 11)
+            )
+            self.tax_label.config(
+                text="S/ 0.00 (0%)",
+                foreground='#7f8c8d',
+                font=('Segoe UI', 11)
+            )
+            self.total_label.config(
+                text="S/ 0.00",
+                foreground='#7f8c8d',
+                font=('Segoe UI', 16, 'bold')
+            )
+            self.change_label.config(
+                text="S/ 0.00",
+                foreground='#7f8c8d',
+                font=('Segoe UI', 13, 'bold')
+            )
+            self.current_total = 0.0
+            return
+        
+        # Subtotal
+        subtotal = sum(item['price'] * item['quantity'] for item in self.cart_items)
+        
+        # Descuento
+        try:
+            discount = float(self.discount_var.get())
+        except:
+            discount = 0.0
+        
+        # Subtotal con descuento
+        subtotal_after_discount = subtotal - discount
+        
+        # Leer tax_rate de la configuración (si no existe, usar 18%)
+        try:
+            from config.settings import load_system_config
+            config = load_system_config()
+            tax_rate = float(config.get('tax_rate', 18)) / 100
+        except:
+            tax_rate = 0.18  # Default 18%
+        
+        # IGV - solo si está activado
+        if self.include_tax_var.get():
+            tax = subtotal_after_discount * tax_rate
+            total = subtotal_after_discount + tax
+        else:
+            tax = 0.0
+            total = subtotal_after_discount
+        
+        # Guardar total actual como variable de instancia
+        self.current_total = total
+        
+        # Actualizar labels con colores
+        self.subtotal_label.config(
+            text=f"S/ {subtotal:.2f}",
+            foreground='#2c3e50',
+            font=('Segoe UI', 11)
+        )
+        
+        # Mostrar porcentaje del IGV
+        tax_percentage = int(tax_rate * 100)
+        if self.include_tax_var.get():
+            self.tax_label.config(
+                text=f"S/ {tax:.2f} ({tax_percentage}%)",
+                foreground='#2c3e50',
+                font=('Segoe UI', 11)
+            )
+        else:
+            self.tax_label.config(
+                text=f"S/ 0.00 (0%)",
+                foreground='#95a5a6',
+                font=('Segoe UI', 11)
+            )
+        
+        self.total_label.config(
+            text=f"S/ {total:.2f}",
+            foreground='#27ae60',
+            font=('Segoe UI', 16, 'bold')
+        )
+        
+        # Calcular vuelto
+        self.calculate_change()
+    
+    def calculate_change(self):
+        """Calcula el vuelto con formato mejorado"""
+        try:
+            # Usar la variable de instancia current_total en lugar de leer el label
+            total = getattr(self, 'current_total', 0.0)
+            
+            # Debug completo de la lectura del valor
+            print(f"\n💰 DEBUG calculate_change:")
+            print(f"   Total: S/ {total:.2f}")
+            print(f"   Leyendo paid_var.get(): '{self.paid_var.get()}'")
+            
+            paid_text = self.paid_var.get().strip()
+            print(f"   Después de strip(): '{paid_text}'")
+            
+            # Si está vacío o es "0.00", no mostrar error
+            if not paid_text or paid_text == "0.00":
+                print(f"   ⚠️ Valor vacío o 0.00, mostrando S/ 0.00")
+                self.change_label.config(
+                    text="S/ 0.00",
+                    foreground='#7f8c8d',
+                    font=('Segoe UI', 13, 'bold')
+                )
+                return
+            
+            paid = float(paid_text)
+            print(f"   Convertido a float: {paid:.2f}")
+            
+            change = paid - total
+            print(f"   Vuelto calculado: S/ {change:.2f}")
+            
+            if change >= 0:
+                self.change_label.config(
+                    text=f"S/ {change:.2f}",
+                    foreground='#27ae60',
+                    font=('Segoe UI', 13, 'bold')
+                )
+            else:
+                self.change_label.config(
+                    text=f"Falta: S/ {abs(change):.2f}",
+                    foreground='#e74c3c',
+                    font=('Segoe UI', 13, 'bold')
+                )
+        except ValueError as e:
+            print(f"❌ Error en calculate_change: {e}")
+            self.change_label.config(
+                text="S/ 0.00",
+                foreground='#7f8c8d',
+                font=('Segoe UI', 13)
+            )
+    
+    # ==========================================
+    # CLIENTE
+    # ==========================================
+    
+    def select_customer(self):
+        """Abre diálogo para seleccionar cliente"""
+        # TODO: Implementar diálogo de selección de cliente
+        messagebox.showinfo("Info", "Función de selección de cliente pendiente")
+    
+    # ==========================================
+    # PROCESAR VENTA
+    # ==========================================
+    
+    def process_sale(self):
+        """Procesa la venta"""
+        if not self.cart_items:
+            messagebox.showwarning("Advertencia", "El carrito está vacío")
+            return
+        
+        # Validar monto pagado
+        payment_method = self.get_payment_value()  # Usar la función helper
+        
+        try:
+            # Usar la variable de instancia current_total
+            total = self.current_total
+            
+            paid_text = self.paid_var.get().strip()
+            if not paid_text:
+                paid = 0.0
+            else:
+                paid = float(paid_text)
+            
+            print(f"🔍 DEBUG process_sale:")
+            print(f"   Total a pagar: S/ {total:.2f}")
+            print(f"   Monto pagado: S/ {paid:.2f}")
+            print(f"   Método de pago: {payment_method}")
+            
+            if payment_method == 'cash' and paid < total:
+                print(f"   ❌ Monto insuficiente!")
+                messagebox.showerror(
+                    "Error",
+                    f"Monto insuficiente\nTotal: S/ {total:.2f}\nPagado: S/ {paid:.2f}"
+                )
+                return
+            
+            print(f"   ✅ Validación exitosa")
+            
+        except ValueError as e:
+            print(f"   ❌ Error de conversión: {e}")
+            messagebox.showerror("Error", "Monto pagado inválido")
+            return
+        
+        # Confirmar venta
+        if not messagebox.askyesno("Confirmar", f"¿Procesar venta por S/ {total:.2f}?"):
+            return
+        
+        # Preparar datos de pago
+        discount = 0.0
+        try:
+            discount = float(self.discount_var.get())
+        except:
+            pass
+        
+        payment_info = {
+            'method': payment_method,
+            'paid_amount': paid if payment_method == 'cash' else total,
+            'change_amount': max(0, paid - total) if payment_method == 'cash' else 0,
+            'discount_amount': discount
+        }
+        
+        # Procesar en el controlador
+        result = self.controller.process_sale(
+            cart_items=self.cart_items,
+            customer_id=self.current_customer['id'] if self.current_customer else None,
+            user_id=self.user_data['id'],
+            payment_info=payment_info,
+            notes=""
+        )
+        
+        if result['success']:
+            messagebox.showinfo(
+                "Éxito",
+                f"✅ {result['message']}\n\n"
+                f"Número de venta: {result['sale_number']}\n"
+                f"Total: S/ {total:.2f}"
+            )
+            
+            # TODO: Imprimir ticket
+            
+            # Limpiar carrito
+            self.clear_cart()
+            self.discount_var.set("0.00")
+            self.paid_var.set("0.00")
+            
+        else:
+            messagebox.showerror("Error", f"❌ {result['message']}")
+    
+    def show(self):
+        """Muestra la vista"""
+        self.main_frame.pack(fill='both', expand=True)
+    
+    def hide(self):
+        """Oculta la vista"""
+        self.main_frame.pack_forget()
+    
+    def destroy(self):
+        """Destruye la vista"""
+        self.main_frame.destroy()

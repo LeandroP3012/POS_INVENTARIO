@@ -935,8 +935,42 @@ class MainController:
     
     # Métodos de acción (placeholder - se implementarán con los módulos correspondientes)
     def _new_sale(self):
-        """Iniciar nueva venta"""
-        messagebox.showinfo("Nueva Venta", "Módulo de ventas en desarrollo")
+        """Iniciar nueva venta - Abrir POS"""
+        try:
+            print("🛒 DEBUG: Abriendo Punto de Venta desde main_controller")
+            print(f"   - main_window tipo: {type(self.main_window)}")
+            print(f"   - current_user: {self.current_user}")
+            
+            # Limpiar la ventana principal
+            self._clear_main_content()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Crear vista POS en la ventana principal
+            from views.pos_view import POSView
+            from controllers.sale_controller import SaleController
+            print("   🔄 Creando POSView...")
+            
+            # Crear controlador de ventas
+            self.sale_controller = SaleController()
+            
+            # Crear vista POS
+            self.pos_view = POSView(
+                parent=self.main_window,
+                controller=self.sale_controller,
+                user_data=self.current_user,
+                on_back=self._show_dashboard
+            )
+            print("   ✅ POSView creada exitosamente")
+            
+            # Cargar vista
+            self.pos_view.show()
+            print("   📺 Vista POS mostrada")
+            
+        except Exception as e:
+            self.logger.error(f"Error al abrir módulo de ventas: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Error", f"No se pudo abrir el módulo de ventas:\n{str(e)}")
     
     def _sales_history(self):
         """Mostrar historial de ventas"""

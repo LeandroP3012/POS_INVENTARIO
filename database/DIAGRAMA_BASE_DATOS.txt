@@ -1,0 +1,412 @@
+# 🗺️ Diagrama de Relaciones - Base de Datos POS
+
+## 📊 Estructura Completa
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         SISTEMA POS - BASE DE DATOS                         │
+│                              16 Tablas + 1 Vista                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                          🔐 MÓDULO DE SEGURIDAD                            ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+    ┌──────────────────┐
+    │      roles       │
+    ├──────────────────┤
+    │ 🔑 id            │
+    │    name          │
+    │    code          │
+    │    permissions   │──┐
+    │    system_role   │  │
+    │    active        │  │
+    └──────────────────┘  │
+            │             │
+            │ role_id     │
+            ▼             │
+    ┌──────────────────┐  │
+    │      users       │  │
+    ├──────────────────┤  │
+    │ 🔑 id            │  │
+    │    username      │  │
+    │    password_hash │  │
+    │    email         │  │
+    │    full_name     │  │
+    │    user_type     │  │
+    │ 🔗 role_id       │──┘
+    │    active        │
+    │    permissions   │
+    └──────────────────┘
+            │
+            │ user_id
+            ├────────────────────────────────────┐
+            │                                    │
+            ▼                                    ▼
+    ┌──────────────────┐              ┌──────────────────┐
+    │  user_sessions   │              │  activity_logs   │
+    ├──────────────────┤              ├──────────────────┤
+    │ 🔑 id            │              │ 🔑 id            │
+    │ 🔗 user_id       │              │ 🔗 user_id       │
+    │    username      │              │    activity_type │
+    │    is_active     │              │    table_name    │
+    │    expires_at    │              │    description   │
+    │    permissions   │              │    old_values    │
+    └──────────────────┘              │    new_values    │
+                                      └──────────────────┘
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                         📦 MÓDULO DE INVENTARIO                            ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+    ┌──────────────────┐
+    │   categories     │
+    ├──────────────────┤
+    │ 🔑 id            │
+    │    name          │──┐
+    │    description   │  │
+    │    color         │  │
+    │    icon          │  │
+    │    active        │  │
+    └──────────────────┘  │
+                          │ category_id
+    ┌──────────────────┐  │
+    │    suppliers     │  │
+    ├──────────────────┤  │
+    │ 🔑 id            │  │
+    │    code          │──┐│
+    │    name          │  ││
+    │    contact_person│  ││
+    │    phone         │  ││
+    │    email         │  ││
+    │    active        │  ││
+    └──────────────────┘  ││
+                          ││ supplier_id
+                          ││
+            ┌─────────────┘│
+            │              │
+            ▼              ▼
+    ┌──────────────────────────┐
+    │       products           │
+    ├──────────────────────────┤
+    │ 🔑 id                    │
+    │    code                  │
+    │    barcode               │
+    │    name                  │
+    │    description           │
+    │ 🔗 category_id           │
+    │ 🔗 supplier_id           │
+    │    cost_price            │
+    │    sale_price            │
+    │    current_stock ⚡      │
+    │    min_stock             │
+    │    tax_rate              │
+    │    active                │
+    │    is_service            │
+    │    track_stock           │
+    └──────────────────────────┘
+            │
+            │ product_id
+            ├────────────────────────────┐
+            │                            │
+            ▼                            ▼
+    ┌──────────────────┐      ┌──────────────────────┐
+    │  sale_items      │      │ inventory_movements  │
+    ├──────────────────┤      ├──────────────────────┤
+    │ 🔑 id            │      │ 🔑 id                │
+    │ 🔗 sale_id       │      │ 🔗 product_id        │
+    │ 🔗 product_id    │      │    movement_type     │
+    │    quantity      │      │    quantity          │
+    │    unit_price    │      │    previous_stock    │
+    │    tax_amount    │      │    new_stock         │
+    │    total         │      │    reference_type    │
+    └──────────────────┘      │    reference_id      │
+                              │ 🔗 user_id           │
+                              └──────────────────────┘
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                          💰 MÓDULO DE VENTAS                               ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+    ┌──────────────────┐
+    │    customers     │
+    ├──────────────────┤
+    │ 🔑 id            │
+    │    code          │──┐
+    │    name          │  │
+    │    document_type │  │
+    │    document_num  │  │
+    │    email         │  │
+    │    phone         │  │
+    │    customer_type │  │
+    │    status        │  │
+    └──────────────────┘  │
+                          │ customer_id
+    ┌──────────────────┐  │
+    │      users       │  │
+    ├──────────────────┤  │
+    │ 🔑 id            │──┐│
+    │    username      │  ││
+    │    full_name     │  ││
+    └──────────────────┘  ││
+                          ││ user_id
+            ┌─────────────┘│
+            │              │
+            ▼              ▼
+    ┌──────────────────────────┐
+    │         sales            │
+    ├──────────────────────────┤
+    │ 🔑 id                    │
+    │    sale_number           │ (VTA-2025-00001)
+    │ 🔗 user_id               │ (Cajero)
+    │ 🔗 customer_id           │
+    │    subtotal              │
+    │    tax_rate              │
+    │    tax_amount            │
+    │    discount_amount       │
+    │    total_amount ⚡       │
+    │    payment_method        │
+    │    paid_amount           │
+    │    change_amount         │
+    │    status                │
+    │    sale_date             │
+    └──────────────────────────┘
+            │
+            │ sale_id
+            ├────────────────────────────┐
+            │                            │
+            ▼                            ▼
+    ┌──────────────────┐      ┌──────────────────┐
+    │   sale_items     │      │  sale_payments   │
+    ├──────────────────┤      ├──────────────────┤
+    │ 🔑 id            │      │ 🔑 id            │
+    │ 🔗 sale_id       │      │ 🔗 sale_id       │
+    │ 🔗 product_id    │      │    payment_method│
+    │    product_sku   │      │    amount        │
+    │    product_name  │      │    card_type     │
+    │    quantity      │      │    card_digits   │
+    │    unit_price    │      │    transaction_  │
+    │    discount_%    │      │    reference     │
+    │    discount_amt  │      └──────────────────┘
+    │    subtotal      │
+    │    tax_rate      │
+    │    tax_amount    │
+    │    total         │
+    └──────────────────┘
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                        ⚙️ CONFIGURACIÓN DEL SISTEMA                        ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+    ┌──────────────────────────┐
+    │    system_config         │
+    ├──────────────────────────┤
+    │ 🔑 id                    │
+    │    config_key            │ (Único)
+    │    config_value          │
+    │    config_type           │ (string/int/float/bool/json)
+    │    description           │
+    │    is_public             │
+    │    is_editable           │
+    │    category              │
+    └──────────────────────────┘
+
+    Categorías de Configuración:
+    ├─ general     → Configuración general de la app
+    ├─ company     → Datos de la empresa
+    ├─ financial   → Configuración financiera (IGV, moneda)
+    ├─ security    → Configuración de seguridad
+    ├─ sales       → Configuración de ventas
+    └─ system      → Configuración del sistema
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                              📊 VISTA: sales_detail                        ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+    SELECT 
+        s.id,
+        s.sale_number,
+        s.sale_date,
+        s.total_amount,
+        s.status,
+        s.payment_method,
+        u.username as cashier_username,
+        u.full_name as cashier_name,
+        COALESCE(c.name, 'Cliente Genérico') as customer_name,
+        COALESCE(c.document_number, '00000000') as customer_document,
+        COUNT(si.id) as items_count,
+        SUM(si.quantity) as total_items_qty
+    FROM sales s
+    INNER JOIN users u ON s.user_id = u.id
+    LEFT JOIN customers c ON s.customer_id = c.id
+    LEFT JOIN sale_items si ON s.id = si.sale_id
+    GROUP BY s.id;
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                          🔗 RESUMEN DE FOREIGN KEYS                        ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+users
+  ├─► users.created_by          → users.id
+  └─► users.role_id             → roles.id
+
+roles
+  └─► roles.created_by          → users.id
+
+user_sessions
+  └─► user_sessions.user_id     → users.id
+
+activity_logs
+  └─► activity_logs.user_id     → users.id
+
+categories
+  ├─► categories.parent_id      → categories.id
+  └─► categories.created_by     → users.id
+
+suppliers
+  └─► suppliers.created_by      → users.id
+
+products
+  ├─► products.category_id      → categories.id
+  ├─► products.supplier_id      → suppliers.id
+  └─► products.created_by       → users.id
+
+customers
+  └─► customers.created_by      → users.id
+
+sales
+  ├─► sales.user_id             → users.id
+  ├─► sales.customer_id         → customers.id
+  └─► sales.cancelled_by        → users.id
+
+sale_items
+  ├─► sale_items.sale_id        → sales.id (CASCADE)
+  └─► sale_items.product_id     → products.id
+
+sale_payments
+  └─► sale_payments.sale_id     → sales.id (CASCADE)
+
+inventory_movements
+  ├─► inventory_movements.product_id  → products.id
+  └─► inventory_movements.user_id     → users.id
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                           📈 FLUJO DE DATOS TÍPICO                         ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+1. INICIALIZACIÓN
+   └─► system_config cargada al iniciar la aplicación
+
+2. AUTENTICACIÓN
+   users → roles → permissions
+      └─► user_sessions (nueva sesión)
+      └─► activity_logs (registro de login)
+
+3. CARGA DE PRODUCTOS
+   products → categories + suppliers
+      └─► Filtro por active = TRUE
+      └─► Filtro por current_stock > 0
+
+4. VENTA
+   ┌─ Seleccionar productos
+   │  └─► products (consulta)
+   │
+   ├─ Agregar al carrito
+   │  └─► Almacenamiento temporal en memoria
+   │
+   ├─ Calcular totales
+   │  ├─► Subtotal (suma de productos)
+   │  ├─► IGV (según system_config.tax_rate)
+   │  └─► Total (subtotal + IGV - descuento)
+   │
+   ├─ Procesar pago
+   │  ├─► Validar monto pagado
+   │  ├─► Calcular vuelto
+   │  └─► Seleccionar método de pago
+   │
+   └─ Guardar venta
+      ├─► INSERT INTO sales (cabecera)
+      ├─► INSERT INTO sale_items (detalle) × N productos
+      ├─► INSERT INTO sale_payments (pago)
+      │
+      └─► Actualizar inventario
+          ├─► UPDATE products.current_stock
+          └─► INSERT INTO inventory_movements
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                           🎯 ÍNDICES PRINCIPALES                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+ALTO RENDIMIENTO (Búsquedas frecuentes):
+  ├─ products.barcode          → Búsqueda por código de barras
+  ├─ products.code             → Búsqueda por SKU
+  ├─ products.name             → Búsqueda por nombre
+  ├─ sales.sale_number         → Búsqueda de venta específica
+  ├─ sales.sale_date           → Reportes por fecha
+  └─ users.username            → Login de usuarios
+
+RENDIMIENTO MEDIO (Reportes):
+  ├─ sale_items.sale_id        → Detalle de ventas
+  ├─ sale_items.product_id     → Productos más vendidos
+  ├─ inventory_movements.product_id  → Historial de movimientos
+  └─ customers.document_number → Búsqueda de clientes
+
+INTEGRIDAD REFERENCIAL:
+  ├─ Todos los campos con 🔗
+  └─ Aseguran consistencia de datos
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                         💾 TAMAÑOS APROXIMADOS                             ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Base de datos vacía:        ~2 MB
+Con 1,000 productos:        ~5 MB
+Con 10,000 ventas:          ~20 MB
+Con 100,000 ventas:         ~150 MB
+Con logs (1 año):           +50 MB
+
+Recomendaciones:
+  ├─ Purgar activity_logs periódicamente (>90 días)
+  ├─ Archivar ventas antiguas (>1 año)
+  └─ Optimizar tablas mensualmente
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                              ⚡ CAMPOS CRÍTICOS                            ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+products.current_stock
+  └─► Actualizado automáticamente en cada venta
+  └─► NUNCA modificar manualmente (usar inventory_movements)
+
+sales.total_amount
+  └─► Calculado: subtotal + tax_amount - discount_amount
+  └─► Almacenado para consistencia histórica
+
+system_config.next_sale_number
+  └─► Auto-incrementa para generar sale_number
+  └─► Formato: VTA-{YYYY}-{NNNNN}
+
+users.password_hash
+  └─► SHA2(password, 256)
+  └─► NUNCA almacenar contraseñas en texto plano
+
+
+════════════════════════════════════════════════════════════════════════════
+
+LEYENDA:
+  🔑 = Primary Key
+  🔗 = Foreign Key
+  ⚡ = Campo calculado/crítico
+  → = Relación/Referencia
+
+════════════════════════════════════════════════════════════════════════════
