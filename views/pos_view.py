@@ -130,12 +130,11 @@ class POSView:
         
         # Campo de búsqueda con mejor diseño
         self.search_var = tk.StringVar()
-        self.search_var.trace('w', lambda *args: self.on_search_change())
         
         # Variable para controlar el delay de búsqueda
         self.search_timer = None
         
-        search_entry = tk.Entry(
+        self.search_entry = tk.Entry(
             search_frame,
             textvariable=self.search_var,
             font=('Segoe UI', 12),
@@ -145,11 +144,14 @@ class POSView:
             highlightcolor='#3498db',
             highlightbackground='#bdc3c7'
         )
-        search_entry.pack(fill='x', pady=(0, 5), ipady=5)
-        search_entry.focus()
+        self.search_entry.pack(fill='x', pady=(0, 5), ipady=5)
+        self.search_entry.focus()
+        
+        # USAR KeyRelease en lugar de trace para búsqueda autoincremental
+        self.search_entry.bind('<KeyRelease>', lambda e: self.on_search_change())
         
         # Bind enter para agregar rápido
-        search_entry.bind('<Return>', lambda e: self.quick_add_product())
+        self.search_entry.bind('<Return>', lambda e: self.quick_add_product())
         
         # Instrucciones mejoradas
         instruction_frame = tk.Frame(search_frame, bg='#e8f4f8', relief='solid', borderwidth=1)
@@ -720,29 +722,45 @@ class POSView:
     
     def on_search_change(self):
         """Maneja el cambio en la búsqueda con delay para evitar consultas excesivas"""
+        # LEER DIRECTAMENTE DEL ENTRY WIDGET en lugar del StringVar
+        search_text = self.search_entry.get().strip()
+        print(f"\n🔍 DEBUG on_search_change:")
+        print(f"   Texto actual: '{search_text}'")
+        print(f"   Longitud: {len(search_text)}")
+        
         # Cancelar búsqueda anterior si existe
         if self.search_timer:
+            print(f"   ⏸️ Cancelando búsqueda anterior")
             self.main_frame.after_cancel(self.search_timer)
-        
-        search_text = self.search_var.get().strip()
         
         # Si está vacío, mostrar productos iniciales
         if not search_text:
+            print(f"   ↩️ Texto vacío - cargando productos iniciales en 300ms")
             self.search_timer = self.main_frame.after(300, self.load_initial_products)
             return
         
         # Si tiene menos de 2 caracteres, solo filtrar localmente
         if len(search_text) < 2:
+            print(f"   ⏸️ Menos de 2 caracteres - esperando más texto")
             return
         
         # Buscar después de 300ms de inactividad (evita consultas mientras escribe)
+        print(f"   ⏰ Programando búsqueda en 300ms para: '{search_text}'")
         self.search_timer = self.main_frame.after(300, lambda: self.perform_search(search_text))
     
     def perform_search(self, search_text):
         """Realiza la búsqueda de productos"""
         try:
+            print(f"\n🔍 DEBUG perform_search:")
+            print(f"   Texto de búsqueda: '{search_text}'")
+            print(f"   Controller tipo: {type(self.controller)}")
+            print(f"   ¿Tiene search_products_for_sale? {hasattr(self.controller, 'search_products_for_sale')}")
+            
             # Buscar productos
             result = self.controller.search_products_for_sale(search_text)
+            
+            print(f"   Resultado success: {result.get('success')}")
+            print(f"   Productos encontrados: {len(result.get('products', []))}")
             
             if result['success']:
                 if result['products']:
@@ -764,7 +782,9 @@ class POSView:
                     foreground='#e74c3c'
                 )
         except Exception as e:
-            print(f"Error en búsqueda: {e}")
+            print(f"❌ Error en búsqueda: {e}")
+            import traceback
+            traceback.print_exc()
             for item in self.products_tree.get_children():
                 self.products_tree.delete(item)
             self.products_count_label.config(
@@ -886,11 +906,8 @@ class POSView:
         self.update_cart_display()
         self.calculate_totals()
         
-        # Limpiar búsqueda
-        self.search_var.set('')
-        # Limpiar tabla de productos
-        for item in self.products_tree.get_children():
-            self.products_tree.delete(item)
+        # Opcional: Limpiar búsqueda (comentado para mantener la lista visible)
+        # self.search_var.set('')
     
     # ==========================================
     # MÉTODOS DEL CARRITO
@@ -1060,13 +1077,15 @@ class POSView:
     # ==========================================
     
     def on_paid_focus_in(self, event=None):
-        """Limpia el campo de monto pagado al hacer click"""
+        """Selecciona todo el texto al hacer click para facilitar sobrescritura"""
         current_value = self.paid_var.get()
         print(f"\n🔍 DEBUG on_paid_focus_in:")
         print(f"   Valor actual en paid_var: '{current_value}'")
-        if current_value == "0.00":
-            self.paid_var.set("")
-            print(f"   ✓ Limpiado a cadena vacía")
+        
+        # Seleccionar todo el texto en lugar de borrar
+        self.paid_entry.select_range(0, tk.END)
+        self.paid_entry.icursor(tk.END)
+        print(f"   ✓ Texto seleccionado para sobrescritura")
     
     def toggle_tax(self, event=None):
         """Alterna el estado del toggle switch de IGV"""
@@ -1186,10 +1205,10 @@ class POSView:
             # Debug completo de la lectura del valor
             print(f"\n💰 DEBUG calculate_change:")
             print(f"   Total: S/ {total:.2f}")
-            print(f"   Leyendo paid_var.get(): '{self.paid_var.get()}'")
             
-            paid_text = self.paid_var.get().strip()
-            print(f"   Después de strip(): '{paid_text}'")
+            # LEER DIRECTAMENTE DEL ENTRY WIDGET en lugar del StringVar
+            paid_text = self.paid_entry.get().strip()
+            print(f"   Leyendo paid_entry.get(): '{paid_text}'")
             
             # Si está vacío o es "0.00", no mostrar error
             if not paid_text or paid_text == "0.00":
@@ -1253,7 +1272,8 @@ class POSView:
             # Usar la variable de instancia current_total
             total = self.current_total
             
-            paid_text = self.paid_var.get().strip()
+            # LEER DIRECTAMENTE DEL ENTRY WIDGET
+            paid_text = self.paid_entry.get().strip()
             if not paid_text:
                 paid = 0.0
             else:
@@ -1307,22 +1327,205 @@ class POSView:
         )
         
         if result['success']:
-            messagebox.showinfo(
-                "Éxito",
-                f"✅ {result['message']}\n\n"
-                f"Número de venta: {result['sale_number']}\n"
-                f"Total: S/ {total:.2f}"
-            )
+            # Mostrar mensaje de éxito PRIMERO (no bloqueante si usamos un popup personalizado)
+            print(f"✅ Venta procesada: {result['sale_number']}")
             
-            # TODO: Imprimir ticket
+            # Generar y mostrar boleta (esto abrirá la ventana de vista previa)
+            self.generate_ticket(result, total, paid, payment_method, discount)
             
-            # Limpiar carrito
+            # Limpiar carrito después de mostrar ticket
             self.clear_cart()
             self.discount_var.set("0.00")
             self.paid_var.set("0.00")
             
         else:
             messagebox.showerror("Error", f"❌ {result['message']}")
+    
+    def generate_ticket(self, sale_result, total, paid, payment_method, discount):
+        """Generar e imprimir boleta de venta"""
+        try:
+            from utils.ticket_generator import TicketGenerator
+            from datetime import datetime
+            
+            # Calcular IGV y subtotal
+            subtotal = total / 1.18  # Total sin IGV
+            igv = total - subtotal
+            
+            # Preparar datos para el ticket
+            ticket_data = {
+                'sale_number': sale_result['sale_number'],
+                'date': datetime.now(),
+                'cashier': self.user_data.get('full_name', self.user_data.get('username')),
+                'customer': self.current_customer if self.current_customer else {'name': 'Cliente Genérico'},
+                'items': [],
+                'subtotal': subtotal,
+                'discount': discount,
+                'igv': igv,
+                'total': total,
+                'payment_method': payment_method,
+                'paid_amount': paid,
+                'change_amount': max(0, paid - total) if payment_method == 'cash' else 0
+            }
+            
+            # Agregar items con los nombres correctos de campos
+            for item in self.cart_items:
+                ticket_data['items'].append({
+                    'name': item['name'],
+                    'quantity': item['quantity'],
+                    'price': item['price'],  # Precio unitario
+                    'total': item['subtotal']  # Total del item
+                })
+            
+            # Generar ticket
+            generator = TicketGenerator()
+            
+            # Generar versión HTML con imagen (si está configurado el logo)
+            ticket_html = generator.generate_ticket_html(ticket_data)
+            ticket_html_path = generator.save_ticket_html(ticket_html, sale_result['sale_number'])
+            
+            # También generar versión texto (para impresoras térmicas)
+            ticket_content = generator.generate_ticket(ticket_data)
+            ticket_path = generator.save_ticket(ticket_content, sale_result['sale_number'])
+            
+            if ticket_html_path:
+                print(f"✅ Ticket HTML guardado en: {ticket_html_path}")
+            if ticket_path:
+                print(f"✅ Ticket TXT guardado en: {ticket_path}")
+            
+            # Mostrar ventana de vista previa con opción de imprimir
+            self.show_ticket_preview(ticket_content, generator, ticket_html, ticket_html_path)
+        
+        except Exception as e:
+            print(f"❌ Error generando ticket: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def show_ticket_preview(self, ticket_content, generator, ticket_html=None, ticket_html_path=None):
+        """Mostrar ventana con vista previa del ticket"""
+        
+        # Si auto_print está activado Y hay HTML, imprimir automáticamente
+        if ticket_html_path and generator.config.get('print_copy', False):
+            print("🖨️ Imprimiendo boleta automáticamente...")
+            generator.print_ticket_html(ticket_html, ticket_html_path)
+            return  # No mostrar la ventana de vista previa
+        
+        preview_window = tk.Toplevel(self.main_frame)
+        preview_window.title('Boleta de Venta')
+        preview_window.geometry('500x700')
+        preview_window.configure(bg='white')
+        preview_window.transient(self.main_frame)
+        preview_window.grab_set()
+        
+        # Header
+        header = tk.Frame(preview_window, bg='#27ae60')
+        header.pack(fill='x')
+        
+        tk.Label(
+            header,
+            text='✅ VENTA PROCESADA - BOLETA',
+            font=('Segoe UI', 16, 'bold'),
+            bg='#27ae60',
+            fg='white'
+        ).pack(pady=15)
+        
+        # Texto del ticket
+        text_frame = tk.Frame(preview_window, bg='white')
+        text_frame.pack(fill='both', expand=True, padx=20, pady=20)
+        
+        text_widget = tk.Text(
+            text_frame,
+            font=('Courier New', 9),
+            bg='#f8f9fa',
+            relief='solid',
+            borderwidth=1,
+            padx=10,
+            pady=10,
+            wrap='none'
+        )
+        text_widget.pack(fill='both', expand=True)
+        text_widget.insert('1.0', ticket_content)
+        text_widget.config(state='disabled')
+        
+        # Botones
+        button_frame = tk.Frame(preview_window, bg='white')
+        button_frame.pack(fill='x', padx=20, pady=20)
+        
+        # Botón para ver versión HTML con imagen
+        if ticket_html_path:
+            tk.Button(
+                button_frame,
+                text='�️ Ver con Logo',
+                command=lambda: self.open_html_ticket(ticket_html_path),
+                bg='#9b59b6',
+                fg='white',
+                font=('Segoe UI', 11, 'bold'),
+                cursor='hand2',
+                relief='flat',
+                padx=20,
+                pady=10
+            ).pack(side='left', padx=5)
+        
+        tk.Button(
+            button_frame,
+            text='�🖨️ Imprimir Texto',
+            command=lambda: self.print_ticket(generator, ticket_content, preview_window),
+            bg='#3498db',
+            fg='white',
+            font=('Segoe UI', 11, 'bold'),
+            cursor='hand2',
+            relief='flat',
+            padx=20,
+            pady=10
+        ).pack(side='left', padx=5)
+        
+        # Botón para imprimir HTML con imagen
+        if ticket_html:
+            tk.Button(
+                button_frame,
+                text='🖨️ Imprimir con Logo',
+                command=lambda: generator.print_ticket_html(ticket_html, ticket_html_path),
+                bg='#e74c3c',
+                fg='white',
+                font=('Segoe UI', 11, 'bold'),
+                cursor='hand2',
+                relief='flat',
+                padx=20,
+                pady=10
+            ).pack(side='left', padx=5)
+        
+        tk.Button(
+            button_frame,
+            text='✓ Cerrar',
+            command=preview_window.destroy,
+            bg='#27ae60',
+            fg='white',
+            font=('Segoe UI', 11, 'bold'),
+            cursor='hand2',
+            relief='flat',
+            padx=20,
+            pady=10
+        ).pack(side='left', padx=5)
+    
+    def open_html_ticket(self, html_path):
+        """Abrir ticket HTML en navegador"""
+        try:
+            import webbrowser
+            import os
+            webbrowser.open('file://' + os.path.abspath(html_path))
+        except Exception as e:
+            print(f"❌ Error abriendo ticket HTML: {e}")
+    
+    def print_ticket(self, generator, ticket_content, window):
+        """Imprimir ticket"""
+        try:
+            success = generator.print_ticket(ticket_content)
+            if success:
+                messagebox.showinfo('Éxito', '✅ Ticket enviado a impresora')
+                window.destroy()
+            else:
+                messagebox.showerror('Error', 'No se pudo imprimir el ticket')
+        except Exception as e:
+            messagebox.showerror('Error', f'Error al imprimir:\n{str(e)}')
     
     def show(self):
         """Muestra la vista"""

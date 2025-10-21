@@ -1,0 +1,14 @@
+{
+    "company_name": "MI EMPRESA",
+    "company_address": "Av. Principal 123",
+    "company_city": "Lima, Perú",
+    "company_phone": "(01) 234-5678",
+    "company_email": "ventas@miempresa.com",
+    "company_ruc": "20123456789",
+    "show_logo": false,
+    "logo_text": "*** POS SYSTEM ***",
+    "footer_message": "¡Gracias por su compra!",
+    "footer_message_2": "Vuelva pronto",
+    "show_barcode": false,
+    "print_copy": true
+}

@@ -1,0 +1,38 @@
+               MI EMPRESA               
+           Av. Principal 123            
+               Lima, Perú               
+           Tel: (01) 234-5678           
+          ventas@miempresa.com          
+            RUC: 20123456789            
+========================================
+            BOLETA DE VENTA             
+----------------------------------------
+N° Venta: VTA-2025-00002
+Fecha: 21/10/2025 00:02:57
+Cajero: Administrador del Sistema
+----------------------------------------
+Cliente: Cliente Genérico
+========================================
+PRODUCTO                           TOTAL
+----------------------------------------
+Cuaderno Universitario 100 hojas
+  1 x S/ 3.50                    S/ 3.50
+Laptop Dell Inspiron 15
+  2 x S/ 799.99               S/ 1599.98
+Trapeador
+  1 x S/ 15.00                  S/ 15.00
+========================================
+SUBTOTAL:                     S/ 1371.59
+IGV (18%):                     S/ 246.89
+----------------------------------------
+TOTAL:                        S/ 1618.48
+========================================
+Método de Pago: 💵 Efectivo
+Pagado:                       S/ 1620.00
+Vuelto:                          S/ 1.52
+========================================
+
+        ¡Gracias por su compra!         
+             Vuelva pronto              
+
+========================================

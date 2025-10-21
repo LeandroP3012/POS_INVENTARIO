@@ -371,6 +371,19 @@ class MainController:
         )
         new_sale_btn.pack(side='left', padx=5)
         
+        # Botón Configuración de Boletas
+        config_btn = tk.Button(
+            quick_buttons_frame,
+            text="🎫 Boletas",
+            command=self._config_tickets,
+            bg='#9b59b6',
+            fg='white',
+            font=('Segoe UI', 10, 'bold'),
+            padx=15,
+            pady=5
+        )
+        config_btn.pack(side='left', padx=5)
+        
         # Botón Cerrar Sesión
         logout_btn = tk.Button(
             quick_buttons_frame,
@@ -418,6 +431,7 @@ class MainController:
         self.dashboard_view.bind_module_callback('quick_sale', lambda: self._new_sale())
         self.dashboard_view.bind_module_callback('results', lambda: self._daily_sales_report())
         self.dashboard_view.bind_module_callback('business', lambda: self._system_config())
+        self.dashboard_view.bind_module_callback('ticket_config', lambda: self._config_tickets())
         self.dashboard_view.bind_module_callback('support', lambda: self._show_support())
         self.dashboard_view.bind_module_callback('help', lambda: self._show_manual())
         self.dashboard_view.bind_module_callback('reports', lambda: self._full_report())
@@ -857,6 +871,13 @@ class MainController:
                 'command': self._view_products,
                 'color': self.settings.get_colors()['success']
             })
+        
+        # Botón Configuración Boletas (disponible para todos)
+        buttons.append({
+            'text': '🎫\nBoletas',
+            'command': self._config_tickets,
+            'color': '#9b59b6'  # Color morado
+        })
         
         # Botón Reportes (si tiene permisos)
         if self.auth_controller.has_permission('reports_basic'):
@@ -1620,6 +1641,31 @@ class MainController:
     def _daily_sales_report(self):
         """Reporte de ventas diarias"""
         messagebox.showinfo("Reporte Diario", "Módulo de reportes en desarrollo")
+    
+    def _config_tickets(self):
+        """Configurar boletas"""
+        try:
+            print("🎫 DEBUG: Abriendo configuración de boletas")
+            
+            # Limpiar ventana principal
+            self._clear_main_content()
+            
+            # Crear vista de configuración de tickets
+            from views.ticket_config_view import TicketConfigView
+            
+            self.ticket_config_view = TicketConfigView(
+                parent=self.main_window,
+                on_back=self._show_dashboard
+            )
+            
+            self.ticket_config_view.show()
+            print("   ✅ Vista de configuración de boletas mostrada")
+            
+        except Exception as e:
+            self.logger.error(f"Error abriendo configuración de boletas: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Error", f"No se pudo abrir configuración de boletas:\n{str(e)}")
     
     def _full_report(self):
         """Reporte completo"""

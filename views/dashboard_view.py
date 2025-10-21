@@ -272,6 +272,14 @@ class DashboardView(BaseView):
                 'permission': 'system.config'
             },
             {
+                'id': 'ticket_config',
+                'title': 'Configuración de Boletas',
+                'icon': '🎫',
+                'color': '#9b59b6',
+                'description': 'Personalizar tickets',
+                'permission': None
+            },
+            {
                 'id': 'support',
                 'title': 'Chat de soporte',
                 'icon': '💬',

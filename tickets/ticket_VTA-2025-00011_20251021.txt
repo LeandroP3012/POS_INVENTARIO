@@ -1,0 +1,38 @@
+           *** POS SYSTEM ***           
+========================================
+             IMPORTACIONES              
+           Garcia Villon #568           
+               Lima, Perú               
+           Tel: +51 960724886           
+           lmqpando@gmail.com           
+             RUC: 123456789             
+========================================
+            BOLETA DE VENTA             
+----------------------------------------
+N° Venta: VTA-2025-00011
+Fecha: 21/10/2025 01:12:32
+Cajero: Administrador del Sistema
+----------------------------------------
+Cliente: Cliente Genérico
+========================================
+PRODUCTO                           TOTAL
+----------------------------------------
+Cuaderno Universitario 100 hojas
+  1 x S/ 3.50                    S/ 3.50
+Mouse Inalámbrico Logitech
+  1 x S/ 24.99                  S/ 24.99
+========================================
+SUBTOTAL:                       S/ 24.14
+IGV (18%):                       S/ 4.35
+----------------------------------------
+TOTAL:                          S/ 28.49
+========================================
+Método de Pago: 💵 Efectivo
+Pagado:                         S/ 30.00
+Vuelto:                          S/ 1.51
+========================================
+
+        ¡Gracias por su compra!         
+             Vuelva pronto              
+
+========================================

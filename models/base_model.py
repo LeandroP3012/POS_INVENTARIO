@@ -37,6 +37,19 @@ class BaseModel:
         """Configurar sistema de logging para modelos"""
         self.logger = logging.getLogger(f'model.{self.__class__.__name__}')
     
+    def get_connection(self):
+        """Obtener conexión a la base de datos"""
+        if not self.db:
+            self.logger.error("DB no disponible")
+            return None
+        
+        if not self.db.connection or not self.db.connection.is_connected():
+            if not self.db.connect():
+                self.logger.error("No se pudo conectar a la base de datos")
+                return None
+        
+        return self.db.connection
+    
     def connect(self) -> bool:
         """Establecer conexión con la base de datos"""
         if not self.db:
