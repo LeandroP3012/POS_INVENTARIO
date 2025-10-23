@@ -7822,3 +7822,978 @@
 2025-10-21 01:12:59,169 - AuthController - INFO - Controlador de autenticación limpiado
 2025-10-21 01:12:59,169 - MainController - INFO - Aplicación cerrada correctamente
 2025-10-21 01:12:59,182 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-21 10:41:49,132 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 10:41:49,265 - MainController - INFO - Sistema POS iniciado
+2025-10-21 10:41:49,265 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 10:41:49,265 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 10:41:50,206 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 10:41:52,192 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 10:41:52,353 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:41:52,370 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:41:52,401 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:41:52,402 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 10:41:54,422 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:41:54,432 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 10:41:54,433 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 10:41:54,433 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 10:41:57,466 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 10:42:07,646 - model.ProductModel - ERROR - Error al obtener productos: 1146 (42S02): Table 'pos_system.product_movements' doesn't exist
+2025-10-21 10:43:19,629 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:43:19,636 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 10:43:19,636 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 10:43:19,637 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-10-21 10:43:19,693 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 10:43:19,695 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 10:43:23,207 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 10:43:23,207 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'
+2025-10-21 10:43:23,217 - AuthController - ERROR - Error limpiando controlador: can't invoke "destroy" command: application has been destroyed
+2025-10-21 10:43:28,871 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 10:43:28,904 - MainController - INFO - Sistema POS iniciado
+2025-10-21 10:43:28,905 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 10:43:28,905 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 10:43:29,428 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 10:43:31,418 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 10:43:31,573 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:43:31,598 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:43:31,606 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:43:31,607 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 10:43:33,636 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:43:33,648 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 10:43:33,649 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 10:43:33,650 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 10:43:36,685 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 10:43:41,048 - ConfigController - INFO - Configuración del sistema cargada: 37 elementos
+2025-10-21 10:43:41,049 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-21 10:44:49,962 - ConfigController - INFO - Configuración del sistema cargada: 37 elementos
+2025-10-21 10:44:49,962 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-21 10:45:05,600 - model.ProductModel - ERROR - Error al obtener productos: 1146 (42S02): Table 'pos_system.product_movements' doesn't exist
+2025-10-21 10:45:38,845 - model.ProductModel - ERROR - Error al obtener productos: 1146 (42S02): Table 'pos_system.product_movements' doesn't exist
+2025-10-21 10:45:55,177 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-21 10:45:55,178 - model.ProductModel - ERROR - Error al obtener productos: 1146 (42S02): Table 'pos_system.product_movements' doesn't exist
+2025-10-21 10:45:55,179 - model.ProductModel - ERROR - Error al obtener categorías: 1054 (42S22): Unknown column 'c.status' in 'where clause'
+2025-10-21 10:45:55,180 - model.ProductModel - ERROR - Error al obtener unidades: 1146 (42S02): Table 'pos_system.units' doesn't exist
+2025-10-21 10:46:00,063 - model.ProductModel - ERROR - Error al generar SKU: 1054 (42S22): Unknown column 'sku' in 'field list'
+2025-10-21 10:49:59,248 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-21 10:49:59,251 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:49:59,255 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-21 10:49:59,282 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:50:34,031 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-21 10:50:34,057 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:50:34,061 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-21 10:50:34,088 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:50:42,971 - controller.RoleController - INFO - Obteniendo rol por ID: 2
+2025-10-21 10:50:42,987 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:56:25,528 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-21 10:56:25,531 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:56:25,534 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-21 10:56:25,537 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 10:57:32,064 - model.ProductModel - ERROR - Error al obtener productos: 1146 (42S02): Table 'pos_system.product_movements' doesn't exist
+2025-10-21 10:57:39,944 - model.ProductModel - ERROR - Error al obtener productos: 1146 (42S02): Table 'pos_system.product_movements' doesn't exist
+2025-10-21 10:57:41,823 - model.ProductModel - ERROR - Error al buscar productos: 1146 (42S02): Table 'pos_system.units' doesn't exist
+2025-10-21 10:57:43,508 - model.ProductModel - ERROR - Error al buscar productos: 1146 (42S02): Table 'pos_system.units' doesn't exist
+2025-10-21 10:57:44,355 - model.ProductModel - ERROR - Error al buscar productos: 1146 (42S02): Table 'pos_system.units' doesn't exist
+2025-10-21 10:57:45,246 - model.ProductModel - ERROR - Error al obtener productos: 1146 (42S02): Table 'pos_system.product_movements' doesn't exist
+2025-10-21 11:01:30,625 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-21 11:01:30,626 - model.ProductModel - ERROR - Error al obtener productos: 1146 (42S02): Table 'pos_system.product_movements' doesn't exist
+2025-10-21 11:01:30,627 - model.ProductModel - ERROR - Error al obtener categorías: 1054 (42S22): Unknown column 'c.status' in 'where clause'
+2025-10-21 11:01:30,628 - model.ProductModel - ERROR - Error al obtener unidades: 1146 (42S02): Table 'pos_system.units' doesn't exist
+2025-10-21 11:01:35,664 - model.ProductModel - ERROR - Error al generar SKU: 1054 (42S22): Unknown column 'sku' in 'field list'
+2025-10-21 11:02:15,816 - model.CategoryModel - ERROR - Error al obtener categorías: 1054 (42S22): Unknown column 'c.status' in 'where clause'
+2025-10-21 11:02:20,158 - model.CategoryModel - ERROR - Error al obtener categorías: 1054 (42S22): Unknown column 'c.status' in 'where clause'
+2025-10-21 11:02:48,334 - model.CategoryModel - ERROR - Error al crear categoría: 1054 (42S22): Unknown column 'status' in 'field list'
+2025-10-21 11:09:38,645 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 11:09:38,648 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:09:38,659 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 11:09:38,660 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 11:09:38,660 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 11:09:38,678 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 11:09:38,698 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 11:09:38,698 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 11:09:45,411 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 11:09:45,446 - MainController - INFO - Sistema POS iniciado
+2025-10-21 11:09:45,447 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 11:09:45,447 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 11:09:45,982 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 11:09:49,179 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 11:09:49,338 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:09:49,356 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:09:49,361 - model.UserModel - WARNING - Contraseña incorrecta para: admin
+2025-10-21 11:09:51,377 - AuthController - WARNING - Error de login: Credenciales incorrectas. Te quedan 2 intentos.
+2025-10-21 11:09:51,378 - MainController - WARNING - Fallo de login: Credenciales incorrectas. Te quedan 2 intentos.
+2025-10-21 11:09:53,161 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 11:09:53,267 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:09:53,281 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:09:53,313 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:09:53,314 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 11:09:55,325 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:09:55,346 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 11:09:55,346 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 11:09:55,347 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 11:09:58,373 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 11:10:03,562 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-21 11:10:03,564 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:10:12,624 - MainController - ERROR - Error abriendo control de stock: StockControlView.register_callbacks() got an unexpected keyword argument 'new_sale'
+2025-10-21 11:10:21,523 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 11:10:21,543 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:10:21,554 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 11:10:21,555 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 11:10:21,555 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 11:10:21,591 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 11:10:21,611 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 11:10:21,611 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 11:10:27,387 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 11:10:27,420 - MainController - INFO - Sistema POS iniciado
+2025-10-21 11:10:27,420 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 11:10:27,420 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 11:10:27,978 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 11:10:31,482 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 11:10:31,638 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:10:31,652 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:10:31,683 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:10:31,684 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 11:10:33,713 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:10:33,734 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 11:10:33,734 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 11:10:33,735 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 11:10:36,774 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 11:11:15,057 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:11:25,437 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:11:37,522 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:11:37,523 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:11:41,868 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:13:29,488 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-21 11:13:29,490 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:13:34,033 - view.ProductFormDialog - ERROR - Error en auto-generación: 'ProductModel' object has no attribute 'generate_next_sku'
+2025-10-21 11:22:28,541 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 11:22:28,576 - MainController - INFO - Sistema POS iniciado
+2025-10-21 11:22:28,577 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 11:22:28,577 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 11:22:29,100 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 11:22:33,322 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 11:22:33,489 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:22:33,517 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:22:33,546 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:22:33,547 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 11:22:35,567 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:22:35,576 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 11:22:35,577 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 11:22:35,578 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 11:22:38,611 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 11:22:57,908 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-21 11:22:57,910 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:28:04,507 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 11:28:04,510 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:28:04,522 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 11:28:04,522 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 11:28:04,522 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 11:28:04,572 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 11:28:04,590 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 11:28:04,590 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 11:28:10,684 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 11:28:10,720 - MainController - INFO - Sistema POS iniciado
+2025-10-21 11:28:10,720 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 11:28:10,721 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 11:28:11,289 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 11:28:13,344 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 11:28:13,509 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:28:13,536 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:28:13,567 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:28:13,569 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 11:28:15,599 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:28:15,619 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 11:28:15,619 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 11:28:15,620 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 11:28:18,650 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 11:28:21,500 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-21 11:28:21,502 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:39:00,335 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 11:39:00,339 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:39:00,344 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 11:39:00,344 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 11:39:00,344 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 11:39:00,406 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 11:39:00,431 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 11:39:00,432 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 11:51:56,373 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 11:51:56,415 - MainController - INFO - Sistema POS iniciado
+2025-10-21 11:51:56,416 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 11:51:56,416 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 11:51:56,969 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 11:51:59,708 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 11:51:59,878 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:51:59,907 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:51:59,938 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:51:59,939 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 11:52:01,965 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:52:01,973 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 11:52:01,974 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 11:52:01,974 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 11:52:05,014 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 11:52:08,224 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:52:23,888 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:52:59,379 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:54:17,115 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-21 11:54:17,137 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:54:17,140 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-21 11:54:17,165 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 11:54:24,162 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:54:28,514 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 11:54:33,764 - model.CategoryModel - ERROR - Error al obtener categorías: 1054 (42S22): Unknown column 'c.status' in 'where clause'
+2025-10-21 12:02:53,924 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:03:21,934 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:03:33,898 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:07:22,782 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:14:19,070 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-21 12:14:19,072 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:14:27,971 - model.CategoryModel - ERROR - Error al obtener categorías: 1054 (42S22): Unknown column 'c.status' in 'where clause'
+2025-10-21 12:14:36,305 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 12:14:36,314 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 12:14:36,321 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 12:14:36,322 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 12:14:36,322 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 12:14:36,342 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 12:14:36,368 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 12:14:36,368 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 12:14:48,567 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 12:14:48,602 - MainController - INFO - Sistema POS iniciado
+2025-10-21 12:14:48,603 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 12:14:48,603 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 12:14:49,134 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 12:14:56,454 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 12:14:56,619 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 12:14:56,646 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 12:14:56,708 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 12:14:56,710 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 12:14:58,725 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 12:14:58,737 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 12:14:58,737 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 12:14:58,738 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 12:15:01,775 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 12:42:54,422 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-21 12:42:54,425 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 12:42:54,429 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-21 12:42:54,432 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 12:43:10,494 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:43:13,437 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:43:17,644 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:44:03,445 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:44:09,433 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:44:18,428 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:44:23,543 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:44:24,279 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:44:24,804 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:44:26,009 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:46:02,001 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:46:19,045 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:46:29,283 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-21 12:46:29,285 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:49:33,026 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-21 12:49:33,028 - model.ProductModel - INFO - Se obtuvieron 7 productos
+2025-10-21 12:51:04,955 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 12:51:04,957 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-21 12:51:04,977 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-21 12:51:04,977 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 12:51:04,978 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 12:51:05,043 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 12:51:05,078 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 12:51:05,083 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 13:21:02,490 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 13:21:02,574 - MainController - INFO - Sistema POS iniciado
+2025-10-21 13:21:02,574 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 13:21:02,575 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 13:21:02,678 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-21 13:21:02,679 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-21 13:21:03,181 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 13:21:06,900 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 13:21:07,088 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:21:07,102 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:21:07,119 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:21:07,119 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 13:21:09,149 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:21:09,150 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 13:21:09,165 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:21:09,166 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 13:21:09,167 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 13:21:12,200 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 13:21:18,885 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:21:18,885 - model.ProductModel - ERROR - No se pudo conectar a la base de datos
+2025-10-21 13:21:22,378 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 13:21:22,386 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:21:22,387 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 13:21:22,404 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:21:22,405 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 13:21:22,405 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 13:21:22,439 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 13:21:22,462 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 13:21:22,462 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 13:21:22,472 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-21 13:29:09,539 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 13:29:09,577 - MainController - INFO - Sistema POS iniciado
+2025-10-21 13:29:09,577 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 13:29:09,577 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 13:29:09,680 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-21 13:29:09,680 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-21 13:29:10,114 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 13:29:12,712 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 13:29:12,870 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:12,888 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:12,903 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:12,903 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 13:29:14,921 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:14,922 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 13:29:14,937 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:14,938 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 13:29:14,939 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 13:29:17,964 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 13:29:30,843 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-21 13:29:30,854 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:30,855 - model.ProductModel - ERROR - No se pudo conectar a la base de datos
+2025-10-21 13:29:30,857 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:30,857 - model.ProductModel - ERROR - No se pudo conectar a la base de datos
+2025-10-21 13:29:30,883 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:30,883 - model.ProductModel - ERROR - No se pudo conectar a la base de datos
+2025-10-21 13:29:38,199 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:38,199 - model.ProductModel - ERROR - No se pudo conectar a la base de datos
+2025-10-21 13:29:42,134 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 13:29:42,136 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:42,136 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 13:29:42,148 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:29:42,149 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 13:29:42,149 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 13:29:42,179 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 13:29:42,203 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 13:29:42,204 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 13:29:58,328 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 13:29:58,364 - MainController - INFO - Sistema POS iniciado
+2025-10-21 13:29:58,364 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 13:29:58,365 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 13:29:58,461 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-21 13:29:58,461 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-21 13:29:58,908 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 13:30:01,351 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 13:30:01,505 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:30:01,507 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:30:01,516 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:30:01,516 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 13:30:03,532 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:30:03,533 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 13:30:03,549 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 13:30:03,549 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 13:30:03,550 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 13:30:06,585 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 14:19:52,468 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 14:19:52,470 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:19:52,470 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 14:19:52,484 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:19:52,484 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 14:19:52,485 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 14:19:52,530 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 14:19:52,551 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 14:19:52,553 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 14:19:52,563 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-21 14:19:55,678 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 14:19:55,715 - MainController - INFO - Sistema POS iniciado
+2025-10-21 14:19:55,715 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 14:19:55,716 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 14:19:55,808 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-21 14:19:55,809 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-21 14:19:56,250 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 14:19:58,393 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 14:19:58,554 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:19:58,568 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:19:58,570 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:19:58,571 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 14:20:00,586 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:20:00,587 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 14:20:00,602 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:20:00,602 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 14:20:00,604 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 14:20:03,637 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 14:20:22,290 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 14:20:22,293 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:20:22,293 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 14:20:22,310 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:20:22,310 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 14:20:22,311 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 14:20:22,360 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 14:20:22,384 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 14:20:22,386 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 14:20:22,396 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-21 14:43:09,857 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 14:43:09,898 - MainController - INFO - Sistema POS iniciado
+2025-10-21 14:43:09,899 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 14:43:09,899 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 14:43:09,999 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-21 14:43:09,999 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-21 14:43:09,999 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-21 14:43:10,447 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 14:43:12,168 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 14:43:12,330 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:43:12,347 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:43:12,367 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:43:12,368 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 14:43:14,374 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:43:14,375 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 14:43:14,388 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:43:14,389 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 14:43:14,390 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 14:43:17,420 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 14:43:23,283 - ConfigController - INFO - Configuración del sistema cargada: 37 elementos
+2025-10-21 14:43:23,284 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-21 14:44:06,131 - ConfigController - INFO - Configuración del sistema cargada: 37 elementos
+2025-10-21 14:44:06,132 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-21 14:53:48,474 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 14:53:48,476 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:53:48,476 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 14:53:48,489 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:53:48,489 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 14:53:48,490 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 14:53:48,548 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 14:53:48,568 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 14:53:48,571 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 14:54:10,259 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 14:54:10,294 - MainController - INFO - Sistema POS iniciado
+2025-10-21 14:54:10,295 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 14:54:10,295 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 14:54:10,391 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-21 14:54:10,392 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-21 14:54:10,392 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-21 14:54:10,816 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 14:54:13,287 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 14:54:13,464 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:54:13,478 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:54:13,494 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:54:13,495 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 14:54:15,525 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:54:15,525 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 14:54:15,527 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:54:15,528 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 14:54:15,529 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 14:54:18,558 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 14:54:22,923 - ConfigController - INFO - Configuración del sistema cargada: 37 elementos
+2025-10-21 14:54:22,923 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-21 14:55:08,560 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 14:55:08,585 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:55:08,585 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 14:55:08,600 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:55:08,600 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 14:55:08,601 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 14:55:08,663 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 14:55:08,691 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 14:55:08,692 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-21 14:55:13,269 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-21 14:55:13,304 - MainController - INFO - Sistema POS iniciado
+2025-10-21 14:55:13,305 - MainController - INFO - Iniciando aplicación POS
+2025-10-21 14:55:13,305 - MainController - INFO - Mostrando pantalla de login
+2025-10-21 14:55:13,403 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-21 14:55:13,403 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-21 14:55:13,403 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-21 14:55:13,833 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-21 14:55:16,105 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-21 14:55:16,254 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:55:16,256 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:55:16,275 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:55:16,275 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-21 14:55:18,301 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:55:18,301 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 14:55:18,317 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:55:18,318 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-21 14:55:18,319 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-21 14:55:21,348 - MainController - INFO - Login exitoso para admin: admin
+2025-10-21 14:55:29,426 - ConfigController - INFO - Configuración del sistema cargada: 37 elementos
+2025-10-21 14:55:29,427 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-21 14:57:12,749 - MainController - INFO - Cerrando aplicación POS
+2025-10-21 14:57:12,761 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:57:12,762 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-21 14:57:12,783 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-21 14:57:12,783 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-21 14:57:12,784 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-21 14:57:12,851 - AuthController - INFO - Logout exitoso para: admin
+2025-10-21 14:57:12,874 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-21 14:57:12,875 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 11:45:00,630 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 11:45:00,751 - MainController - INFO - Sistema POS iniciado
+2025-10-22 11:45:00,751 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 11:45:00,752 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 11:45:00,999 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-22 11:45:01,000 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-22 11:45:01,005 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-22 11:45:01,917 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 11:45:03,475 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 11:45:03,717 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:03,737 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:03,752 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:03,753 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 11:45:05,767 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:05,768 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:05,770 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:05,771 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 11:45:05,772 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 11:45:08,820 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 11:45:27,206 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-22 11:45:27,224 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:27,225 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:27,257 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:27,258 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:27,261 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:27,262 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:27,292 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:27,293 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:27,308 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:27,309 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:27,327 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:27,327 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 11:45:27,343 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:33,926 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-22 11:45:33,929 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:33,930 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:33,940 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:33,942 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:33,945 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:33,946 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:33,966 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:33,971 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:33,991 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:33,992 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:45:33,996 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:45:33,996 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 11:45:34,016 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:22,576 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:22,577 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:56:22,580 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:22,581 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 11:56:22,581 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-10-22 11:56:22,752 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 11:56:22,756 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 11:56:29,341 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 11:56:29,458 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:29,475 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:29,492 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:29,493 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 11:56:31,511 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:31,511 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:56:31,524 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:31,527 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 11:56:31,531 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 11:56:34,581 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 11:56:50,448 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-22 11:56:50,455 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:50,455 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:56:50,459 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:50,460 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:56:50,471 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:50,472 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:56:50,476 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:50,477 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:56:50,489 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:50,490 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:56:50,493 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:56:50,494 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 11:56:50,522 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:57:08,884 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-22 11:57:08,887 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:57:08,888 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:57:08,892 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:57:08,893 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:57:08,916 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:57:08,917 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:57:08,932 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:57:08,933 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:57:08,948 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:57:08,949 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 11:57:08,973 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 11:57:08,974 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 11:57:08,989 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:02,644 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 12:03:02,650 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:02,650 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:03:02,658 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:02,659 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 12:03:02,659 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 12:03:02,754 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 12:03:02,823 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 12:03:02,823 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 12:03:05,536 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 12:03:05,638 - MainController - INFO - Sistema POS iniciado
+2025-10-22 12:03:05,639 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 12:03:05,639 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 12:03:05,906 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-22 12:03:05,906 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-22 12:03:05,907 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-22 12:03:07,107 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 12:03:09,767 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 12:03:09,986 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:09,990 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:10,004 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:10,005 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 12:03:12,013 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:12,014 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:03:12,027 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:12,028 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 12:03:12,030 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 12:03:15,146 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 12:03:21,417 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-22 12:03:21,433 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:21,434 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:03:21,450 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:21,453 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:03:21,467 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:21,468 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:03:21,471 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:21,473 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:03:21,477 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:21,477 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:03:21,481 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:03:21,482 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 12:03:21,486 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:27,133 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 12:07:27,150 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:27,151 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:07:27,166 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:27,168 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 12:07:27,169 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 12:07:27,287 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 12:07:27,369 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 12:07:27,373 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 12:07:31,998 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 12:07:32,102 - MainController - INFO - Sistema POS iniciado
+2025-10-22 12:07:32,102 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 12:07:32,103 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 12:07:32,397 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-22 12:07:32,398 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-22 12:07:32,399 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-22 12:07:33,703 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 12:07:40,070 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 12:07:40,291 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:40,303 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:40,328 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:40,328 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 12:07:42,338 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:42,339 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:07:42,343 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:42,344 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 12:07:42,346 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 12:07:45,607 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 12:07:52,849 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-22 12:07:52,853 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:52,854 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:07:52,861 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:52,868 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:07:52,872 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:52,876 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:07:52,885 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:52,887 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:07:52,892 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:52,893 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:07:52,899 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:07:52,905 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 12:07:52,910 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:39:49,152 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 12:39:49,159 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:39:49,159 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:39:49,164 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:39:49,168 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 12:39:49,169 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 12:39:49,262 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 12:39:49,339 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 12:39:49,385 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 12:39:56,433 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 12:39:56,558 - MainController - INFO - Sistema POS iniciado
+2025-10-22 12:39:56,559 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 12:39:56,559 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 12:39:56,840 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-22 12:39:56,841 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-22 12:39:56,842 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-22 12:39:58,065 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 12:40:00,754 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 12:40:00,982 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:01,007 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:01,011 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:01,012 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 12:40:03,024 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:03,025 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:40:03,054 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:03,069 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 12:40:03,071 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 12:40:06,144 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 12:40:12,221 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-22 12:40:12,243 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:12,244 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:40:12,248 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:12,249 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:40:12,254 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:12,255 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:40:12,259 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:12,261 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:40:12,265 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:12,266 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:40:12,271 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:40:12,272 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 12:40:12,288 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:50:49,245 - controller.RoleController - INFO - Creando nuevo rol: Planillero
+2025-10-22 12:50:49,251 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:50:49,256 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:50:49,262 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:50:49,263 - controller.RoleController - ERROR - Error interno al crear el rol
+2025-10-22 12:51:45,324 - controller.RoleController - INFO - Obteniendo rol por ID: 3
+2025-10-22 12:51:45,348 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 12:51:45,349 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 12:51:45,354 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 17:18:36,649 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 17:18:36,654 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 17:18:36,655 - database - INFO - Intentando reconectar a la base de datos...
+2025-10-22 17:18:36,659 - database - ERROR - Error conectando a MySQL: 2061 (HY000): Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection.
+2025-10-22 17:18:36,659 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 17:18:36,660 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 17:18:36,864 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 17:18:36,939 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 17:18:36,939 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 17:28:21,918 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 17:28:22,043 - MainController - INFO - Sistema POS iniciado
+2025-10-22 17:28:22,044 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 17:28:22,044 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 17:28:22,407 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-22 17:28:22,409 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-22 17:28:22,411 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-22 17:28:23,687 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 17:28:29,829 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 17:28:30,136 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:28:30,160 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:28:30,208 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:28:30,213 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 17:28:32,242 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:28:32,279 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:28:32,285 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 17:28:32,288 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 17:28:35,437 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 17:28:41,863 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-22 17:28:41,889 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:28:41,905 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 17:28:41,937 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:28:54,347 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
+2025-10-22 17:28:54,371 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:28:54,386 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 17:28:54,417 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:29:04,048 - controller.RoleController - INFO - Obteniendo rol por ID: 4
+2025-10-22 17:29:04,076 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:29:17,344 - ConfigController - INFO - Configuración del sistema cargada: 37 elementos
+2025-10-22 17:29:17,345 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-22 17:30:33,958 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 17:30:33,990 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:30:34,041 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:30:34,042 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 17:30:34,044 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 17:30:34,264 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 17:30:34,346 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 17:30:34,347 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 17:30:36,936 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 17:30:37,042 - MainController - INFO - Sistema POS iniciado
+2025-10-22 17:30:37,043 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 17:30:37,043 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 17:30:37,341 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-22 17:30:37,342 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-22 17:30:37,342 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-22 17:30:38,652 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 17:30:40,696 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 17:30:40,946 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:30:40,970 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:30:41,000 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:30:41,004 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 17:30:43,034 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:30:43,092 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:30:43,119 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 17:30:43,123 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 17:30:46,193 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 17:31:40,882 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-22 17:31:40,901 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:31:40,917 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 17:31:40,935 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:36:01,265 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-22 17:36:01,295 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:36:01,308 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 17:36:01,333 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:40:10,321 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 17:40:10,341 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:40:10,359 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:40:10,360 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 17:40:10,360 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 17:40:10,629 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 17:40:10,708 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 17:40:10,710 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 17:41:22,021 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 17:41:22,114 - MainController - INFO - Sistema POS iniciado
+2025-10-22 17:41:22,115 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 17:41:22,116 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 17:41:22,387 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-22 17:41:22,388 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-22 17:41:22,388 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-22 17:41:23,772 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 17:41:28,761 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 17:41:29,026 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:41:29,062 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:41:29,110 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:41:29,115 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 17:41:31,143 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:41:31,170 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:41:31,171 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 17:41:31,173 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 17:41:34,254 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 17:43:34,332 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-22 17:43:34,364 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:43:34,380 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 17:43:34,410 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:45:26,147 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 17:45:26,166 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:45:26,186 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:45:26,187 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 17:45:26,187 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 17:45:26,284 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 17:45:26,352 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 17:45:26,353 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 17:45:30,403 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 17:45:30,524 - MainController - INFO - Sistema POS iniciado
+2025-10-22 17:45:30,525 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 17:45:30,526 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 17:45:30,855 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-22 17:45:30,856 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-22 17:45:30,857 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-22 17:45:32,230 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 17:45:34,124 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 17:45:34,361 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:45:34,389 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:45:34,431 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:45:34,435 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 17:45:36,460 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:45:36,480 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:45:36,481 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 17:45:36,483 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 17:45:39,620 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 17:45:54,744 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-22 17:45:54,770 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:45:54,781 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 17:45:54,803 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:49:01,494 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 17:49:01,535 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:49:01,557 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:49:01,558 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 17:49:01,559 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 17:49:01,670 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 17:49:01,739 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 17:49:01,740 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 17:50:19,985 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 17:50:20,079 - MainController - INFO - Sistema POS iniciado
+2025-10-22 17:50:20,080 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 17:50:20,080 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 17:50:20,360 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-22 17:50:20,362 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-22 17:50:20,363 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-22 17:50:21,763 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 17:50:24,201 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 17:50:24,441 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:50:24,465 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:50:24,517 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:50:24,524 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 17:50:26,563 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:50:26,597 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:50:26,598 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 17:50:26,600 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 17:50:29,679 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 17:50:38,274 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-22 17:50:38,301 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:50:38,315 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 17:50:38,334 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:56:09,662 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 17:56:09,689 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:56:09,717 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:56:09,719 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 17:56:09,720 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 17:56:09,813 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 17:56:09,909 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 17:56:09,912 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 17:56:14,455 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 17:56:14,553 - MainController - INFO - Sistema POS iniciado
+2025-10-22 17:56:14,554 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 17:56:14,554 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 17:56:14,839 - utils.ResponsiveScaler - INFO - Configuración personalizada cargada
+2025-10-22 17:56:14,840 - utils.ResponsiveScaler - INFO - Resolución detectada: 1366x768
+2025-10-22 17:56:14,842 - utils.ResponsiveScaler - INFO - Factor de escala: 0.71 (HD)
+2025-10-22 17:56:16,167 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 17:56:30,346 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 17:56:30,627 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:56:30,669 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:56:30,701 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:56:30,704 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 17:56:32,741 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:56:32,765 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 17:56:32,784 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 17:56:32,789 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 17:56:35,918 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 17:56:52,621 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-22 17:56:52,652 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:56:52,669 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 17:56:52,686 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 17:57:19,152 - ConfigController - INFO - Configuración del sistema cargada: 37 elementos
+2025-10-22 17:57:19,153 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-22 18:01:17,701 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 18:01:17,813 - MainController - INFO - Sistema POS iniciado
+2025-10-22 18:01:17,814 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 18:01:17,814 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 18:01:18,085 - utils.AutoScaler - INFO - 🖥️  Resolución: 1366x768
+2025-10-22 18:01:18,086 - utils.AutoScaler - INFO - 📊 Factor de escala: 0.71
+2025-10-22 18:01:19,343 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 18:01:22,188 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 18:01:22,451 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:01:22,489 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:01:22,522 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:01:22,526 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 18:01:24,553 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:01:24,580 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 18:01:24,580 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 18:01:24,582 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 18:01:27,709 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 18:07:17,726 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-22 18:07:17,838 - MainController - INFO - Sistema POS iniciado
+2025-10-22 18:07:17,839 - MainController - INFO - Iniciando aplicación POS
+2025-10-22 18:07:17,839 - MainController - INFO - Mostrando pantalla de login
+2025-10-22 18:07:18,130 - utils.AutoScaler - INFO - 🖥️  Resolución: 1366x768
+2025-10-22 18:07:18,132 - utils.AutoScaler - INFO - 📊 Factor de escala: 0.71
+2025-10-22 18:07:19,530 - AuthController - INFO - Usuario recordado cargado: admin
+2025-10-22 18:07:27,949 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 18:07:27,985 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:07:28,013 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 18:07:28,014 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 18:07:28,014 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 18:07:28,310 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 18:07:28,397 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 18:07:28,398 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 18:07:31,908 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 18:07:31,941 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:07:32,028 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 18:07:32,052 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 18:07:32,072 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 18:07:32,286 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 18:07:32,348 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 18:07:32,388 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-22 18:07:32,416 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-10-22 18:07:36,718 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-22 18:07:36,954 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:07:36,975 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:07:37,007 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:07:37,010 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-22 18:07:39,043 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:07:39,060 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 18:07:39,061 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-22 18:07:39,063 - AuthController - INFO - Usuario recordado guardado: admin
+2025-10-22 18:07:42,143 - MainController - INFO - Login exitoso para admin: admin
+2025-10-22 18:07:53,824 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-22 18:07:53,839 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:07:53,852 - controller.RoleController - INFO - Se obtuvieron 5 roles
+2025-10-22 18:07:53,887 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:07:56,903 - MainController - INFO - Cerrando aplicación POS
+2025-10-22 18:07:56,922 - database - INFO - Conectado exitosamente a MySQL Server versión 9.4.0
+2025-10-22 18:07:56,939 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-22 18:07:56,940 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-22 18:07:56,943 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-22 18:07:57,048 - AuthController - INFO - Logout exitoso para: admin
+2025-10-22 18:07:57,134 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-22 18:07:57,135 - MainController - INFO - Aplicación cerrada correctamente

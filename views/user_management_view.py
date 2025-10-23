@@ -721,56 +721,78 @@ class UserDialog:
             bg='#3498db'
         ).pack(expand=True)
         
-        # Contenido - usando pack en lugar de place para mayor simplicidad
-        content_frame = tk.Frame(self.dialog, bg='white')
-        content_frame.pack(fill='both', expand=True, padx=30, pady=30)
+        # Contenedor principal con Canvas para scroll
+        main_container = tk.Frame(self.dialog, bg='white')
+        main_container.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # Canvas con scrollbar
+        canvas = tk.Canvas(main_container, bg='white', highlightthickness=0)
+        scrollbar = ttk.Scrollbar(main_container, orient='vertical', command=canvas.yview)
+        
+        # Frame que contendrá todo el contenido scrolleable
+        content_frame = tk.Frame(canvas, bg='white')
+        
+        # Configurar el canvas
+        content_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=content_frame, anchor='nw', width=560)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Empaquetar canvas y scrollbar
+        canvas.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
+        
+        # Habilitar scroll con rueda del ratón
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
+        # Padding interno para el contenido
+        inner_frame = tk.Frame(content_frame, bg='white')
+        inner_frame.pack(fill='both', expand=True, padx=20, pady=20)
         
         # Campos del formulario usando pack para simplicidad
         # Username
-        tk.Label(content_frame, text="👤 Nombre de Usuario:", bg='white', 
+        tk.Label(inner_frame, text="👤 Nombre de Usuario:", bg='white', 
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
-        self.username_entry = tk.Entry(content_frame, textvariable=self.username_var, 
+        self.username_entry = tk.Entry(inner_frame, textvariable=self.username_var, 
                                       font=('Segoe UI', 11), relief='solid', bd=1)
         self.username_entry.pack(fill='x', pady=(0, 15))
         
-        # Debug: verificar binding
-        print(f"DEBUG - Username entry creado, var actual: '{self.username_var.get()}'")
-        
-        # Verificar que el binding funciona
-        def test_username_change(*args):
-            print(f"DEBUG - Username cambió a: '{self.username_var.get()}'")
-        self.username_var.trace('w', test_username_change)
+        # Si hay datos existentes, forzar actualización visual
+        if self.user_data and self.user_data.get('username'):
+            self.username_entry.delete(0, tk.END)
+            self.username_entry.insert(0, self.user_data.get('username', ''))
         
         # Full name
-        tk.Label(content_frame, text="📝 Nombre Completo:", bg='white',
+        tk.Label(inner_frame, text="📝 Nombre Completo:", bg='white',
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
-        self.fullname_entry = tk.Entry(content_frame, textvariable=self.full_name_var, 
+        self.fullname_entry = tk.Entry(inner_frame, textvariable=self.full_name_var, 
                 font=('Segoe UI', 11), relief='solid', bd=1)
         self.fullname_entry.pack(fill='x', pady=(0, 15))
         
-        # Debug: verificar binding
-        print(f"DEBUG - Fullname entry creado, var actual: '{self.full_name_var.get()}'")
-        
-        def test_fullname_change(*args):
-            print(f"DEBUG - Fullname cambió a: '{self.full_name_var.get()}'")
-        self.full_name_var.trace('w', test_fullname_change)
+        # Si hay datos existentes, forzar actualización visual
+        if self.user_data and self.user_data.get('full_name'):
+            self.fullname_entry.delete(0, tk.END)
+            self.fullname_entry.insert(0, self.user_data.get('full_name', ''))
         
         # Email
-        tk.Label(content_frame, text="📧 Email:", bg='white',
+        tk.Label(inner_frame, text="📧 Email:", bg='white',
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
-        self.email_entry = tk.Entry(content_frame, textvariable=self.email_var, 
+        self.email_entry = tk.Entry(inner_frame, textvariable=self.email_var, 
                 font=('Segoe UI', 11), relief='solid', bd=1)
         self.email_entry.pack(fill='x', pady=(0, 15))
         
-        # Debug: verificar binding
-        print(f"DEBUG - Email entry creado, var actual: '{self.email_var.get()}'")
-        
-        def test_email_change(*args):
-            print(f"DEBUG - Email cambió a: '{self.email_var.get()}'")
-        self.email_var.trace('w', test_email_change)
+        # Si hay datos existentes, forzar actualización visual
+        if self.user_data and self.user_data.get('email'):
+            self.email_entry.delete(0, tk.END)
+            self.email_entry.insert(0, self.user_data.get('email', ''))
         
         # User Type (Role)
-        tk.Label(content_frame, text="🎭 Rol:", bg='white',
+        tk.Label(inner_frame, text="🎭 Rol:", bg='white',
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
         
         # Obtener valores de roles dinámicamente
@@ -778,72 +800,77 @@ class UserDialog:
         if not role_values:  # Fallback si no hay roles
             role_values = ['Admin', 'Manager', 'Employee', 'Cashier']
         
-        user_type_combo = ttk.Combobox(content_frame, textvariable=self.user_type_var,
+        user_type_combo = ttk.Combobox(inner_frame, textvariable=self.user_type_var,
                                       values=role_values, state='readonly', font=('Segoe UI', 11))
         user_type_combo.pack(fill='x', pady=(0, 15))
         
+        # Si hay datos existentes, forzar actualización visual del rol
+        if self.user_data and self.user_data.get('user_type'):
+            user_type = self.user_data.get('user_type', '')
+            # Buscar el nombre del rol correspondiente
+            for role in self.roles_data:
+                if role.get('name', '').lower() == user_type.lower() or role.get('code', '').lower() == user_type.lower():
+                    user_type_combo.set(role.get('name', ''))
+                    break
+            else:
+                # Si no se encuentra, usar el valor directo
+                user_type_combo.set(user_type)
+        
         # Status (solo en edición)
         if self.is_edit:
-            tk.Label(content_frame, text="📊 Estado:", bg='white',
+            tk.Label(inner_frame, text="📊 Estado:", bg='white',
                     font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
             
-            status_combo = ttk.Combobox(content_frame, textvariable=self.status_var,
-                                       values=['active', 'inactive'], state='readonly', font=('Segoe UI', 11))
+            status_combo = ttk.Combobox(inner_frame, textvariable=self.status_var,
+                                       values=['activo', 'inactivo'], state='readonly', font=('Segoe UI', 11))
             status_combo.pack(fill='x', pady=(0, 15))
+            
+            # Si hay datos existentes, forzar actualización visual del estado
+            if self.user_data:
+                current_status = self.user_data.get('status', 'activo')
+                # Normalizar el valor del estado
+                status_value = 'activo' if current_status in ['active', 'activo', 'Active', 'ACTIVE'] else 'inactivo'
+                status_combo.set(status_value)
         
         # Contraseña
         password_label = "🔒 Nueva Contraseña:" if self.is_edit else "🔒 Contraseña:"
         required = "" if self.is_edit else " *"
         
-        tk.Label(content_frame, text=password_label + required, bg='white',
+        tk.Label(inner_frame, text=password_label + required, bg='white',
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
         
-        self.password_entry = tk.Entry(content_frame, textvariable=self.password_var, font=('Segoe UI', 11), 
+        self.password_entry = tk.Entry(inner_frame, textvariable=self.password_var, font=('Segoe UI', 11), 
                 show='*', relief='solid', bd=1)
         self.password_entry.pack(fill='x', pady=(0, 15))
-        
-        # Debug: verificar binding
-        print(f"DEBUG - Password entry creado, var actual: '{self.password_var.get()}'")
-        
-        def test_password_change(*args):
-            print(f"DEBUG - Password cambió a: '{'*' * len(self.password_var.get())}'")
-        self.password_var.trace('w', test_password_change)
         
         # Confirmar contraseña
         confirm_label = "🔒 Confirmar Nueva Contraseña:" if self.is_edit else "🔒 Confirmar Contraseña:"
         
-        tk.Label(content_frame, text=confirm_label + required, bg='white',
+        tk.Label(inner_frame, text=confirm_label + required, bg='white',
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
         
-        self.confirm_password_entry = tk.Entry(content_frame, textvariable=self.confirm_password_var, font=('Segoe UI', 11), 
+        self.confirm_password_entry = tk.Entry(inner_frame, textvariable=self.confirm_password_var, font=('Segoe UI', 11), 
                 show='*', relief='solid', bd=1)
         self.confirm_password_entry.pack(fill='x', pady=(0, 15))
         
-        # Debug: verificar binding
-        print(f"DEBUG - Confirm password entry creado, var actual: '{self.confirm_password_var.get()}'")
-        
-        def test_confirm_password_change(*args):
-            print(f"DEBUG - Confirm password cambió a: '{'*' * len(self.confirm_password_var.get())}'")
-        self.confirm_password_var.trace('w', test_confirm_password_change)
-        
         # Nota para edición
         if self.is_edit:
-            tk.Label(content_frame, text="💡 Deje las contraseñas vacías si no desea cambiarla",
+            tk.Label(inner_frame, text="💡 Deje las contraseñas vacías si no desea cambiarla",
                     font=('Segoe UI', 10), fg='#7f8c8d', bg='white').pack(anchor='w', pady=(10, 0))
         
         # Botones
-        buttons_frame = tk.Frame(content_frame, bg='white')
-        buttons_frame.pack(fill='x', pady=(20, 0))
+        buttons_frame = tk.Frame(inner_frame, bg='white')
+        buttons_frame.pack(fill='x', pady=(30, 0))
         
         cancel_btn = tk.Button(buttons_frame, text="❌ Cancelar", command=self.cancel,
                               bg='#95a5a6', fg='white', font=('Segoe UI', 11, 'bold'),
-                              relief='flat', cursor='hand2', width=12)
+                              relief='flat', cursor='hand2', width=12, padx=20, pady=10)
         cancel_btn.pack(side='left')
         
         save_text = "💾 Guardar" if self.is_edit else "➕ Crear Usuario"
         save_btn = tk.Button(buttons_frame, text=save_text, command=self.save,
                             bg='#27ae60', fg='white', font=('Segoe UI', 11, 'bold'),
-                            relief='flat', cursor='hand2', width=15)
+                            relief='flat', cursor='hand2', width=15, padx=20, pady=10)
         save_btn.pack(side='right')
         
         # Bind Enter key

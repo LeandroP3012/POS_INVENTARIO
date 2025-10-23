@@ -49,17 +49,21 @@ class CategoryModel(BaseModel):
             
             query = """
                 INSERT INTO categories (
-                    name, description, parent_id, status
+                    name, description, parent_id, active
                 ) VALUES (
                     %s, %s, %s, %s
                 )
             """
             
+            # Convertir status a active (1 o 0)
+            status = category_data.get('status', 'active')
+            active = 1 if status == 'active' else 0
+            
             values = (
                 category_data['name'],
                 category_data.get('description', ''),
                 category_data.get('parent_id', None),
-                category_data.get('status', 'active')
+                active
             )
             
             cursor.execute(query, values)
@@ -97,15 +101,16 @@ class CategoryModel(BaseModel):
             query = """
                 SELECT 
                     c.*,
+                    CASE WHEN c.active = 1 THEN 'active' ELSE 'inactive' END as status,
                     COUNT(p.id) as product_count,
                     pc.name as parent_name
                 FROM categories c
-                LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
+                LEFT JOIN products p ON c.id = p.category_id AND p.active = 1
                 LEFT JOIN categories pc ON c.parent_id = pc.id
             """
             
             if not include_inactive:
-                query += " WHERE c.status = 'active'"
+                query += " WHERE c.active = 1"
             
             query += """
                 GROUP BY c.id
@@ -142,6 +147,7 @@ class CategoryModel(BaseModel):
             query = """
                 SELECT 
                     c.*,
+                    CASE WHEN c.active = 1 THEN 'active' ELSE 'inactive' END as status,
                     COUNT(p.id) as product_count,
                     pc.name as parent_name
                 FROM categories c
@@ -196,8 +202,10 @@ class CategoryModel(BaseModel):
                 values.append(category_data['parent_id'])
             
             if 'status' in category_data:
-                update_fields.append("status = %s")
-                values.append(category_data['status'])
+                update_fields.append("active = %s")
+                # Convertir status a active (1 o 0)
+                active = 1 if category_data['status'] == 'active' else 0
+                values.append(active)
             
             if not update_fields:
                 return False
@@ -272,12 +280,13 @@ class CategoryModel(BaseModel):
             query = """
                 SELECT 
                     c.*,
+                    CASE WHEN c.active = 1 THEN 'active' ELSE 'inactive' END as status,
                     COUNT(p.id) as product_count,
                     pc.name as parent_name
                 FROM categories c
-                LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
+                LEFT JOIN products p ON c.id = p.category_id AND p.active = 1
                 LEFT JOIN categories pc ON c.parent_id = pc.id
-                WHERE c.status = 'active'
+                WHERE c.active = 1
                 AND (
                     c.name LIKE %s 
                     OR c.description LIKE %s

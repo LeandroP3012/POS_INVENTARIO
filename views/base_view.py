@@ -8,6 +8,7 @@ from tkinter import ttk, messagebox, font
 from typing import Dict, Any, Callable, Optional
 import logging
 from config.settings import SystemSettings
+from utils.auto_scale import get_auto_scaler
 
 class BaseView:
     """Clase base para todas las vistas del sistema"""
@@ -17,6 +18,11 @@ class BaseView:
         self.root = parent if parent else tk.Tk()
         self.settings = SystemSettings()
         self.logger = logging.getLogger(self.__class__.__name__)
+        
+        # Inicializar sistema de auto-escalado
+        self.scaler = get_auto_scaler(self.root)
+        self.responsive_fonts = self.scaler.get_fonts()
+        self.responsive_sizes = self.scaler.get_sizes()
         
         # Variables de configuración
         self.colors = self.settings.get_colors()
@@ -30,15 +36,22 @@ class BaseView:
         self.setup_style()
     
     def _setup_fonts(self) -> Dict[str, font.Font]:
-        """Configurar fuentes del sistema"""
-        return {
-            'default': font.Font(family="Segoe UI", size=10),
-            'title': font.Font(family="Segoe UI", size=16, weight="bold"),
-            'subtitle': font.Font(family="Segoe UI", size=12, weight="bold"),
-            'button': font.Font(family="Segoe UI", size=10, weight="normal"),
-            'small': font.Font(family="Segoe UI", size=8),
-            'large': font.Font(family="Segoe UI", size=14)
-        }
+        """Configurar fuentes del sistema con auto-escalado"""
+        rf = self.responsive_fonts
+        fonts_dict = {}
+        
+        for key, (family, size, weight) in rf.items():
+            fonts_dict[key] = font.Font(family=family, size=size, weight=weight)
+        
+        # Asegurar que tengan los keys necesarios
+        if 'default' not in fonts_dict:
+            fonts_dict['default'] = font.Font(family='Segoe UI', size=12, weight='normal')
+        if 'large' not in fonts_dict:
+            fonts_dict['large'] = font.Font(family='Segoe UI', size=16, weight='normal')
+        if 'xlarge' not in fonts_dict:
+            fonts_dict['xlarge'] = font.Font(family='Segoe UI', size=20, weight='bold')
+            
+        return fonts_dict
     
     def setup_style(self):
         """Configurar estilos TTK"""
@@ -54,6 +67,11 @@ class BaseView:
         # Colores personalizados
         colors = self.colors
         
+        # Obtener padding auto-escalado
+        sizes = self.responsive_sizes
+        padding_md = (sizes['padding_md'], sizes['padding_sm'])
+        padding_sm = (sizes['padding_sm'], sizes['padding_xs'])
+        
         # Configurar estilos de botones
         self.style.configure(
             'Primary.TButton',
@@ -61,7 +79,7 @@ class BaseView:
             foreground='white',
             borderwidth=0,
             focuscolor='none',
-            padding=(20, 10)
+            padding=padding_md
         )
         
         self.style.map(
@@ -76,7 +94,7 @@ class BaseView:
             foreground='white',
             borderwidth=0,
             focuscolor='none',
-            padding=(15, 8)
+            padding=padding_sm
         )
         
         self.style.map(
@@ -91,7 +109,7 @@ class BaseView:
             foreground='white',
             borderwidth=0,
             focuscolor='none',
-            padding=(15, 8)
+            padding=padding_sm
         )
         
         self.style.configure(
@@ -100,7 +118,7 @@ class BaseView:
             foreground='white',
             borderwidth=0,
             focuscolor='none',
-            padding=(15, 8)
+            padding=padding_sm
         )
         
         self.style.configure(
@@ -109,7 +127,7 @@ class BaseView:
             foreground='white',
             borderwidth=0,
             focuscolor='none',
-            padding=(15, 8)
+            padding=padding_sm
         )
         
         # Configurar estilos de frames
@@ -135,26 +153,46 @@ class BaseView:
             font=self.fonts['subtitle']
         )
         
-        # Configurar entrada de texto
+        # Configurar entrada de texto con padding responsivo
         self.style.configure(
             'Custom.TEntry',
-            borderwidth=1,
+            borderwidth=self.responsive_sizes['border_width'],
             relief='solid',
-            padding=10
+            padding=self.responsive_sizes['padding_sm']
         )
     
     def create_window(self, title: str, width: int = 800, height: int = 600, 
-                     resizable: bool = True, center: bool = True) -> tk.Toplevel:
-        """Crear ventana secundaria"""
+                     resizable: bool = True, center: bool = True,
+                     scale_size: bool = True) -> tk.Toplevel:
+        """
+        Crear ventana secundaria con escalado responsivo
+        
+        Args:
+            title: Título de la ventana
+            width: Ancho base (se escalará si scale_size=True)
+            height: Alto base (se escalará si scale_size=True)
+            resizable: Si la ventana es redimensionable
+            center: Si centrar la ventana
+            scale_size: Si escalar el tamaño según resolución
+        """
         window = tk.Toplevel(self.root)
         window.title(title)
-        window.geometry(f"{width}x{height}")
+        
+        # Escalar tamaño si está habilitado
+        if scale_size:
+            scaled_width, scaled_height = self.scaler.get_window_size(width, height)
+            window.geometry(f"{scaled_width}x{scaled_height}")
+        else:
+            window.geometry(f"{width}x{height}")
         
         if not resizable:
             window.resizable(False, False)
         
         if center:
-            self.center_window(window, width, height)
+            if scale_size:
+                self.center_window(window, scaled_width, scaled_height)
+            else:
+                self.center_window(window, width, height)
         
         # Configurar colores
         window.configure(bg=self.colors['background'])
@@ -171,8 +209,12 @@ class BaseView:
         
         window.geometry(f"{width}x{height}+{x}+{y}")
     
-    def create_card_frame(self, parent, padding: int = 20) -> ttk.Frame:
-        """Crear frame con estilo de tarjeta"""
+    def create_card_frame(self, parent, padding: int = None) -> ttk.Frame:
+        """Crear frame con estilo de tarjeta con padding responsivo"""
+        if padding is None:
+            padding = self.responsive_sizes['padding_lg']
+        else:
+            padding = self.scaler.scale_padding(padding)
         frame = ttk.Frame(parent, style='Card.TFrame')
         frame.pack(fill='both', expand=True, padx=padding, pady=padding)
         return frame
@@ -448,3 +490,23 @@ class BaseView:
     def on_destroy(self):
         """Método llamado al destruir la vista"""
         pass
+    
+    def get_responsive_size(self, value: int) -> int:
+        """Obtener valor escalado según resolución"""
+        return self.scaler.scale(value)
+    
+    def get_responsive_width(self, value: int) -> int:
+        """Obtener ancho escalado"""
+        return self.scaler.scale_width(value)
+    
+    def get_responsive_height(self, value: int) -> int:
+        """Obtener altura escalada"""
+        return self.scaler.scale_height(value)
+    
+    def is_compact_mode(self) -> bool:
+        """Verificar si debe usar modo compacto (resoluciones bajas)"""
+        return self.scaler.should_use_compact_layout()
+    
+    def print_screen_info(self):
+        """Imprimir información de pantalla (útil para debugging)"""
+        self.scaler.print_info()

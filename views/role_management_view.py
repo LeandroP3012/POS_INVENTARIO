@@ -11,15 +11,17 @@ import os
 # Agregar el directorio raíz al path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from views.base_view import BaseView
 from controllers.role_controller import RoleController
 
-class RoleManagementView:
+class RoleManagementView(BaseView):
     """Vista para gestión de roles y permisos"""
     
     def __init__(self, parent, current_user: Dict[str, Any], embedded: bool = False):
         self.parent = parent
         self.current_user = current_user
         self.embedded = embedded
+        super().__init__(parent)
         self.role_controller = RoleController()
         
         # Variables de la vista
@@ -30,10 +32,6 @@ class RoleManagementView:
         # Callbacks
         self.callbacks = {}
         
-        # Configurar tamaño de ventana si no está embebido
-        if not self.embedded and hasattr(parent, 'geometry'):
-            parent.geometry("1500x1000")
-        
         # Crear interfaz
         self.create_interface()
         
@@ -42,185 +40,456 @@ class RoleManagementView:
     
     def create_interface(self):
         """Crear la interfaz de usuario"""
-        # Marco principal
+        # Configurar fondo principal
         if self.embedded:
-            self.main_frame = ttk.Frame(self.parent)
-            self.main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        else:
-            self.main_frame = self.parent
+            self.root.configure(bg='#f8f9fa')
         
-        # Título
-        title_frame = ttk.Frame(self.main_frame)
-        title_frame.pack(fill=tk.X, pady=(0, 30))
+        # Header
+        self.create_header()
         
-        ttk.Label(title_frame, text="🔐 GESTIÓN DE ROLES Y PERMISOS", 
-                 font=('Arial', 26, 'bold')).pack(side=tk.LEFT)
+        # Navbar
+        self.create_navbar()
         
-        if self.embedded:
-            ttk.Button(title_frame, text="← Volver al Dashboard", 
-                      command=self._back_to_dashboard).pack(side=tk.RIGHT)
+        # Toolbar con búsqueda y botones
+        self.create_toolbar()
         
-        # Marco de estadísticas
-        self.create_stats_frame()
+        # Panel principal con tabla
+        self.create_main_panel()
         
-        # Marco de búsqueda y filtros
-        self.create_search_frame()
-        
-        # Marco de botones de acción
-        self.create_action_buttons_frame()
-        
-        # Marco de tabla de roles
-        self.create_roles_table_frame()
+        # Footer con estadísticas
+        self.create_footer()
     
-    def create_stats_frame(self):
-        """Crear marco de estadísticas"""
-        stats_frame = ttk.LabelFrame(self.main_frame, text="📊 ESTADÍSTICAS", padding=20)
-        stats_frame.pack(fill=tk.X, pady=(0, 20))
+    def create_header(self):
+        """Crear header de gestión de roles"""
+        header_frame = tk.Frame(self.root, bg='#2c3e50', height=100)
+        header_frame.pack(fill='x')
+        header_frame.pack_propagate(False)
         
-        # Contenedor de estadísticas
-        stats_container = ttk.Frame(stats_frame)
-        stats_container.pack(fill=tk.X)
+        content_frame = tk.Frame(header_frame, bg='#2c3e50')
+        content_frame.pack(expand=True, fill='both', padx=30, pady=15)
+        
+        # Título (izquierda)
+        title_label = tk.Label(
+            content_frame,
+            text="🔐 Gestión de Roles y Permisos",
+            font=('Segoe UI', 24, 'bold'),
+            fg='white',
+            bg='#2c3e50'
+        )
+        title_label.pack(side='left')
+        
+        # Botón de volver (derecha) - solo en modo embebido
+        if self.embedded:
+            back_button = tk.Button(
+                content_frame,
+                text="⬅️ Volver al Dashboard",
+                command=self._back_to_dashboard,
+                bg='#34495e',
+                fg='white',
+                font=('Segoe UI', 10, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=8
+            )
+            back_button.pack(side='right', padx=10)
+        
+        # Usuario actual (derecha, antes del botón)
+        user_text = f"Usuario: {self.current_user.get('full_name', self.current_user.get('username', 'Admin'))}"
+        user_label = tk.Label(
+            content_frame,
+            text=user_text,
+            font=('Segoe UI', 14),
+            fg='#bdc3c7',
+            bg='#2c3e50'
+        )
+        user_label.pack(side='right')
+    
+    def create_navbar(self):
+        """Crear navbar personalizado - GLOBAL para todos los módulos"""
+        navbar_frame = tk.Frame(self.root, bg='#2c3e50', height=50)
+        navbar_frame.pack(fill='x')
+        navbar_frame.pack_propagate(False)
+        
+        # Estilo de botones
+        btn_style = {
+            'font': ('Segoe UI', 12, 'bold'),
+            'bg': '#2c3e50',
+            'fg': 'white',
+            'activebackground': '#34495e',
+            'activeforeground': 'white',
+            'relief': 'flat',
+            'bd': 0,
+            'padx': 20,
+            'pady': 10,
+            'cursor': 'hand2'
+        }
+        
+        # Contenedor de botones
+        buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
+        buttons_container.pack(side='left', padx=10, pady=5)
+        
+        # Botón Archivo
+        file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
+        file_btn.pack(side='left', padx=2)
+        file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
+        file_btn.config(menu=file_menu)
+        file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        file_menu.add_separator()
+        if self.embedded:
+            file_menu.add_command(label="Volver al Dashboard", command=self._back_to_dashboard)
+        
+        # Botón Ventas
+        sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
+        sales_btn.pack(side='left', padx=2)
+        sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
+        sales_btn.config(menu=sales_menu)
+        sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        
+        # Botón Inventario
+        inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
+        inv_btn.pack(side='left', padx=2)
+        inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
+        inv_btn.config(menu=inv_menu)
+        inv_menu.add_command(label="Ver Productos", command=self.callbacks.get('view_products', lambda: None))
+        inv_menu.add_command(label="Gestionar Categorías", command=self.callbacks.get('view_categories', lambda: None))
+        inv_menu.add_command(label="Control de Stock", command=self.callbacks.get('stock_control', lambda: None))
+        
+        # Botón Reportes
+        rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
+        rep_btn.pack(side='left', padx=2)
+        rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
+        rep_btn.config(menu=rep_menu)
+        rep_menu.add_command(label="Ventas del Día", command=self.callbacks.get('daily_report', lambda: None))
+        rep_menu.add_command(label="Reporte Completo", command=self.callbacks.get('full_report', lambda: None))
+        
+        # Botón Administración
+        admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
+        admin_btn.pack(side='left', padx=2)
+        admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
+        admin_btn.config(menu=admin_menu)
+        admin_menu.add_command(label="Gestionar Usuarios", command=self.callbacks.get('manage_users', lambda: None))
+        admin_menu.add_command(label="Gestionar Roles", command=self.refresh_roles)
+        admin_menu.add_separator()
+        admin_menu.add_command(label="Configuración", command=self.callbacks.get('system_config', lambda: None))
+        
+        # Botón Ayuda
+        help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
+        help_btn.pack(side='left', padx=2)
+        help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 11))
+        help_btn.config(menu=help_menu)
+        help_menu.add_command(label="Manual de Usuario", command=self.callbacks.get('show_manual', lambda: None))
+        help_menu.add_command(label="Acerca de", command=self.callbacks.get('show_about', lambda: None))
+    
+    def create_toolbar(self):
+        """Crear toolbar con búsqueda y botones de acción"""
+        toolbar_frame = tk.Frame(self.root, bg='white', height=90)
+        toolbar_frame.pack(fill='x', padx=25, pady=(25, 0))
+        toolbar_frame.pack_propagate(False)
+        
+        # Frame interno con padding
+        inner_frame = tk.Frame(toolbar_frame, bg='white')
+        inner_frame.pack(fill='both', expand=True, padx=20, pady=15)
+        
+        # Frame izquierdo - Búsqueda
+        search_frame = tk.Frame(inner_frame, bg='white')
+        search_frame.pack(side='left', fill='y')
+        
+        tk.Label(
+            search_frame,
+            text="� Buscar rol:",
+            font=('Segoe UI', 13, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(side='left', padx=(0, 10))
+        
+        self.search_var.trace_add('write', lambda *args: self.search_roles())
+        search_entry = tk.Entry(
+            search_frame,
+            textvariable=self.search_var,
+            font=('Segoe UI', 13),
+            width=28,
+            relief='solid',
+            bd=1
+        )
+        search_entry.pack(side='left', padx=(0, 15), ipady=8)
+        
+        # Filtro por estado
+        tk.Label(
+            search_frame,
+            text="Estado:",
+            font=('Segoe UI', 13, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(side='left', padx=(25, 8))
+        
+        status_combo = ttk.Combobox(
+            search_frame,
+            textvariable=self.filter_active_var,
+            values=['todos', 'activos', 'inactivos'],
+            state='readonly',
+            width=18,
+            font=('Segoe UI', 12)
+        )
+        status_combo.pack(side='left', padx=(0, 15))
+        status_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters())
+        
+        # Filtro por tipo
+        tk.Label(
+            search_frame,
+            text="Tipo:",
+            font=('Segoe UI', 13, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(side='left', padx=(15, 8))
+        
+        type_combo = ttk.Combobox(
+            search_frame,
+            textvariable=self.filter_type_var,
+            values=['todos', 'sistema', 'personalizados'],
+            state='readonly',
+            width=18,
+            font=('Segoe UI', 12)
+        )
+        type_combo.pack(side='left', padx=(0, 15))
+        type_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters())
+        
+        # Frame derecho - Botones de acción
+        buttons_frame = tk.Frame(inner_frame, bg='white')
+        buttons_frame.pack(side='right', fill='y')
+        
+        # Botón nuevo rol
+        new_role_btn = tk.Button(
+            buttons_frame,
+            text="➕ Nuevo Rol",
+            command=self.create_role,
+            bg='#27ae60',
+            fg='white',
+            font=('Segoe UI', 13, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            padx=20,
+            pady=12
+        )
+        new_role_btn.pack(side='left', padx=(0, 12))
+        
+        # Botón editar
+        self.edit_role_btn = tk.Button(
+            buttons_frame,
+            text="✏️ Editar",
+            command=self.edit_role,
+            bg='#3498db',
+            fg='white',
+            font=('Segoe UI', 13, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            padx=20,
+            pady=12,
+            state='disabled'
+        )
+        self.edit_role_btn.pack(side='left', padx=(0, 12))
+        
+        # Botón eliminar
+        self.delete_role_btn = tk.Button(
+            buttons_frame,
+            text="🗑️ Eliminar",
+            command=self.delete_role,
+            bg='#e74c3c',
+            fg='white',
+            font=('Segoe UI', 13, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            padx=20,
+            pady=12,
+            state='disabled'
+        )
+        self.delete_role_btn.pack(side='left', padx=(0, 12))
+        
+        # Botón permisos
+        self.permissions_btn = tk.Button(
+            buttons_frame,
+            text="🔓 Permisos",
+            command=self.manage_permissions,
+            bg='#9b59b6',
+            fg='white',
+            font=('Segoe UI', 13, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            padx=20,
+            pady=12,
+            state='disabled'
+        )
+        self.permissions_btn.pack(side='left')
+    
+    def create_main_panel(self):
+        """Crear panel principal con tabla de roles"""
+        main_frame = tk.Frame(self.root, bg='#f8f9fa')
+        main_frame.pack(fill='both', expand=True, padx=25, pady=25)
+        
+        # Frame para la tabla
+        table_frame = tk.Frame(main_frame, bg='white', relief='solid', bd=1)
+        table_frame.pack(fill='both', expand=True)
+        
+        # Título de la tabla
+        table_header = tk.Frame(table_frame, bg='#34495e', height=50)
+        table_header.pack(fill='x')
+        table_header.pack_propagate(False)
+        
+        tk.Label(
+            table_header,
+            text="📋 Lista de Roles del Sistema",
+            font=('Segoe UI', 16, 'bold'),
+            fg='white',
+            bg='#34495e'
+        ).pack(side='left', padx=25, pady=15)
+        
+        # Contador de roles
+        self.role_count_label = tk.Label(
+            table_header,
+            text="0 roles",
+            font=('Segoe UI', 13),
+            fg='#bdc3c7',
+            bg='#34495e'
+        )
+        self.role_count_label.pack(side='right', padx=25, pady=15)
+        
+        # Crear Treeview para la tabla
+        self.create_roles_table(table_frame)
+    
+    def create_roles_table(self, parent):
+        """Crear tabla de roles con Treeview"""
+        # Frame para tabla y scrollbars
+        tree_frame = tk.Frame(parent, bg='white')
+        tree_frame.pack(fill='both', expand=True, padx=15, pady=15)
+        
+        # Configurar columnas
+        columns = ('id', 'name', 'code', 'description', 'type', 'status', 'users_count', 'permissions_count')
+        column_names = {
+            'id': 'ID',
+            'name': 'Nombre',
+            'code': 'Código',
+            'description': 'Descripción',
+            'type': 'Tipo',
+            'status': 'Estado',
+            'users_count': 'Usuarios',
+            'permissions_count': 'Permisos'
+        }
+        
+        # Crear Treeview
+        self.roles_tree = ttk.Treeview(
+            tree_frame,
+            columns=columns,
+            show='tree headings',
+            height=18
+        )
+        
+        # Configurar columnas
+        self.roles_tree.column('#0', width=0, stretch=False)  # Ocultar primera columna
+        self.roles_tree.column('id', width=60, anchor='center')
+        self.roles_tree.column('name', width=180, anchor='w')
+        self.roles_tree.column('code', width=140, anchor='w')
+        self.roles_tree.column('description', width=300, anchor='w')
+        self.roles_tree.column('type', width=120, anchor='center')
+        self.roles_tree.column('status', width=100, anchor='center')
+        self.roles_tree.column('users_count', width=100, anchor='center')
+        self.roles_tree.column('permissions_count', width=100, anchor='center')
+        
+        # Configurar headers
+        for col in columns:
+            self.roles_tree.heading(col, text=column_names[col], anchor='center')
+        
+        # Scrollbars
+        v_scrollbar = ttk.Scrollbar(tree_frame, orient='vertical', command=self.roles_tree.yview)
+        h_scrollbar = ttk.Scrollbar(tree_frame, orient='horizontal', command=self.roles_tree.xview)
+        
+        self.roles_tree.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+        
+        # Pack scrollbars y tree
+        self.roles_tree.pack(side='left', fill='both', expand=True)
+        v_scrollbar.pack(side='right', fill='y')
+        h_scrollbar.pack(side='bottom', fill='x')
+        
+        # Bind eventos
+        self.roles_tree.bind('<<TreeviewSelect>>', self.on_role_select)
+        self.roles_tree.bind('<Double-Button-1>', lambda e: self.edit_role())
+        
+        # Configurar estilo para filas alternadas
+        style = ttk.Style()
+        style.configure('Treeview', rowheight=30, font=('Segoe UI', 11))
+        style.configure('Treeview.Heading', font=('Segoe UI', 12, 'bold'))
+    
+    def create_footer(self):
+        """Crear footer con estadísticas"""
+        footer_frame = tk.Frame(self.root, bg='#ecf0f1', height=60)
+        footer_frame.pack(fill='x', side='bottom')
+        footer_frame.pack_propagate(False)
+        
+        # Contenedor interno
+        content_frame = tk.Frame(footer_frame, bg='#ecf0f1')
+        content_frame.pack(fill='both', expand=True, padx=30, pady=15)
         
         # Estadísticas
         self.stats_labels = {}
         
         stats_data = [
-            ("total_roles", "Total de Roles", "#3498db"),
-            ("active_roles", "Roles Activos", "#27ae60"),
-            ("system_roles", "Roles del Sistema", "#9b59b6"),
-            ("custom_roles", "Roles Personalizados", "#e67e22")
+            ('total_roles', 'Total de Roles', '#3498db'),
+            ('active_roles', 'Activos', '#27ae60'),
+            ('system_roles', 'Sistema', '#9b59b6'),
+            ('custom_roles', 'Personalizados', '#e67e22')
         ]
         
-        for i, (key, label, color) in enumerate(stats_data):
-            stat_frame = ttk.Frame(stats_container)
-            stat_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        for key, label_text, color in stats_data:
+            stat_frame = tk.Frame(content_frame, bg='#ecf0f1')
+            stat_frame.pack(side='left', padx=20)
             
-            value_label = ttk.Label(stat_frame, text="0", font=('Arial', 32, 'bold'), 
-                                   foreground=color)
-            value_label.pack(pady=5)
+            value_label = tk.Label(
+                stat_frame,
+                text='0',
+                font=('Segoe UI', 18, 'bold'),
+                fg=color,
+                bg='#ecf0f1'
+            )
+            value_label.pack(side='left', padx=(0, 8))
             
-            desc_label = ttk.Label(stat_frame, text=label, font=('Arial', 14, 'bold'))
-            desc_label.pack()
+            desc_label = tk.Label(
+                stat_frame,
+                text=label_text,
+                font=('Segoe UI', 13),
+                fg='#7f8c8d',
+                bg='#ecf0f1'
+            )
+            desc_label.pack(side='left')
             
             self.stats_labels[key] = value_label
     
-    def create_search_frame(self):
-        """Crear marco de búsqueda y filtros"""
-        search_frame = ttk.LabelFrame(self.main_frame, text="🔍 BÚSQUEDA Y FILTROS", padding=15)
-        search_frame.pack(fill=tk.X, pady=(0, 20))
-        
-        # Primera fila: búsqueda
-        search_row = ttk.Frame(search_frame)
-        search_row.pack(fill=tk.X, pady=(0, 15))
-        
-        ttk.Label(search_row, text="Buscar:", font=('Arial', 14, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
-        
-        search_entry = ttk.Entry(search_row, textvariable=self.search_var, width=40, font=('Arial', 14))
-        search_entry.pack(side=tk.LEFT, padx=(0, 15))
-        search_entry.bind('<KeyRelease>', lambda e: self.search_roles())
-        
-        ttk.Button(search_row, text="🔍 BUSCAR", 
-                  command=self.search_roles).pack(side=tk.LEFT, padx=(0, 10))
-        
-        ttk.Button(search_row, text="🔄 LIMPIAR", 
-                  command=self.clear_search).pack(side=tk.LEFT)
-        
-        # Segunda fila: filtros
-        filter_row = ttk.Frame(search_frame)
-        filter_row.pack(fill=tk.X)
-        
-        # Filtro por estado
-        ttk.Label(filter_row, text="Estado:", font=('Arial', 14, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
-        
-        active_combo = ttk.Combobox(filter_row, textvariable=self.filter_active_var, 
-                                   values=["todos", "activos", "inactivos"], 
-                                   state="readonly", width=18, font=('Arial', 14))
-        active_combo.pack(side=tk.LEFT, padx=(0, 30))
-        active_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters())
-        
-        # Filtro por tipo
-        ttk.Label(filter_row, text="Tipo:", font=('Arial', 14, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
-        
-        type_combo = ttk.Combobox(filter_row, textvariable=self.filter_type_var, 
-                                 values=["todos", "sistema", "personalizados"], 
-                                 state="readonly", width=22, font=('Arial', 14))
-        type_combo.pack(side=tk.LEFT, padx=(0, 15))
-        type_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters())
+    def on_role_select(self, event):
+        """Manejar selección de rol"""
+        selection = self.roles_tree.selection()
+        if selection:
+            self.selected_role = selection[0]
+            # Habilitar botones de acción
+            self.edit_role_btn.config(state='normal')
+            self.delete_role_btn.config(state='normal')
+            self.permissions_btn.config(state='normal')
+        else:
+            self.selected_role = None
+            # Deshabilitar botones de acción
+            self.edit_role_btn.config(state='disabled')
+            self.delete_role_btn.config(state='disabled')
+            self.permissions_btn.config(state='disabled')
     
-    def create_action_buttons_frame(self):
-        """Crear marco de botones de acción"""
-        buttons_frame = ttk.Frame(self.main_frame)
-        buttons_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        # Botones principales
-        ttk.Button(buttons_frame, text="➕ Crear Rol", 
-                  command=self.create_role, style="Accent.TButton").pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(buttons_frame, text="✏️ Editar Rol", 
-                  command=self.edit_role).pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(buttons_frame, text="🗑️ Eliminar Rol", 
-                  command=self.delete_role).pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(buttons_frame, text="🔓 Gestionar Permisos", 
-                  command=self.manage_permissions).pack(side=tk.LEFT, padx=(0, 20))
-        
-        # Botones de estado
-        ttk.Button(buttons_frame, text="✅ Activar", 
-                  command=self.activate_role).pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(buttons_frame, text="❌ Desactivar", 
-                  command=self.deactivate_role).pack(side=tk.LEFT, padx=(0, 10))
-        
-        # Botón de actualizar
-        ttk.Button(buttons_frame, text="🔄 Actualizar", 
-                  command=self.refresh_roles).pack(side=tk.RIGHT)
+    def create_search_frame(self, parent):
+        """Este método ya no se usa - la búsqueda está en el toolbar"""
+        pass
     
-    def create_roles_table_frame(self):
-        """Crear marco de tabla de roles"""
-        table_frame = ttk.LabelFrame(self.main_frame, text="📋 Lista de Roles", padding=10)
-        table_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Crear Treeview con scrollbars
-        tree_frame = ttk.Frame(table_frame)
-        tree_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Definir columnas
-        columns = ('ID', 'Nombre', 'Código', 'Descripción', 'Tipo', 'Estado', 'Usuarios', 'Permisos')
-        
-        self.roles_tree = ttk.Treeview(tree_frame, columns=columns, show='headings', height=18)
-        
-        # Configurar columnas
-        column_configs = {
-            'ID': (60, tk.CENTER),
-            'Nombre': (180, tk.W),
-            'Código': (140, tk.W),
-            'Descripción': (300, tk.W),
-            'Tipo': (120, tk.CENTER),
-            'Estado': (100, tk.CENTER),
-            'Usuarios': (100, tk.CENTER),
-            'Permisos': (100, tk.CENTER)
-        }
-        
-        for col in columns:
-            width, anchor = column_configs[col]
-            self.roles_tree.heading(col, text=col)
-            self.roles_tree.column(col, width=width, anchor=anchor)
-        
-        # Scrollbars
-        v_scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.roles_tree.yview)
-        h_scrollbar = ttk.Scrollbar(tree_frame, orient=tk.HORIZONTAL, command=self.roles_tree.xview)
-        
-        self.roles_tree.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
-        
-        # Empaquetar componentes
-        self.roles_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        v_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        h_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
-        
-        # Bind eventos
-        self.roles_tree.bind('<Double-1>', lambda e: self.edit_role())
-        self.roles_tree.bind('<Button-3>', self.show_context_menu)
+    def create_action_buttons_frame(self, parent):
+        """Este método ya no se usa - los botones están en el toolbar"""
+        pass
+    
+    def create_roles_table_frame(self, parent):
+        """Este método ya no se usa - la tabla está en create_main_panel"""
+        pass
     
     def refresh_roles(self):
         """Actualizar lista de roles"""
@@ -240,22 +509,20 @@ class RoleManagementView:
                 code = role.get('code', '')
                 description = role.get('description', '')[:50] + '...' if len(role.get('description', '')) > 50 else role.get('description', '')
                 role_type = "Sistema" if role.get('system_role', False) else "Personalizado"
-                status = "Activo" if role.get('active', True) else "Inactivo"
+                status = "✅ Activo" if role.get('active', True) else "❌ Inactivo"
                 users_count = role.get('users_count', 0)
                 permissions_count = len(role.get('permissions', []))
                 
                 # Insertar en tabla
-                item_id = self.roles_tree.insert('', tk.END, values=(
+                self.roles_tree.insert('', tk.END, values=(
                     role_id, name, code, description, role_type, status, users_count, permissions_count
                 ))
-                
-                # Colorear según estado
-                if not role.get('active', True):
-                    self.roles_tree.set(item_id, 'Estado', '❌ Inactivo')
-                else:
-                    self.roles_tree.set(item_id, 'Estado', '✅ Activo')
             
-            # Actualizar estadísticas
+            # Actualizar contador de roles
+            total_count = len(roles)
+            self.role_count_label.config(text=f"{total_count} rol{'es' if total_count != 1 else ''}")
+            
+            # Actualizar estadísticas del footer
             self.update_stats()
             
         except Exception as e:
@@ -340,11 +607,11 @@ class RoleManagementView:
         """Crear nuevo rol"""
         try:
             print("DEBUG CREATE_ROLE VIEW - Abriendo diálogo...")
-            dialog = RoleDialog(self.main_frame, title="Crear Nuevo Rol", 
+            dialog = RoleDialog(self.root, title="Crear Nuevo Rol", 
                                role_controller=self.role_controller)
             
             # Esperar a que el diálogo termine completamente
-            self.main_frame.wait_window(dialog.dialog)
+            self.root.wait_window(dialog.dialog)
             
             print(f"DEBUG CREATE_ROLE VIEW - Diálogo cerrado, result: {dialog.result}")
             
@@ -394,7 +661,7 @@ class RoleManagementView:
                 return
             
             # Mostrar diálogo de edición
-            dialog = RoleDialog(self.main_frame, title="Editar Rol", 
+            dialog = RoleDialog(self.root, title="Editar Rol", 
                                role_controller=self.role_controller, role_data=role)
             
             if dialog.result:
@@ -519,10 +786,10 @@ class RoleManagementView:
             
             # Mostrar diálogo de permisos
             print("DEBUG MANAGE_PERMISOS - Abriendo diálogo de permisos...")
-            dialog = PermissionsDialog(self.main_frame, role, self.role_controller)
+            dialog = PermissionsDialog(self.root, role, self.role_controller)
             
             # Esperar a que el diálogo se cierre
-            self.main_frame.wait_window(dialog.dialog)
+            self.root.wait_window(dialog.dialog)
             
             print(f"DEBUG MANAGE_PERMISOS - Diálogo cerrado, result: {dialog.result}")
             
@@ -559,7 +826,7 @@ class RoleManagementView:
                 self.roles_tree.selection_set(item)
                 
                 # Crear menú contextual
-                context_menu = tk.Menu(self.main_frame, tearoff=0)
+                context_menu = tk.Menu(self.root, tearoff=0)
                 context_menu.add_command(label="✏️ Editar", command=self.edit_role)
                 context_menu.add_command(label="🔓 Permisos", command=self.manage_permissions)
                 context_menu.add_separator()
@@ -582,6 +849,14 @@ class RoleManagementView:
         """Volver al dashboard"""
         if 'back_to_dashboard' in self.callbacks:
             self.callbacks['back_to_dashboard']()
+    
+    def bind_callback(self, event_name: str, callback: Callable):
+        """Registrar un callback para un evento"""
+        self.callbacks[event_name] = callback
+    
+    def on_back_to_dashboard(self):
+        """Callback para volver al dashboard"""
+        self._back_to_dashboard()
 
 
 class RoleDialog:
@@ -604,73 +879,298 @@ class RoleDialog:
         self.create_dialog()
     
     def create_dialog(self):
-        """Crear ventana de diálogo"""
+        """Crear ventana de diálogo con diseño moderno"""
         self.dialog = tk.Toplevel(self.parent)
         self.dialog.title(self.title)
-        self.dialog.geometry("600x500")
+        self.dialog.geometry("650x600")
         self.dialog.resizable(False, False)
         self.dialog.transient(self.parent)
         self.dialog.grab_set()
+        self.dialog.configure(bg='#f5f6fa')
         
         # Centrar ventana
-        self.dialog.geometry("+%d+%d" % (
-            self.parent.winfo_rootx() + 50,
-            self.parent.winfo_rooty() + 50
-        ))
+        self.dialog.update_idletasks()
+        x = (self.dialog.winfo_screenwidth() // 2) - (650 // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (600 // 2)
+        self.dialog.geometry(f"650x600+{x}+{y}")
         
-        # Marco principal
-        main_frame = ttk.Frame(self.dialog, padding=30)
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        # Header moderno con color
+        header_frame = tk.Frame(self.dialog, bg='#3498db', height=80)
+        header_frame.pack(fill='x')
+        header_frame.pack_propagate(False)
         
-        # Campos del formulario
-        # Nombre
-        ttk.Label(main_frame, text="Nombre del Rol:", font=('Arial', 13)).pack(anchor=tk.W, pady=(0, 8))
-        self.name_entry = ttk.Entry(main_frame, textvariable=self.name_var, font=('Arial', 13))
-        self.name_entry.pack(fill=tk.X, pady=(0, 20))
+        # Icono y título en el header
+        title_container = tk.Frame(header_frame, bg='#3498db')
+        title_container.pack(expand=True, fill='both', padx=30, pady=20)
+        
+        icon_label = tk.Label(
+            title_container,
+            text="🔐",
+            font=('Segoe UI', 28),
+            bg='#3498db',
+            fg='white'
+        )
+        icon_label.pack(side='left', padx=(0, 15))
+        
+        title_label = tk.Label(
+            title_container,
+            text=self.title,
+            font=('Segoe UI', 20, 'bold'),
+            bg='#3498db',
+            fg='white'
+        )
+        title_label.pack(side='left')
+        
+        # Contenedor principal con scroll
+        main_container = tk.Frame(self.dialog, bg='#f5f6fa')
+        main_container.pack(fill='both', expand=True, padx=30, pady=30)
+        
+        # Canvas para scroll
+        canvas = tk.Canvas(main_container, bg='#f5f6fa', highlightthickness=0)
+        scrollbar = ttk.Scrollbar(main_container, orient='vertical', command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg='#f5f6fa')
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor='nw')
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack canvas y scrollbar
+        canvas.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
+        
+        # Frame de formulario dentro del scrollable
+        form_frame = tk.Frame(scrollable_frame, bg='white', relief='flat', bd=0)
+        form_frame.pack(fill='both', expand=True, padx=5, pady=5)
+        
+        # Padding interno
+        inner_frame = tk.Frame(form_frame, bg='white')
+        inner_frame.pack(fill='both', expand=True, padx=25, pady=25)
+        
+        # Campo: Nombre del Rol
+        tk.Label(
+            inner_frame,
+            text="Nombre del Rol",
+            font=('Segoe UI', 12, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(anchor='w', pady=(0, 8))
+        
+        name_frame = tk.Frame(inner_frame, bg='white')
+        name_frame.pack(fill='x', pady=(0, 20))
+        
+        self.name_entry = tk.Entry(
+            name_frame,
+            textvariable=self.name_var,
+            font=('Segoe UI', 12),
+            relief='solid',
+            bd=1,
+            bg='#f8f9fa'
+        )
+        self.name_entry.pack(fill='x', ipady=10)
+        
+        # Si hay datos existentes, forzar actualización visual
+        if self.role_data and self.role_data.get('name'):
+            self.name_entry.delete(0, tk.END)
+            self.name_entry.insert(0, self.role_data.get('name', ''))
+        
         self.name_entry.focus()
         
-        print(f"DEBUG ROLE - Name entry creado, var actual: '{self.name_var.get()}'")
+        # Hint para nombre
+        hint_name = tk.Label(
+            inner_frame,
+            text="Ej: Gerente de Ventas, Cajero, Supervisor",
+            font=('Segoe UI', 9, 'italic'),
+            bg='white',
+            fg='#7f8c8d'
+        )
+        hint_name.pack(anchor='w', pady=(0, 15))
         
-        # Código
-        ttk.Label(main_frame, text="Código del Rol:", font=('Arial', 13)).pack(anchor=tk.W, pady=(0, 8))
-        self.code_entry = ttk.Entry(main_frame, textvariable=self.code_var, font=('Arial', 13))
-        self.code_entry.pack(fill=tk.X, pady=(0, 20))
+        # Campo: Código del Rol
+        tk.Label(
+            inner_frame,
+            text="Código del Rol",
+            font=('Segoe UI', 12, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(anchor='w', pady=(0, 8))
         
-        print(f"DEBUG ROLE - Code entry creado, var actual: '{self.code_var.get()}'")
+        code_frame = tk.Frame(inner_frame, bg='white')
+        code_frame.pack(fill='x', pady=(0, 20))
         
-        # Descripción
-        ttk.Label(main_frame, text="Descripción:", font=('Arial', 13)).pack(anchor=tk.W, pady=(0, 8))
-        desc_frame = ttk.Frame(main_frame)
-        desc_frame.pack(fill=tk.X, pady=(0, 20))
+        self.code_entry = tk.Entry(
+            code_frame,
+            textvariable=self.code_var,
+            font=('Segoe UI', 12),
+            relief='solid',
+            bd=1,
+            bg='#f8f9fa'
+        )
+        self.code_entry.pack(fill='x', ipady=10)
         
-        self.desc_text = tk.Text(desc_frame, height=5, font=('Arial', 12), wrap=tk.WORD)
-        desc_scrollbar = ttk.Scrollbar(desc_frame, orient=tk.VERTICAL, command=self.desc_text.yview)
+        # Si hay datos existentes, forzar actualización visual
+        if self.role_data and self.role_data.get('code'):
+            self.code_entry.delete(0, tk.END)
+            self.code_entry.insert(0, self.role_data.get('code', ''))
+        
+        # Hint para código
+        hint_code = tk.Label(
+            inner_frame,
+            text="Código único (sin espacios, minúsculas). Ej: gerente_ventas, cajero",
+            font=('Segoe UI', 9, 'italic'),
+            bg='white',
+            fg='#7f8c8d'
+        )
+        hint_code.pack(anchor='w', pady=(0, 15))
+        
+        # Campo: Descripción
+        tk.Label(
+            inner_frame,
+            text="Descripción",
+            font=('Segoe UI', 12, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(anchor='w', pady=(0, 8))
+        
+        desc_container = tk.Frame(inner_frame, bg='white', relief='solid', bd=1)
+        desc_container.pack(fill='x', pady=(0, 20))
+        
+        self.desc_text = tk.Text(
+            desc_container,
+            height=5,
+            font=('Segoe UI', 11),
+            wrap=tk.WORD,
+            relief='flat',
+            bg='#f8f9fa',
+            padx=10,
+            pady=10
+        )
+        desc_scrollbar = ttk.Scrollbar(desc_container, orient=tk.VERTICAL, command=self.desc_text.yview)
         self.desc_text.configure(yscrollcommand=desc_scrollbar.set)
         
-        self.desc_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        desc_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.desc_text.pack(side='left', fill='both', expand=True)
+        desc_scrollbar.pack(side='right', fill='y')
         
         # Insertar descripción existente
         if self.role_data.get('description'):
             self.desc_text.insert('1.0', self.role_data.get('description'))
         
-        # Estado
-        ttk.Checkbutton(main_frame, text="Rol Activo", 
-                       variable=self.active_var).pack(anchor=tk.W, pady=(15, 25))
+        # Hint para descripción
+        hint_desc = tk.Label(
+            inner_frame,
+            text="Describe las responsabilidades y alcance de este rol",
+            font=('Segoe UI', 9, 'italic'),
+            bg='white',
+            fg='#7f8c8d'
+        )
+        hint_desc.pack(anchor='w', pady=(0, 20))
         
-        # Botones
-        button_frame = ttk.Frame(main_frame)
-        button_frame.pack(fill=tk.X, pady=(20, 0))
+        # Separador visual
+        separator = tk.Frame(inner_frame, bg='#e0e0e0', height=1)
+        separator.pack(fill='x', pady=20)
         
-        ttk.Button(button_frame, text="Cancelar", 
-                  command=self.cancel).pack(side=tk.RIGHT, padx=(10, 0))
+        # Estado con mejor diseño
+        status_frame = tk.Frame(inner_frame, bg='white')
+        status_frame.pack(fill='x', pady=(0, 10))
         
-        ttk.Button(button_frame, text="Guardar", 
-                  command=self.save, style="Accent.TButton").pack(side=tk.RIGHT)
+        tk.Label(
+            status_frame,
+            text="Estado del Rol",
+            font=('Segoe UI', 12, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(side='left', padx=(0, 20))
+        
+        # Checkbutton personalizado
+        self.active_check = tk.Checkbutton(
+            status_frame,
+            text="✓ Activo",
+            variable=self.active_var,
+            font=('Segoe UI', 11),
+            bg='white',
+            fg='#27ae60',
+            activebackground='white',
+            activeforeground='#27ae60',
+            selectcolor='white',
+            cursor='hand2'
+        )
+        self.active_check.pack(side='left')
+        
+        # Footer con botones
+        footer_frame = tk.Frame(self.dialog, bg='#ecf0f1', height=80)
+        footer_frame.pack(fill='x', side='bottom')
+        footer_frame.pack_propagate(False)
+        
+        button_container = tk.Frame(footer_frame, bg='#ecf0f1')
+        button_container.pack(expand=True, fill='both', padx=30, pady=20)
+        
+        # Botón Cancelar
+        cancel_btn = tk.Button(
+            button_container,
+            text="✕ Cancelar",
+            command=self.cancel,
+            bg='#95a5a6',
+            fg='white',
+            font=('Segoe UI', 12, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            padx=30,
+            pady=12
+        )
+        cancel_btn.pack(side='right', padx=(10, 0))
+        
+        # Botón Guardar
+        save_btn = tk.Button(
+            button_container,
+            text="✓ Guardar Rol",
+            command=self.save,
+            bg='#27ae60',
+            fg='white',
+            font=('Segoe UI', 12, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            padx=30,
+            pady=12
+        )
+        save_btn.pack(side='right')
+        
+        # Información adicional (si es edición)
+        if self.role_data:
+            info_label = tk.Label(
+                button_container,
+                text=f"📝 Editando rol existente",
+                font=('Segoe UI', 10),
+                bg='#ecf0f1',
+                fg='#7f8c8d'
+            )
+            info_label.pack(side='left')
         
         # Bind Enter y Escape
         self.dialog.bind('<Return>', lambda e: self.save())
         self.dialog.bind('<Escape>', lambda e: self.cancel())
+        
+        # Efecto hover en botones
+        def on_enter_save(e):
+            save_btn.config(bg='#229954')
+        
+        def on_leave_save(e):
+            save_btn.config(bg='#27ae60')
+        
+        def on_enter_cancel(e):
+            cancel_btn.config(bg='#7f8c8d')
+        
+        def on_leave_cancel(e):
+            cancel_btn.config(bg='#95a5a6')
+        
+        save_btn.bind('<Enter>', on_enter_save)
+        save_btn.bind('<Leave>', on_leave_save)
+        cancel_btn.bind('<Enter>', on_enter_cancel)
+        cancel_btn.bind('<Leave>', on_leave_cancel)
+        
+        print(f"DEBUG ROLE - Diálogo creado con diseño moderno")
     
     def save(self):
         """Guardar rol"""

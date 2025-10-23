@@ -190,6 +190,9 @@ class ConfigurationView(BaseView):
         admin_menu.add_command(label="Gestionar Usuarios", command=self.callbacks.get('manage_users', lambda: None))
         admin_menu.add_command(label="Gestionar Roles", command=self.callbacks.get('manage_roles', lambda: None))
         admin_menu.add_separator()
+        admin_menu.add_command(label="🏢 Información de la Empresa", command=lambda: None)
+        admin_menu.add_command(label="🖥️ Configurador Responsivo", command=self.open_responsive_configurator)
+        admin_menu.add_separator()
         admin_menu.add_command(label="Configuración del Sistema", command=lambda: None)
         
         # Botón Ayuda
@@ -2335,6 +2338,34 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
                         messagebox.showerror("Error", f"❌ {message}")
                 except Exception as e:
                     messagebox.showerror("Error", f"❌ Error restaurando backup:\n{str(e)}")
+    
+    def open_responsive_configurator(self):
+        """Abrir el configurador de escalado responsivo"""
+        import subprocess
+        import sys
+        import os
+        
+        try:
+            # Obtener la ruta del configurador
+            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            configurator_path = os.path.join(script_dir, 'responsive_configurator.py')
+            
+            if not os.path.exists(configurator_path):
+                messagebox.showerror("Error", 
+                                   f"❌ No se encontró el configurador responsivo en:\n{configurator_path}")
+                return
+            
+            # Abrir el configurador en un proceso separado
+            subprocess.Popen([sys.executable, configurator_path])
+            
+            # Mostrar mensaje informativo
+            messagebox.showinfo("Configurador Responsivo", 
+                              "✅ Se ha abierto el configurador de escalado responsivo.\n\n"
+                              "⚠️ Los cambios que realices requerirán reiniciar la aplicación para aplicarse.")
+            
+        except Exception as e:
+            messagebox.showerror("Error", 
+                               f"❌ Error al abrir el configurador responsivo:\n{str(e)}")
     
     def save_configuration(self):
         """Guardar configuración"""

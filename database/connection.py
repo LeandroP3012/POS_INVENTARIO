@@ -38,6 +38,8 @@ class DatabaseConnection:
                     config.setdefault('connection_timeout', 10)
                     config.setdefault('reconnection_attempts', 3)
                     config.setdefault('ssl_disabled', True)
+                    config.setdefault('get_server_public_key', True)
+                    config.setdefault('allow_local_infile', True)
                     
                     return config
             else:
@@ -55,7 +57,9 @@ class DatabaseConnection:
                     "pool_reset_session": True,
                     "connection_timeout": 10,
                     "reconnection_attempts": 3,
-                    "ssl_disabled": True
+                    "ssl_disabled": True,
+                    "get_server_public_key": True,
+                    "allow_local_infile": True
                 }
                 self.save_config(default_config)
                 return default_config
@@ -102,17 +106,27 @@ class DatabaseConnection:
     def connect(self) -> bool:
         """Establecer conexión con la base de datos"""
         try:
-            self.connection = mysql.connector.connect(
-                host=self.config['host'],
-                port=self.config['port'],
-                database=self.config['database'],
-                user=self.config['username'],
-                password=self.config['password'],
-                charset=self.config['charset'],
-                autocommit=self.config.get('autocommit', True),
-                connection_timeout=self.config.get('connection_timeout', 10),
-                ssl_disabled=self.config.get('ssl_disabled', True)
-            )
+            # Configuración de conexión para MySQL 8.0+ y 9.x
+            connection_params = {
+                'host': self.config['host'],
+                'port': self.config['port'],
+                'database': self.config['database'],
+                'user': self.config['username'],
+                'password': self.config['password'],
+                'charset': self.config['charset'],
+                'autocommit': self.config.get('autocommit', True),
+                'connection_timeout': self.config.get('connection_timeout', 10),
+            }
+            
+            # Intentar con mysql_native_password como plugin de autenticación
+            # Esto resuelve el error de caching_sha2_password
+            try:
+                connection_params['auth_plugin'] = 'mysql_native_password'
+                self.connection = mysql.connector.connect(**connection_params)
+            except Exception:
+                # Si falla, intentar sin auth_plugin especificado
+                del connection_params['auth_plugin']
+                self.connection = mysql.connector.connect(**connection_params)
             
             if self.connection.is_connected():
                 db_info = self.connection.get_server_info()

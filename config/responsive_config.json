@@ -1,0 +1,48 @@
+{
+    "resolutions": {
+        "3840x2160": {
+            "name": "4K/UHD",
+            "factor": 2.0
+        },
+        "2560x1440": {
+            "name": "2K/QHD",
+            "factor": 1.33
+        },
+        "1920x1080": {
+            "name": "Full HD",
+            "factor": 1.0
+        },
+        "1600x900": {
+            "name": "HD+",
+            "factor": 0.83
+        },
+        "1366x768": {
+            "name": "HD",
+            "factor": 0.71
+        },
+        "1280x720": {
+            "name": "HD Ready",
+            "factor": 0.67
+        }
+    },
+    "base_sizes": {
+        "title_font": 16,
+        "subtitle_font": 12,
+        "default_font": 10,
+        "small_font": 8,
+        "padding_lg": 20,
+        "padding_md": 15,
+        "padding_sm": 10,
+        "padding_xs": 5,
+        "button_padding_x": 20,
+        "button_padding_y": 10,
+        "card_width": 220,
+        "card_height": 140
+    },
+    "min_limits": {
+        "font_size": 8,
+        "padding": 5,
+        "button_height": 30,
+        "widget_height": 25
+    }
+}

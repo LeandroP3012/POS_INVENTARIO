@@ -56,12 +56,12 @@ class ProductFormDialog:
             from models.product_model import ProductModel
             product_model = ProductModel()
             
-            # Generar SKU
-            next_sku = product_model.generate_next_sku()
+            # Generar SKU (código)
+            next_sku = product_model.generate_next_code()
             self.sku_var.set(next_sku)
             
             # Generar código de barras
-            barcode = product_model.generate_barcode_from_sku(next_sku)
+            barcode = product_model.generate_barcode_from_code(next_sku)
             self.barcode_var.set(barcode)
             
             # Forzar actualización visual de los Entry widgets
@@ -956,7 +956,7 @@ class ProductFormDialog:
         try:
             from models.product_model import ProductModel
             product_model = ProductModel()
-            next_sku = product_model.generate_next_sku()
+            next_sku = product_model.generate_next_code()
             
             # Actualizar variable y Entry directamente
             self.sku_var.set(next_sku)
@@ -994,7 +994,7 @@ class ProductFormDialog:
             
             from models.product_model import ProductModel
             product_model = ProductModel()
-            barcode = product_model.generate_barcode_from_sku(sku)
+            barcode = product_model.generate_barcode_from_code(sku)
             
             # Actualizar variable y Entry directamente
             self.barcode_var.set(barcode)

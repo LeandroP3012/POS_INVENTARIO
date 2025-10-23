@@ -41,18 +41,24 @@ class DashboardView(BaseView):
         self.root.configure(bg='#f1f5f9')
     
     def create_header(self):
-        """Crear header moderno con gradientes y efectos visuales"""
-        header_frame = tk.Frame(self.root, bg='#ffffff', height=80)
+        """Crear header moderno con gradientes y efectos visuales auto-escalados"""
+        # Tamaños escalados
+        header_height = self.scaler.scale_value(80)
+        gradient_height = max(2, self.scaler.scale_value(3))
+        content_padx = self.scaler.scale_padding(20)
+        content_pady = self.scaler.scale_padding(8)
+        
+        header_frame = tk.Frame(self.root, bg='#ffffff', height=header_height)
         header_frame.pack(fill='x', side='top', pady=0, padx=0)
         header_frame.pack_propagate(False)
         
         # Gradiente superior más sutil
-        gradient_frame = tk.Frame(header_frame, bg='#1e3a8a', height=3)
+        gradient_frame = tk.Frame(header_frame, bg='#1e3a8a', height=gradient_height)
         gradient_frame.pack(fill='x')
         
         # Contenedor principal con fondo más elegante
         main_content = tk.Frame(header_frame, bg='#ffffff')
-        main_content.pack(expand=True, fill='both', padx=20, pady=8)
+        main_content.pack(expand=True, fill='both', padx=content_padx, pady=content_pady)
         
         # Frame izquierdo con logo animado
         left_frame = tk.Frame(main_content, bg='#ffffff')
@@ -61,9 +67,12 @@ class DashboardView(BaseView):
         # Cargar configuración de la empresa
         company_name, logo_path = self.load_company_config()
         
-        # Contenedor del logo
-        self.logo_container = tk.Frame(left_frame, bg='#ffffff', width=50, height=50)
-        self.logo_container.pack(side='left', padx=(0, 18), pady=0)
+        # Contenedor del logo (escalado)
+        logo_size = self.scaler.scale_value(50)
+        logo_padx = self.scaler.scale_padding(18)
+        
+        self.logo_container = tk.Frame(left_frame, bg='#ffffff', width=logo_size, height=logo_size)
+        self.logo_container.pack(side='left', padx=(0, logo_padx), pady=0)
         self.logo_container.pack_propagate(False)
         
         # Intentar cargar logo desde configuración
@@ -77,11 +86,14 @@ class DashboardView(BaseView):
         title_frame = tk.Frame(left_frame, bg='#ffffff')
         title_frame.pack(side='left', fill='y', pady=0)
         
-        # Título principal con nombre de la empresa
+        # Título principal con nombre de la empresa (escalado)
+        title_font_size = self.scaler.scale_font(20)
+        subtitle_font_size = self.scaler.scale_font(10)
+        
         main_title = tk.Label(
             title_frame,
             text=company_name.upper(),
-            font=('Segoe UI', 20, 'bold'),
+            font=('Segoe UI', title_font_size, 'bold'),
             fg='#1e293b',
             bg='#ffffff',
             relief='flat'
@@ -92,7 +104,7 @@ class DashboardView(BaseView):
         subtitle = tk.Label(
             title_frame,
             text="Sistema de Gestión Empresarial",
-            font=('Segoe UI', 10),
+            font=('Segoe UI', subtitle_font_size),
             fg='#64748b',
             bg='#ffffff'
         )
@@ -102,16 +114,21 @@ class DashboardView(BaseView):
         user_container = tk.Frame(main_content, bg='#ffffff')
         user_container.pack(side='right', pady=0)
         
-        # Contenido del user card
+        # Contenido del user card (escalado)
+        user_padx = self.scaler.scale_padding(15)
+        user_pady = self.scaler.scale_padding(8)
+        user_font_size = self.scaler.scale_font(11)
+        role_font_size = self.scaler.scale_font(9)
+        
         user_content = tk.Frame(user_container, bg='#ffffff')
-        user_content.pack(padx=15, pady=8)
+        user_content.pack(padx=user_padx, pady=user_pady)
         
         # Información del usuario con iconos modernos
-        welcome_text = f"� {self.user_data.get('full_name', self.user_data.get('username', 'Usuario'))}"
+        welcome_text = f"👤 {self.user_data.get('full_name', self.user_data.get('username', 'Usuario'))}"
         user_label = tk.Label(
             user_content,
             text=welcome_text,
-            font=('Segoe UI', 11, 'bold'),
+            font=('Segoe UI', user_font_size, 'bold'),
             fg='#1e293b',
             bg='#ffffff'
         )
@@ -122,7 +139,7 @@ class DashboardView(BaseView):
         role_label = tk.Label(
             user_content,
             text=role_text,
-            font=('Segoe UI', 9),
+            font=('Segoe UI', role_font_size),
             fg='#64748b',
             bg='#ffffff'
         )
@@ -269,6 +286,14 @@ class DashboardView(BaseView):
                 'icon': '🏢',
                 'color': '#0d9488',
                 'description': 'Configuración general',
+                'permission': 'system.config'
+            },
+            {
+                'id': 'responsive_config',
+                'title': 'Escalado Responsivo',
+                'icon': '🖥️',
+                'color': '#0891b2',
+                'description': 'Ajustar tamaños por resolución',
                 'permission': 'system.config'
             },
             {
@@ -606,11 +631,16 @@ class DashboardView(BaseView):
         ).pack(anchor='w')
     
     def create_fullscreen_module_card(self, parent, module, row, col):
-        """Crear tarjeta moderna con diseño limpio"""
+        """Crear tarjeta moderna con diseño limpio y auto-escalado"""
         
-        # Contenedor principal con sombra - tamaño fijo para mejor distribución
-        shadow_container = tk.Frame(parent, bg='#e2e8f0', width=220, height=140)
-        shadow_container.grid(row=row, column=col, padx=12, pady=12)
+        # Obtener tamaños escalados automáticamente
+        card_width = self.scaler.scale_value(220)
+        card_height = self.scaler.scale_value(140)
+        card_padding = self.scaler.scale_padding(12)
+        
+        # Contenedor principal con sombra - tamaño escalado
+        shadow_container = tk.Frame(parent, bg='#e2e8f0', width=card_width, height=card_height)
+        shadow_container.grid(row=row, column=col, padx=card_padding, pady=card_padding)
         shadow_container.grid_propagate(False)
         
         # Frame de la tarjeta con elevación
@@ -629,8 +659,8 @@ class DashboardView(BaseView):
         
         # Función para crear contenido con efectos visuales
         def on_canvas_configure(event):
-            canvas_width = event.width if hasattr(event, 'width') else 220
-            canvas_height = event.height if hasattr(event, 'height') else 140
+            canvas_width = event.width if hasattr(event, 'width') else card_width
+            canvas_height = event.height if hasattr(event, 'height') else card_height
             
             # Evitar tamaños muy pequeños
             if canvas_width < 50 or canvas_height < 50:
@@ -647,12 +677,12 @@ class DashboardView(BaseView):
             icon_y = canvas_height * 0.35
             title_y = canvas_height * 0.72
             
-            # Tamaños de fuente
-            icon_size = 36
-            title_size = 11
+            # Tamaños de fuente escalados
+            icon_size = self.scaler.scale_font(36)
+            title_size = self.scaler.scale_font(11)
             
-            # Círculo blanco de fondo para el icono
-            icon_radius = 28
+            # Círculo blanco de fondo para el icono (escalado)
+            icon_radius = self.scaler.scale_value(28)
             canvas.create_oval(
                 center_x - icon_radius, icon_y - icon_radius,
                 center_x + icon_radius, icon_y + icon_radius,
@@ -681,8 +711,8 @@ class DashboardView(BaseView):
         # Bind para redimensionamiento
         canvas.bind('<Configure>', on_canvas_configure)
         
-        # Dibujar contenido inicial inmediatamente
-        canvas.after(1, lambda: on_canvas_configure(type('Event', (), {'width': 220, 'height': 140})()))
+        # Dibujar contenido inicial inmediatamente con tamaños escalados
+        canvas.after(1, lambda: on_canvas_configure(type('Event', (), {'width': card_width, 'height': card_height})()))
         
         # Sistema de eventos con efectos mejorados
         self.setup_enhanced_card_events(canvas, module, card_container)
@@ -1097,8 +1127,43 @@ class DashboardView(BaseView):
         """Registrar callback para un módulo específico"""
         self.module_callbacks[module_id] = callback
     
+    def open_responsive_configurator(self):
+        """Abrir el configurador de escalado responsivo"""
+        import subprocess
+        import sys
+        
+        try:
+            # Obtener la ruta del configurador
+            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            configurator_path = os.path.join(script_dir, 'responsive_configurator.py')
+            
+            if not os.path.exists(configurator_path):
+                from tkinter import messagebox
+                messagebox.showerror("Error", 
+                                   f"❌ No se encontró el configurador responsivo en:\n{configurator_path}")
+                return
+            
+            # Abrir el configurador en un proceso separado
+            subprocess.Popen([sys.executable, configurator_path])
+            
+            # Mostrar mensaje informativo
+            from tkinter import messagebox
+            messagebox.showinfo("Configurador Responsivo", 
+                              "✅ Se ha abierto el configurador de escalado responsivo.\n\n"
+                              "⚠️ Los cambios que realices requerirán reiniciar la aplicación para aplicarse.")
+            
+        except Exception as e:
+            from tkinter import messagebox
+            messagebox.showerror("Error", 
+                               f"❌ Error al abrir el configurador responsivo:\n{str(e)}")
+    
     def on_module_click(self, module_id: str):
         """Manejar click en módulo"""
+        # Manejar módulos especiales
+        if module_id == 'responsive_config':
+            self.open_responsive_configurator()
+            return
+        
         if module_id in self.module_callbacks:
             self.module_callbacks[module_id]()
         else:
