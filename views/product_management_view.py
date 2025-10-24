@@ -8,6 +8,7 @@ from tkinter import ttk, messagebox
 from typing import Dict, Any, Callable, Optional, List
 from views.base_view import BaseView
 from decimal import Decimal
+from services.permission_service import PermissionService
 
 
 class ProductManagementView(BaseView):
@@ -18,6 +19,7 @@ class ProductManagementView(BaseView):
         self.user_data = user_data
         super().__init__(parent)
         
+        self.permission_service = PermissionService()
         self.callbacks = {}
         self.products = []
         self.categories = []
@@ -25,6 +27,14 @@ class ProductManagementView(BaseView):
         self.selected_product = None
         
         self.setup_product_view()
+    
+    def has_permission(self, permission: str) -> bool:
+        """Verificar si el usuario actual tiene un permiso específico"""
+        try:
+            return self.permission_service.check_permission(self.user_data, permission)
+        except Exception as e:
+            print(f"Error verificando permiso {permission}: {e}")
+            return False
     
     def setup_product_view(self):
         """Configurar vista principal"""
@@ -198,47 +208,50 @@ class ProductManagementView(BaseView):
         right_frame = tk.Frame(toolbar, bg='#ecf0f1')
         right_frame.pack(side='right', fill='y', padx=20, pady=10)
         
-        # Botón Nuevo Producto
-        tk.Button(
-            right_frame,
-            text="➕ Nuevo Producto",
-            font=('Segoe UI', 10, 'bold'),
-            bg='#27ae60',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            padx=15,
-            pady=8,
-            command=self.on_new_product
-        ).pack(side='left', padx=5)
+        # Botón Nuevo Producto - Solo si tiene permiso inventory.create
+        if self.has_permission('inventory.create'):
+            tk.Button(
+                right_frame,
+                text="➕ Nuevo Producto",
+                font=('Segoe UI', 10, 'bold'),
+                bg='#27ae60',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=8,
+                command=self.on_new_product
+            ).pack(side='left', padx=5)
         
-        # Botón Actualizar Stock - Dirige a Gestión de Inventario
-        tk.Button(
-            right_frame,
-            text="📊 Actualizar Stock",
-            font=('Segoe UI', 10),
-            bg='#3498db',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            padx=15,
-            pady=8,
-            command=self.on_go_to_inventory
-        ).pack(side='left', padx=5)
+        # Botón Actualizar Stock - Solo si tiene permiso inventory.stock
+        if self.has_permission('inventory.stock'):
+            tk.Button(
+                right_frame,
+                text="📊 Actualizar Stock",
+                font=('Segoe UI', 10),
+                bg='#3498db',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=8,
+                command=self.on_go_to_inventory
+            ).pack(side='left', padx=5)
         
-        # Botón Exportar
-        tk.Button(
-            right_frame,
-            text="📥 Exportar",
-            font=('Segoe UI', 10),
-            bg='#95a5a6',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            padx=15,
-            pady=8,
-            command=self.on_export
-        ).pack(side='left', padx=5)
+        # Botón Exportar - Solo si tiene permiso inventory.export
+        if self.has_permission('inventory.export'):
+            tk.Button(
+                right_frame,
+                text="📥 Exportar",
+                font=('Segoe UI', 10),
+                bg='#95a5a6',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=8,
+                command=self.on_export
+            ).pack(side='left', padx=5)
     
     def create_main_content(self):
         """Crear contenido principal"""
@@ -516,31 +529,35 @@ class ProductManagementView(BaseView):
         action_frame = tk.Frame(scrollable_frame, bg='white')
         action_frame.pack(fill='x', pady=10)
         
-        tk.Button(
-            action_frame,
-            text="✏️ Editar",
-            font=('Segoe UI', 9, 'bold'),
-            bg='#3498db',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            command=self.on_edit_product,
-            width=15,
-            pady=8
-        ).pack(fill='x', pady=2)
+        # Botón Editar - Solo si tiene permiso inventory.edit
+        if self.has_permission('inventory.edit'):
+            tk.Button(
+                action_frame,
+                text="✏️ Editar",
+                font=('Segoe UI', 9, 'bold'),
+                bg='#3498db',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                command=self.on_edit_product,
+                width=15,
+                pady=8
+            ).pack(fill='x', pady=2)
         
-        tk.Button(
-            action_frame,
-            text="️ Eliminar",
-            font=('Segoe UI', 9),
-            bg='#e74c3c',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            command=self.on_delete_product,
-            width=15,
-            pady=8
-        ).pack(fill='x', pady=2)
+        # Botón Eliminar - Solo si tiene permiso inventory.delete
+        if self.has_permission('inventory.delete'):
+            tk.Button(
+                action_frame,
+                text="🗑️ Eliminar",
+                font=('Segoe UI', 9),
+                bg='#e74c3c',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                command=self.on_delete_product,
+                width=15,
+                pady=8
+            ).pack(fill='x', pady=2)
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
@@ -596,16 +613,43 @@ class ProductManagementView(BaseView):
     
     def on_new_product(self):
         """Crear nuevo producto"""
+        # Validar permiso primero
+        if not self.has_permission('inventory.create'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para crear productos.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         if self.callbacks.get('create'):
             self.callbacks['create']()
     
     def on_edit_product(self):
         """Editar producto seleccionado"""
+        # Validar permiso primero
+        if not self.has_permission('inventory.edit'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para editar productos.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         if self.selected_product and self.callbacks.get('edit'):
             self.callbacks['edit'](self.selected_product)
     
     def on_delete_product(self):
         """Eliminar producto seleccionado"""
+        # Validar permiso primero
+        if not self.has_permission('inventory.delete'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para eliminar productos.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         if self.selected_product and self.callbacks.get('delete'):
             if messagebox.askyesno(
                 "Confirmar eliminación",

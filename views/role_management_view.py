@@ -13,6 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from views.base_view import BaseView
 from controllers.role_controller import RoleController
+from services.permission_service import PermissionService
 
 class RoleManagementView(BaseView):
     """Vista para gestión de roles y permisos"""
@@ -23,6 +24,7 @@ class RoleManagementView(BaseView):
         self.embedded = embedded
         super().__init__(parent)
         self.role_controller = RoleController()
+        self.permission_service = PermissionService()
         
         # Variables de la vista
         self.search_var = tk.StringVar()
@@ -37,6 +39,14 @@ class RoleManagementView(BaseView):
         
         # Cargar datos iniciales
         self.refresh_roles()
+    
+    def has_permission(self, permission: str) -> bool:
+        """Verificar si el usuario actual tiene un permiso específico"""
+        try:
+            return self.permission_service.check_permission(self.current_user, permission)
+        except Exception as e:
+            print(f"Error verificando permiso {permission}: {e}")
+            return False
     
     def create_interface(self):
         """Crear la interfaz de usuario"""
@@ -259,68 +269,78 @@ class RoleManagementView(BaseView):
         buttons_frame = tk.Frame(inner_frame, bg='white')
         buttons_frame.pack(side='right', fill='y')
         
-        # Botón nuevo rol
-        new_role_btn = tk.Button(
-            buttons_frame,
-            text="➕ Nuevo Rol",
-            command=self.create_role,
-            bg='#27ae60',
-            fg='white',
-            font=('Segoe UI', 13, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            padx=20,
-            pady=12
-        )
-        new_role_btn.pack(side='left', padx=(0, 12))
+        # Botón nuevo rol - Solo si tiene permiso roles.create
+        if self.has_permission('roles.create'):
+            new_role_btn = tk.Button(
+                buttons_frame,
+                text="➕ Nuevo Rol",
+                command=self.create_role,
+                bg='#27ae60',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12
+            )
+            new_role_btn.pack(side='left', padx=(0, 12))
         
-        # Botón editar
-        self.edit_role_btn = tk.Button(
-            buttons_frame,
-            text="✏️ Editar",
-            command=self.edit_role,
-            bg='#3498db',
-            fg='white',
-            font=('Segoe UI', 13, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            padx=20,
-            pady=12,
-            state='disabled'
-        )
-        self.edit_role_btn.pack(side='left', padx=(0, 12))
+        # Botón editar - Solo si tiene permiso roles.edit
+        if self.has_permission('roles.edit'):
+            self.edit_role_btn = tk.Button(
+                buttons_frame,
+                text="✏️ Editar",
+                command=self.edit_role,
+                bg='#3498db',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12,
+                state='disabled'
+            )
+            self.edit_role_btn.pack(side='left', padx=(0, 12))
+        else:
+            self.edit_role_btn = None
         
-        # Botón eliminar
-        self.delete_role_btn = tk.Button(
-            buttons_frame,
-            text="🗑️ Eliminar",
-            command=self.delete_role,
-            bg='#e74c3c',
-            fg='white',
-            font=('Segoe UI', 13, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            padx=20,
-            pady=12,
-            state='disabled'
-        )
-        self.delete_role_btn.pack(side='left', padx=(0, 12))
+        # Botón eliminar - Solo si tiene permiso roles.delete
+        if self.has_permission('roles.delete'):
+            self.delete_role_btn = tk.Button(
+                buttons_frame,
+                text="🗑️ Eliminar",
+                command=self.delete_role,
+                bg='#e74c3c',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12,
+                state='disabled'
+            )
+            self.delete_role_btn.pack(side='left', padx=(0, 12))
+        else:
+            self.delete_role_btn = None
         
-        # Botón permisos
-        self.permissions_btn = tk.Button(
-            buttons_frame,
-            text="🔓 Permisos",
-            command=self.manage_permissions,
-            bg='#9b59b6',
-            fg='white',
-            font=('Segoe UI', 13, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            padx=20,
-            pady=12,
-            state='disabled'
-        )
-        self.permissions_btn.pack(side='left')
+        # Botón permisos - Solo si tiene permiso roles.permissions
+        if self.has_permission('roles.permissions'):
+            self.permissions_btn = tk.Button(
+                buttons_frame,
+                text="🔓 Permisos",
+                command=self.manage_permissions,
+                bg='#9b59b6',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12,
+                state='disabled'
+            )
+            self.permissions_btn.pack(side='left')
+        else:
+            self.permissions_btn = None
     
     def create_main_panel(self):
         """Crear panel principal con tabla de roles"""
@@ -468,16 +488,22 @@ class RoleManagementView(BaseView):
         selection = self.roles_tree.selection()
         if selection:
             self.selected_role = selection[0]
-            # Habilitar botones de acción
-            self.edit_role_btn.config(state='normal')
-            self.delete_role_btn.config(state='normal')
-            self.permissions_btn.config(state='normal')
+            # Habilitar botones de acción solo si existen (depende de permisos)
+            if self.edit_role_btn is not None:
+                self.edit_role_btn.config(state='normal')
+            if self.delete_role_btn is not None:
+                self.delete_role_btn.config(state='normal')
+            if self.permissions_btn is not None:
+                self.permissions_btn.config(state='normal')
         else:
             self.selected_role = None
-            # Deshabilitar botones de acción
-            self.edit_role_btn.config(state='disabled')
-            self.delete_role_btn.config(state='disabled')
-            self.permissions_btn.config(state='disabled')
+            # Deshabilitar botones de acción solo si existen
+            if self.edit_role_btn is not None:
+                self.edit_role_btn.config(state='disabled')
+            if self.delete_role_btn is not None:
+                self.delete_role_btn.config(state='disabled')
+            if self.permissions_btn is not None:
+                self.permissions_btn.config(state='disabled')
     
     def create_search_frame(self, parent):
         """Este método ya no se usa - la búsqueda está en el toolbar"""
@@ -605,6 +631,15 @@ class RoleManagementView(BaseView):
     
     def create_role(self):
         """Crear nuevo rol"""
+        # Validar permiso primero
+        if not self.has_permission('roles.create'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para crear roles.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         try:
             print("DEBUG CREATE_ROLE VIEW - Abriendo diálogo...")
             dialog = RoleDialog(self.root, title="Crear Nuevo Rol", 
@@ -639,6 +674,15 @@ class RoleManagementView(BaseView):
     
     def edit_role(self):
         """Editar rol seleccionado"""
+        # Validar permiso primero
+        if not self.has_permission('roles.edit'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para editar roles.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         try:
             selected = self.roles_tree.selection()
             if not selected:
@@ -680,6 +724,15 @@ class RoleManagementView(BaseView):
     
     def delete_role(self):
         """Eliminar rol seleccionado"""
+        # Validar permiso primero
+        if not self.has_permission('roles.delete'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para eliminar roles.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         try:
             selected = self.roles_tree.selection()
             if not selected:
@@ -764,6 +817,15 @@ class RoleManagementView(BaseView):
     
     def manage_permissions(self):
         """Gestionar permisos del rol seleccionado"""
+        # Validar permiso primero
+        if not self.has_permission('roles.permissions'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para gestionar permisos de roles.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         try:
             print("DEBUG MANAGE_PERMISOS - Iniciando gestión de permisos...")
             

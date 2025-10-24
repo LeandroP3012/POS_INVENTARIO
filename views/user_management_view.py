@@ -11,6 +11,7 @@ from datetime import datetime
 from views.base_view import BaseView
 from controllers.user_controller import UserController
 from controllers.role_controller import RoleController
+from services.permission_service import PermissionService
 
 
 class UserManagementView(BaseView):
@@ -25,9 +26,10 @@ class UserManagementView(BaseView):
         self.selected_user = None
         self.roles_data = []
         
-        # Inicializar controladores
+        # Inicializar controladores y servicios
         self.user_controller = UserController()
         self.role_controller = RoleController()
+        self.permission_service = PermissionService()
         
         # Configurar ventana
         self.setup_user_management_window()
@@ -35,6 +37,14 @@ class UserManagementView(BaseView):
         # Cargar datos iniciales
         self.load_roles_data()
         self.load_users_data()
+    
+    def has_permission(self, permission: str) -> bool:
+        """Verificar si el usuario actual tiene un permiso específico"""
+        try:
+            return self.permission_service.check_permission(self.user_data, permission)
+        except Exception as e:
+            print(f"Error verificando permiso {permission}: {e}")
+            return False
     
     def setup_user_management_window(self):
         """Configurar ventana de gestión de usuarios"""
@@ -251,52 +261,59 @@ class UserManagementView(BaseView):
         buttons_frame = tk.Frame(inner_frame, bg='white')
         buttons_frame.pack(side='right', fill='y')
         
-        # Botón nuevo usuario
-        new_user_btn = tk.Button(
-            buttons_frame,
-            text="➕ Nuevo Usuario",
-            command=self.create_new_user,
-            bg='#27ae60',
-            fg='white',
-            font=('Segoe UI', 13, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            padx=20,
-            pady=12
-        )
-        new_user_btn.pack(side='left', padx=(0, 12))
+        # Botón nuevo usuario - Solo si tiene permiso users.create
+        if self.has_permission('users.create'):
+            new_user_btn = tk.Button(
+                buttons_frame,
+                text="➕ Nuevo Usuario",
+                command=self.create_new_user,
+                bg='#27ae60',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12
+            )
+            new_user_btn.pack(side='left', padx=(0, 12))
         
-        # Botón editar
-        self.edit_user_btn = tk.Button(
-            buttons_frame,
-            text="✏️ Editar",
-            command=self.edit_selected_user,
-            bg='#3498db',
-            fg='white',
-            font=('Segoe UI', 13, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            padx=20,
-            pady=12,
-            state='disabled'
-        )
-        self.edit_user_btn.pack(side='left', padx=(0, 12))
+        # Botón editar - Solo si tiene permiso users.edit
+        if self.has_permission('users.edit'):
+            self.edit_user_btn = tk.Button(
+                buttons_frame,
+                text="✏️ Editar",
+                command=self.edit_selected_user,
+                bg='#3498db',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12,
+                state='disabled'
+            )
+            self.edit_user_btn.pack(side='left', padx=(0, 12))
+        else:
+            self.edit_user_btn = None
         
-        # Botón eliminar
-        self.delete_user_btn = tk.Button(
-            buttons_frame,
-            text="🗑️ Eliminar",
-            command=self.delete_selected_user,
-            bg='#e74c3c',
-            fg='white',
-            font=('Segoe UI', 13, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            padx=20,
-            pady=12,
-            state='disabled'
-        )
-        self.delete_user_btn.pack(side='left')
+        # Botón eliminar - Solo si tiene permiso users.delete
+        if self.has_permission('users.delete'):
+            self.delete_user_btn = tk.Button(
+                buttons_frame,
+                text="🗑️ Eliminar",
+                command=self.delete_selected_user,
+                bg='#e74c3c',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12,
+                state='disabled'
+            )
+            self.delete_user_btn.pack(side='left')
+        else:
+            self.delete_user_btn = None
     
     def create_main_panel(self):
         """Crear panel principal con tabla de usuarios"""
@@ -542,17 +559,24 @@ class UserManagementView(BaseView):
             # Buscar usuario seleccionado
             self.selected_user = next((u for u in self.users_data if u.get('id') == user_id), None)
             
-            # Habilitar botones
-            self.edit_user_btn.configure(state='normal')
-            # Solo permitir eliminar si no es el usuario actual
-            if self.selected_user and self.selected_user.get('username') != self.user_data.get('username', ''):
-                self.delete_user_btn.configure(state='normal')
-            else:
-                self.delete_user_btn.configure(state='disabled')
+            # Habilitar botón editar solo si tiene permiso users.edit
+            if self.edit_user_btn:
+                self.edit_user_btn.configure(state='normal')
+            
+            # Habilitar botón eliminar solo si:
+            # 1. Tiene permiso users.delete
+            # 2. No es el usuario actual
+            if self.delete_user_btn:
+                if self.selected_user and self.selected_user.get('username') != self.user_data.get('username', ''):
+                    self.delete_user_btn.configure(state='normal')
+                else:
+                    self.delete_user_btn.configure(state='disabled')
         else:
             self.selected_user = None
-            self.edit_user_btn.configure(state='disabled')
-            self.delete_user_btn.configure(state='disabled')
+            if self.edit_user_btn:
+                self.edit_user_btn.configure(state='disabled')
+            if self.delete_user_btn:
+                self.delete_user_btn.configure(state='disabled')
     
     def on_user_double_click(self, event):
         """Manejar doble clic en usuario"""
@@ -561,6 +585,11 @@ class UserManagementView(BaseView):
     
     def create_new_user(self):
         """Crear nuevo usuario"""
+        # Verificar permiso
+        if not self.has_permission('users.create'):
+            messagebox.showerror("Acceso Denegado", "❌ No tienes permisos para crear usuarios")
+            return
+        
         dialog = UserDialog(self.root, "Crear Nuevo Usuario", None, self.roles_data)
         self.root.wait_window(dialog.dialog)
         
@@ -579,6 +608,11 @@ class UserManagementView(BaseView):
     def edit_selected_user(self):
         """Editar usuario seleccionado"""
         if not self.selected_user:
+            return
+        
+        # Verificar permiso
+        if not self.has_permission('users.edit'):
+            messagebox.showerror("Acceso Denegado", "❌ No tienes permisos para editar usuarios")
             return
         
         dialog = UserDialog(self.root, "Editar Usuario", self.selected_user, self.roles_data)
@@ -601,6 +635,11 @@ class UserManagementView(BaseView):
         if not self.selected_user:
             return
         
+        # Verificar permiso
+        if not self.has_permission('users.delete'):
+            messagebox.showerror("Acceso Denegado", "❌ No tienes permisos para eliminar usuarios")
+            return
+        
         # Confirmar eliminación
         if messagebox.askyesno("Confirmar Eliminación", 
                              f"⚠️ ¿Está seguro de que desea eliminar al usuario '{self.selected_user.get('full_name', '')}'?\n\n"
@@ -612,8 +651,10 @@ class UserManagementView(BaseView):
                 if success:
                     self.selected_user = None
                     self.load_users_data()  # Recargar datos
-                    self.edit_user_btn.configure(state='disabled')
-                    self.delete_user_btn.configure(state='disabled')
+                    if self.edit_user_btn:
+                        self.edit_user_btn.configure(state='disabled')
+                    if self.delete_user_btn:
+                        self.delete_user_btn.configure(state='disabled')
                     messagebox.showinfo("Usuario Eliminado", "✅ Usuario eliminado exitosamente")
                 else:
                     messagebox.showerror("Error", "❌ Error eliminando el usuario")
