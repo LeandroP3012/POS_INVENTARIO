@@ -4,6 +4,7 @@ import json
 import os
 from PIL import Image, ImageTk
 from views.base_view import BaseView
+from utils.responsive_utils import ResponsiveManager
 
 class LoginView(BaseView):
     def __init__(self, parent, controller, auth_controller):
@@ -13,17 +14,38 @@ class LoginView(BaseView):
         self.logo_label = None  # Logo dinámico
         self.loading_animation = False  # Estado de animación
         self.loading_dots = 0  # Contador para animación
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(self.root)
+        
         self.setup_ui()
         self.load_company_info()  # Cargar info de la empresa
         
     def setup_ui(self):
         # Configuración del estilo visual - fondo gris claro como en la imagen
         self.root.configure(bg='#f5f5f5')
+        
+        # Login debe mantener tamaño original (NO usar make_window_responsive)
+        # Tamaño fijo optimizado para login
+        self.root.geometry("450x600")
+        
+        # Centrar ventana de login
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width - 450) // 2
+        y = (screen_height - 600) // 2
+        self.root.geometry(f"450x600+{x}+{y}")
+        
+        # Tamaño mínimo y máximo (login no debe redimensionarse)
+        self.root.minsize(450, 600)
+        self.root.maxsize(450, 600)
+        self.root.resizable(False, False)
+        
         self.create_widgets()
         self.setup_layout()
         
     def create_widgets(self):
-        # Marco para el logo (FUERA del cuadro blanco) - REDUCIDO
+        # Marco para el logo (FUERA del cuadro blanco) - Tamaño FIJO original
         logo_frame = tk.Frame(self.root, bg='#f5f5f5', width=100, height=100)
         logo_frame.pack_propagate(False)
         
@@ -31,7 +53,7 @@ class LoginView(BaseView):
         self.logo_bg_frame = tk.Frame(logo_frame, bg='#2196f3', width=80, height=80)
         self.logo_bg_frame.pack_propagate(False)
         
-        # Logo dinámico simple (sin diamante, solo imagen) - REDUCIDO
+        # Logo dinámico simple - Tamaño FIJO original
         self.logo_label = tk.Label(
             logo_frame,
             text="🏪",  # Placeholder por defecto
@@ -44,7 +66,7 @@ class LoginView(BaseView):
         # Título eliminado - ya no se muestra
         # self.title_label comentado
         
-        # Subtítulo dinámico de la empresa (FUERA del cuadro blanco) - REDUCIDO
+        # Subtítulo dinámico de la empresa - Fuente FIJA original
         self.company_label = tk.Label(
             self.root,
             text="Importadora Punto de Venta",
@@ -53,7 +75,7 @@ class LoginView(BaseView):
             fg='#333333'
         )
         
-        # Mensaje de bienvenida (FUERA del cuadro blanco)
+        # Mensaje de bienvenida - Fuente FIJA original
         welcome_label = tk.Label(
             self.root,
             text="Inicia sesión para continuar",

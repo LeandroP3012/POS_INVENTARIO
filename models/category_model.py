@@ -100,20 +100,25 @@ class CategoryModel(BaseModel):
             
             query = """
                 SELECT 
-                    c.*,
-                    CASE WHEN c.active = 1 THEN 'active' ELSE 'inactive' END as status,
+                    c.id,
+                    c.name,
+                    c.description,
+                    c.parent_id,
+                    c.status,
+                    c.created_at,
+                    c.updated_at,
                     COUNT(p.id) as product_count,
                     pc.name as parent_name
                 FROM categories c
-                LEFT JOIN products p ON c.id = p.category_id AND p.active = 1
+                LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
                 LEFT JOIN categories pc ON c.parent_id = pc.id
             """
             
             if not include_inactive:
-                query += " WHERE c.active = 1"
+                query += " WHERE c.status = 'active'"
             
             query += """
-                GROUP BY c.id
+                GROUP BY c.id, c.name, c.description, c.parent_id, c.status, c.created_at, c.updated_at, pc.name
                 ORDER BY c.name ASC
             """
             
@@ -146,15 +151,20 @@ class CategoryModel(BaseModel):
             
             query = """
                 SELECT 
-                    c.*,
-                    CASE WHEN c.active = 1 THEN 'active' ELSE 'inactive' END as status,
+                    c.id,
+                    c.name,
+                    c.description,
+                    c.parent_id,
+                    c.status,
+                    c.created_at,
+                    c.updated_at,
                     COUNT(p.id) as product_count,
                     pc.name as parent_name
                 FROM categories c
                 LEFT JOIN products p ON c.id = p.category_id
                 LEFT JOIN categories pc ON c.parent_id = pc.id
                 WHERE c.id = %s
-                GROUP BY c.id
+                GROUP BY c.id, c.name, c.description, c.parent_id, c.status, c.created_at, c.updated_at, pc.name
             """
             
             cursor.execute(query, (category_id,))
@@ -279,19 +289,24 @@ class CategoryModel(BaseModel):
             
             query = """
                 SELECT 
-                    c.*,
-                    CASE WHEN c.active = 1 THEN 'active' ELSE 'inactive' END as status,
+                    c.id,
+                    c.name,
+                    c.description,
+                    c.parent_id,
+                    c.status,
+                    c.created_at,
+                    c.updated_at,
                     COUNT(p.id) as product_count,
                     pc.name as parent_name
                 FROM categories c
-                LEFT JOIN products p ON c.id = p.category_id AND p.active = 1
+                LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
                 LEFT JOIN categories pc ON c.parent_id = pc.id
-                WHERE c.active = 1
+                WHERE c.status = 'active'
                 AND (
                     c.name LIKE %s 
                     OR c.description LIKE %s
                 )
-                GROUP BY c.id
+                GROUP BY c.id, c.name, c.description, c.parent_id, c.status, c.created_at, c.updated_at, pc.name
                 ORDER BY c.name ASC
             """
             

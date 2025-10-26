@@ -10,6 +10,7 @@ from tkinter import ttk, messagebox
 import json
 import os
 from utils.ticket_generator import TicketGenerator
+from utils.responsive_utils import ResponsiveManager
 
 class TicketConfigView:
     """Vista para configurar las boletas"""
@@ -18,6 +19,9 @@ class TicketConfigView:
         self.parent = parent
         self.on_back = on_back
         self.config_path = os.path.join('config', 'system_config.json')
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(parent)
         
         # Diccionario para almacenar widgets
         self.entries = {}

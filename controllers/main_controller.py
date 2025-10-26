@@ -13,6 +13,7 @@ from controllers.auth_controller import AuthController
 from views.login_view import LoginView
 from config.settings import SystemSettings
 from models.role_model import RoleModel
+from utils.responsive_utils import ResponsiveManager
 
 class MainController:
     """Controlador principal de la aplicación"""
@@ -30,6 +31,12 @@ class MainController:
         
         # Ventana principal (se crea después del login)
         self.main_window = None
+        
+        # Gestor responsivo (se inicializa al crear ventana principal)
+        self.responsive = None
+        
+        # Guardar geometría de ventana para mantenerla al cambiar de módulo
+        self.saved_window_geometry = None
         
         # Configurar logging
         self._setup_logging()
@@ -137,8 +144,12 @@ class MainController:
             # Crear ventana principal
             self.main_window = tk.Tk()
             self.main_window.title("Sistema POS - Panel Principal")
-            self.main_window.geometry("1200x800")
-            self.main_window.state('zoomed')  # Maximizar en Windows
+            
+            # Inicializar gestor responsivo
+            self.responsive = ResponsiveManager(self.main_window)
+            
+            # Aplicar configuración responsiva
+            self.responsive.make_window_responsive(self.main_window)
             
             # Configurar protocolo de cierre
             self.main_window.protocol("WM_DELETE_WINDOW", self._on_main_window_close)
@@ -146,6 +157,9 @@ class MainController:
             # Configurar colores
             colors = self.settings.get_colors()
             self.main_window.configure(bg=colors['background'])
+            
+            # Configurar grid weights para responsividad
+            self.responsive.apply_grid_weights(self.main_window, 'default')
             
             # Crear interfaz principal
             self._create_main_interface()
@@ -783,8 +797,32 @@ class MainController:
         # Convertir de vuelta a hex
         return '#{:02x}{:02x}{:02x}'.format(*darker_rgb)
     
+    def _save_window_geometry(self):
+        """Guardar geometría actual de la ventana"""
+        try:
+            if self.main_window:
+                self.saved_window_geometry = self.main_window.geometry()
+                # También guardar estado de maximizado
+                self.saved_window_state = self.main_window.state()
+        except Exception as e:
+            self.logger.error(f"Error guardando geometría: {e}")
+    
+    def _restore_window_geometry(self):
+        """Restaurar geometría guardada de la ventana"""
+        try:
+            if self.main_window and self.saved_window_geometry:
+                self.main_window.geometry(self.saved_window_geometry)
+                # Restaurar estado de maximizado si corresponde
+                if hasattr(self, 'saved_window_state') and self.saved_window_state == 'zoomed':
+                    self.main_window.state('zoomed')
+        except Exception as e:
+            self.logger.error(f"Error restaurando geometría: {e}")
+    
     def _clear_main_content(self):
         """Limpiar contenido principal de la ventana"""
+        # PRIMERO: Guardar geometría actual ANTES de limpiar
+        self._save_window_geometry()
+        
         # Destruir todos los widgets hijos excepto la barra de menú
         for widget in self.main_window.winfo_children():
             if not isinstance(widget, tk.Menu):
@@ -811,11 +849,14 @@ class MainController:
     def _back_to_dashboard(self):
         """Volver al dashboard principal"""
         try:
-            # Limpiar contenido actual
+            # Limpiar contenido actual (guarda geometría automáticamente)
             self._clear_main_content()
             
             # Recrear interfaz principal
             self._create_main_interface()
+            
+            # IMPORTANTE: Restaurar geometría después de recrear
+            self._restore_window_geometry()
             
         except Exception as e:
             self.logger.error(f"Error volviendo al dashboard: {e}")
@@ -962,7 +1003,7 @@ class MainController:
             print(f"   - main_window tipo: {type(self.main_window)}")
             print(f"   - current_user: {self.current_user}")
             
-            # Limpiar la ventana principal
+            # Limpiar la ventana principal (guarda geometría automáticamente)
             self._clear_main_content()
             print("   ✅ Ventana principal limpiada")
             
@@ -987,6 +1028,9 @@ class MainController:
             self.pos_view.show()
             print("   📺 Vista POS mostrada")
             
+            # IMPORTANTE: Restaurar geometría después de cargar vista
+            self._restore_window_geometry()
+            
         except Exception as e:
             self.logger.error(f"Error al abrir módulo de ventas: {e}")
             import traceback
@@ -1009,7 +1053,7 @@ class MainController:
                 messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder al módulo de inventario")
                 return
             
-            # Limpiar la ventana principal
+            # Limpiar la ventana principal (guarda geometría automáticamente)
             self._clear_main_content()
             print("   ✅ Ventana principal limpiada")
             
@@ -1053,6 +1097,9 @@ class MainController:
             self._load_products()
             self._load_product_categories()
             self._load_product_units()
+            
+            # IMPORTANTE: Restaurar geometría después de cargar todo
+            self._restore_window_geometry()
             
         except Exception as e:
             import traceback
@@ -1346,6 +1393,9 @@ class MainController:
             print(f"   - main_window tipo: {type(self.main_window)}")
             print(f"   - current_user: {self.current_user}")
             
+            # Guardar geometría ANTES de limpiar ventana
+            self._save_window_geometry()
+            
             # Limpiar ventana
             for widget in self.main_window.winfo_children():
                 widget.destroy()
@@ -1370,12 +1420,28 @@ class MainController:
                 create=lambda: self._create_category(category_view, category_controller),
                 edit=lambda cat_id: self._edit_category(category_view, category_controller, cat_id),
                 delete=lambda cat_id: self._delete_category(category_view, category_controller, cat_id),
-                back=self._back_to_dashboard  # Agregar callback de volver
+                back=self._back_to_dashboard,
+                # Callbacks de navegación del navbar
+                new_sale=self._new_sale,
+                sales_history=self._sales_history,
+                view_products=self._view_products,
+                view_categories=self._view_categories,
+                stock_control=self._view_stock_control,
+                daily_report=self._daily_sales_report,
+                full_report=self._full_report,
+                manage_users=self._manage_users,
+                manage_roles=self._manage_roles,
+                system_config=self._system_config,
+                show_manual=self._show_manual,
+                show_about=self._show_about
             )
             print("   ✅ Callbacks registrados")
             
             # Cargar categorías
             self._load_categories(category_view, category_controller)
+            
+            # IMPORTANTE: Restaurar geometría después de cargar todo
+            self._restore_window_geometry()
             
         except Exception as e:
             self.logger.error(f"Error abriendo gestión de categorías: {e}")
@@ -1477,6 +1543,9 @@ class MainController:
         try:
             print(f"📊 DEBUG: Abriendo control de stock desde main_controller")
             
+            # Guardar geometría ANTES de limpiar ventana
+            self._save_window_geometry()
+            
             # Limpiar ventana
             for widget in self.main_window.winfo_children():
                 widget.destroy()
@@ -1494,30 +1563,21 @@ class MainController:
             stock_view = StockControlView(self.main_window, self.current_user)
             print("   ✅ StockControlView creada exitosamente")
             
-            # Registrar callbacks - NAVBAR COMPLETO
+            # Registrar callbacks - Solo los que acepta el método
             stock_view.register_callbacks(
                 refresh=lambda: self._load_stock_products(stock_view, product_controller),
                 search=lambda term: self._search_stock_products(stock_view, product_controller, term),
                 update_stock=lambda data: self._update_product_stock(stock_view, product_controller, data),
                 save_limits=lambda data: self._save_product_limits(stock_view, product_controller, data),
-                back=self._back_to_dashboard,
-                # Navegación principal
-                new_sale=self._new_sale,
-                sales_history=self._sales_history,
-                view_products=self._view_products,
-                view_categories=self._view_categories,
-                daily_report=self._daily_sales_report,
-                full_report=self._full_report,
-                manage_users=self._manage_users,
-                manage_roles=self._manage_roles,
-                system_config=self._system_config,
-                show_manual=self._show_manual,
-                show_about=self._show_about
+                back=self._back_to_dashboard
             )
             print("   ✅ Callbacks registrados")
             
             # Cargar productos
             self._load_stock_products(stock_view, product_controller)
+            
+            # IMPORTANTE: Restaurar geometría después de cargar todo
+            self._restore_window_geometry()
             
         except Exception as e:
             self.logger.error(f"Error abriendo control de stock: {e}")
@@ -1683,7 +1743,7 @@ class MainController:
                 messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder a la gestión de usuarios")
                 return
             
-            # Limpiar la ventana principal
+            # Limpiar la ventana principal (guarda geometría automáticamente)
             self._clear_main_content()
             print("   ✅ Ventana principal limpiada")
             
@@ -1704,9 +1764,23 @@ class MainController:
             self.users_view = UserManagementView(self.main_window, user_data, embedded=True)
             print("   ✅ UserManagementView creada exitosamente")
             
-            # Registrar callbacks
+            # Registrar callbacks - NAVBAR COMPLETO
             self.users_view.bind_callback('back_to_dashboard', self._back_to_dashboard)
+            self.users_view.bind_callback('new_sale', self._new_sale)
+            self.users_view.bind_callback('sales_history', self._sales_history)
+            self.users_view.bind_callback('view_products', self._view_products)
+            self.users_view.bind_callback('view_categories', self._view_categories)
+            self.users_view.bind_callback('stock_control', self._view_stock_control)
+            self.users_view.bind_callback('daily_report', self._daily_sales_report)
+            self.users_view.bind_callback('full_report', self._full_report)
+            self.users_view.bind_callback('manage_roles', self._manage_roles)
+            self.users_view.bind_callback('system_config', self._system_config)
+            self.users_view.bind_callback('show_manual', self._show_manual)
+            self.users_view.bind_callback('show_about', self._show_about)
             print("   ✅ Callbacks registrados")
+            
+            # IMPORTANTE: Restaurar geometría después de cargar vista
+            self._restore_window_geometry()
             
         except Exception as e:
             print(f"   ❌ Error en _manage_users: {e}")
@@ -1727,7 +1801,7 @@ class MainController:
                 messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder a la gestión de roles")
                 return
             
-            # Limpiar la ventana principal
+            # Limpiar la ventana principal (guarda geometría automáticamente)
             self._clear_main_content()
             print("   ✅ Ventana principal limpiada")
             
@@ -1748,9 +1822,23 @@ class MainController:
             self.roles_view = RoleManagementView(self.main_window, user_data, embedded=True)
             print("   ✅ RoleManagementView creada exitosamente")
             
-            # Registrar callbacks
+            # Registrar callbacks - NAVBAR COMPLETO
             self.roles_view.bind_callback('back_to_dashboard', self._back_to_dashboard)
+            self.roles_view.bind_callback('new_sale', self._new_sale)
+            self.roles_view.bind_callback('sales_history', self._sales_history)
+            self.roles_view.bind_callback('view_products', self._view_products)
+            self.roles_view.bind_callback('view_categories', self._view_categories)
+            self.roles_view.bind_callback('stock_control', self._view_stock_control)
+            self.roles_view.bind_callback('daily_report', self._daily_sales_report)
+            self.roles_view.bind_callback('full_report', self._full_report)
+            self.roles_view.bind_callback('manage_users', self._manage_users)
+            self.roles_view.bind_callback('system_config', self._system_config)
+            self.roles_view.bind_callback('show_manual', self._show_manual)
+            self.roles_view.bind_callback('show_about', self._show_about)
             print("   ✅ Callbacks registrados")
+            
+            # IMPORTANTE: Restaurar geometría después de cargar vista
+            self._restore_window_geometry()
             
         except Exception as e:
             print(f"   ❌ Error en _manage_roles: {e}")
@@ -1778,7 +1866,7 @@ class MainController:
             print(f"   - main_window tipo: {type(self.main_window)}")
             print(f"   - current_user: {self.current_user}")
             
-            # Limpiar la ventana principal
+            # Limpiar la ventana principal (guarda geometría automáticamente)
             self._clear_main_content()
             print("   ✅ Ventana principal limpiada")
             
@@ -1789,10 +1877,24 @@ class MainController:
             self.config_view = ConfigurationView(self.main_window, self.current_user, embedded=True)
             print("   ✅ ConfigurationView creada exitosamente")
             
-            # Registrar callbacks
+            # Registrar callbacks - NAVBAR COMPLETO
             self.config_view.bind_callback('back_to_dashboard', self._back_to_dashboard)
             self.config_view.bind_callback('configuration_saved', self._on_configuration_saved)
+            self.config_view.bind_callback('new_sale', self._new_sale)
+            self.config_view.bind_callback('sales_history', self._sales_history)
+            self.config_view.bind_callback('view_products', self._view_products)
+            self.config_view.bind_callback('view_categories', self._view_categories)
+            self.config_view.bind_callback('stock_control', self._view_stock_control)
+            self.config_view.bind_callback('daily_report', self._daily_sales_report)
+            self.config_view.bind_callback('full_report', self._full_report)
+            self.config_view.bind_callback('manage_users', self._manage_users)
+            self.config_view.bind_callback('manage_roles', self._manage_roles)
+            self.config_view.bind_callback('show_manual', self._show_manual)
+            self.config_view.bind_callback('show_about', self._show_about)
             print("   ✅ Callbacks registrados")
+            
+            # IMPORTANTE: Restaurar geometría después de cargar vista
+            self._restore_window_geometry()
             
         except Exception as e:
             print(f"   ❌ Error en _system_config: {e}")

@@ -10,6 +10,7 @@ from tkinter import ttk, messagebox
 from datetime import datetime
 from decimal import Decimal
 import logging
+from utils.responsive_utils import ResponsiveManager
 
 class POSView:
     """Vista del Punto de Venta"""
@@ -19,6 +20,9 @@ class POSView:
         self.controller = controller
         self.user_data = user_data
         self.on_back = on_back
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(parent)
         
         # Estado del carrito
         self.cart_items = []
@@ -1393,20 +1397,20 @@ class POSView:
                 print(f"✅ Ticket TXT guardado en: {ticket_path}")
             
             # Mostrar ventana de vista previa con opción de imprimir
-            self.show_ticket_preview(ticket_content, generator, ticket_html, ticket_html_path)
+            self.show_ticket_preview(ticket_content, generator, ticket_html, ticket_html_path, ticket_data)
         
         except Exception as e:
             print(f"❌ Error generando ticket: {e}")
             import traceback
             traceback.print_exc()
     
-    def show_ticket_preview(self, ticket_content, generator, ticket_html=None, ticket_html_path=None):
+    def show_ticket_preview(self, ticket_content, generator, ticket_html=None, ticket_html_path=None, ticket_data=None):
         """Mostrar ventana con vista previa del ticket"""
         
         # Si auto_print está activado Y hay HTML, imprimir automáticamente
         if ticket_html_path and generator.config.get('print_copy', False):
             print("🖨️ Imprimiendo boleta automáticamente...")
-            generator.print_ticket_html(ticket_html, ticket_html_path)
+            generator.print_ticket_html(ticket_html, ticket_html_path, ticket_data)
             return  # No mostrar la ventana de vista previa
         
         preview_window = tk.Toplevel(self.main_frame)
@@ -1483,7 +1487,7 @@ class POSView:
             tk.Button(
                 button_frame,
                 text='🖨️ Imprimir con Logo',
-                command=lambda: generator.print_ticket_html(ticket_html, ticket_html_path),
+                command=lambda: generator.print_ticket_html(ticket_html, ticket_html_path, ticket_data),
                 bg='#e74c3c',
                 fg='white',
                 font=('Segoe UI', 11, 'bold'),

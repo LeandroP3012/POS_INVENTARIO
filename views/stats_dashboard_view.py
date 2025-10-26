@@ -8,6 +8,7 @@ from tkinter import ttk
 from typing import Dict, Any, List
 from datetime import datetime, timedelta
 import random
+from utils.responsive_utils import ResponsiveManager
 
 
 class StatsDashboardView:
@@ -16,6 +17,12 @@ class StatsDashboardView:
     def __init__(self, parent_frame: tk.Frame, user_data: Dict[str, Any] = None):
         self.parent_frame = parent_frame
         self.user_data = user_data or {}
+        
+        # Inicializar gestor responsivo
+        # Obtener la ventana raíz del parent_frame
+        root = parent_frame.winfo_toplevel()
+        self.responsive = ResponsiveManager(root)
+        
         self.setup_dashboard()
     
     def setup_dashboard(self):

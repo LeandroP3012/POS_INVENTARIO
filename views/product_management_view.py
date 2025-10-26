@@ -9,6 +9,7 @@ from typing import Dict, Any, Callable, Optional, List
 from views.base_view import BaseView
 from decimal import Decimal
 from services.permission_service import PermissionService
+from utils.responsive_utils import ResponsiveManager
 
 
 class ProductManagementView(BaseView):
@@ -20,11 +21,18 @@ class ProductManagementView(BaseView):
         super().__init__(parent)
         
         self.permission_service = PermissionService()
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(self.root)
+        
         self.callbacks = {}
         self.products = []
         self.categories = []
         self.units = []
         self.selected_product = None
+        
+        # Flag para saber si ya se creó el navbar
+        self.navbar_built = False
         
         self.setup_product_view()
     
@@ -45,8 +53,8 @@ class ProductManagementView(BaseView):
         # Header
         self.create_header()
         
-        # Navbar personalizado
-        self.create_navbar()
+        # El navbar se creará después de registrar callbacks
+        # en build_navbar()
         
         # Toolbar con búsqueda y acciones
         self.create_toolbar()
@@ -98,10 +106,29 @@ class ProductManagementView(BaseView):
         )
         user_label.pack(side='right', padx=10)
     
-    def create_navbar(self):
+    def build_navbar(self):
+        """Construir navbar DESPUÉS de registrar callbacks"""
+        print("🔨 Construyendo navbar...")
+        # Encontrar el widget header para insertar el navbar después
+        header_widget = None
+        for widget in self.main_frame.winfo_children():
+            if isinstance(widget, tk.Frame) and widget.cget('bg') == '#2c3e50':
+                header_widget = widget
+                break
+        
+        if header_widget:
+            self.create_navbar(header_widget)
+            print("   ✅ Navbar construido")
+        else:
+            print("   ✗ No se encontró el header")
+    
+    def create_navbar(self, after_widget=None):
         """Crear navbar personalizado con menús - GLOBAL para todos los módulos"""
         navbar_frame = tk.Frame(self.main_frame, bg='#2c3e50', height=50)
-        navbar_frame.pack(fill='x')
+        if after_widget:
+            navbar_frame.pack(fill='x', after=after_widget)
+        else:
+            navbar_frame.pack(fill='x')
         navbar_frame.pack_propagate(False)
         
         # Estilo de botones
@@ -122,57 +149,69 @@ class ProductManagementView(BaseView):
         buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
         buttons_container.pack(side='left', padx=10, pady=5)
         
+        # Helper para ejecutar callbacks de forma segura
+        def safe_call(callback_name):
+            def wrapper():
+                print(f"🔄 Navbar: Intentando ejecutar '{callback_name}'")
+                callback = self.callbacks.get(callback_name)
+                if callback:
+                    print(f"   ✓ Callback encontrado, ejecutando...")
+                    callback()
+                else:
+                    print(f"   ✗ Callback no encontrado o es None")
+            return wrapper
+        
         # Botón Archivo
         file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
         file_btn.pack(side='left', padx=2)
         file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
         file_btn.config(menu=file_menu)
-        file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        file_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
         file_menu.add_separator()
-        file_menu.add_command(label="Volver al Dashboard", command=self.callbacks.get('back_to_dashboard', lambda: None))
+        file_menu.add_command(label="Volver al Dashboard", command=safe_call('back_to_dashboard'))
         
         # Botón Ventas
         sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
         sales_btn.pack(side='left', padx=2)
         sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
         sales_btn.config(menu=sales_menu)
-        sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
-        sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        sales_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+        sales_menu.add_command(label="Historial de Ventas", command=safe_call('sales_history'))
         
         # Botón Inventario
         inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
         inv_btn.pack(side='left', padx=2)
         inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
         inv_btn.config(menu=inv_menu)
-        inv_menu.add_command(label="Ver Productos", command=self.callbacks.get('view_products', lambda: None))
-        inv_menu.add_command(label="Gestionar Categorías", command=self.callbacks.get('view_categories', lambda: None))
-        inv_menu.add_command(label="Control de Stock", command=self.callbacks.get('go_to_inventory', lambda: None))
+        inv_menu.add_command(label="Ver Productos ✓", command=lambda: None)  # Actual
+        inv_menu.add_command(label="Gestionar Categorías", command=safe_call('view_categories'))
+        inv_menu.add_command(label="Control de Stock", command=safe_call('go_to_inventory'))
         
         # Botón Reportes
         rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
         rep_btn.pack(side='left', padx=2)
         rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
         rep_btn.config(menu=rep_menu)
-        rep_menu.add_command(label="Ventas del Día", command=self.callbacks.get('daily_report', lambda: None))
-        rep_menu.add_command(label="Reporte Completo", command=self.callbacks.get('full_report', lambda: None))
+        rep_menu.add_command(label="Ventas del Día", command=safe_call('daily_report'))
+        rep_menu.add_command(label="Reporte Completo", command=safe_call('full_report'))
         
         # Botón Administración
         admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
         admin_btn.pack(side='left', padx=2)
         admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
         admin_btn.config(menu=admin_menu)
-        admin_menu.add_command(label="Gestionar Usuarios", command=self.callbacks.get('manage_users', lambda: None))
-        admin_menu.add_command(label="Gestionar Roles", command=self.callbacks.get('manage_roles', lambda: None))
+        admin_menu.add_command(label="Gestionar Usuarios", command=safe_call('manage_users'))
+        admin_menu.add_command(label="Gestionar Roles", command=safe_call('manage_roles'))
         admin_menu.add_separator()
-        admin_menu.add_command(label="Configuración", command=self.callbacks.get('system_config', lambda: None))
+        admin_menu.add_command(label="Configuración", command=safe_call('system_config'))
         
         # Botón Ayuda
         help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
         help_btn.pack(side='left', padx=2)
         help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 11))
         help_btn.config(menu=help_menu)
-        help_menu.add_command(label="Manual de Usuario", command=self.callbacks.get('show_manual', lambda: None))
-        help_menu.add_command(label="Acerca de", command=self.callbacks.get('show_about', lambda: None))
+        help_menu.add_command(label="Manual de Usuario", command=safe_call('show_manual'))
+        help_menu.add_command(label="Acerca de", command=safe_call('show_about'))
     
     def create_toolbar(self):
         """Crear toolbar con búsqueda y botones"""
@@ -754,6 +793,22 @@ class ProductManagementView(BaseView):
     def bind_callback(self, event_name: str, callback: Callable):
         """Registrar callback"""
         self.callbacks[event_name] = callback
+        
+        # Crear navbar en el primer callback de navegación que se registre
+        if not self.navbar_built and event_name in ['back_to_dashboard', 'new_sale', 'view_products', 'view_categories']:
+            print(f"📋 Primer callback de navegación detectado: {event_name}")
+            print(f"   Total callbacks hasta ahora: {len(self.callbacks)}")
+            # Esperar un poco para que se registren todos los callbacks
+            self.main_frame.after(100, self._try_build_navbar)
+    
+    def _try_build_navbar(self):
+        """Intentar construir navbar después de un delay"""
+        if not self.navbar_built:
+            print(f"📋 Callbacks totales registrados: {len(self.callbacks)}")
+            for key in self.callbacks:
+                print(f"   - {key}")
+            self.build_navbar()
+            self.navbar_built = True
     
     def refresh(self):
         """Refrescar vista"""

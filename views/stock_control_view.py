@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Dict, Any, List
 from views.base_view import BaseView
+from utils.responsive_utils import ResponsiveManager
 
 
 class StockControlView(BaseView):
@@ -17,6 +18,9 @@ class StockControlView(BaseView):
         self.user_data = user_data or {}
         self.products = []
         self.filtered_products = []
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(self.root)
         
         # Callbacks
         self.on_refresh_callback = None

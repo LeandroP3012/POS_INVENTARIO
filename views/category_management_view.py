@@ -6,6 +6,7 @@ Interfaz para administrar categorías de productos
 import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Dict, Any, List, Callable, Optional
+from utils.responsive_utils import ResponsiveManager
 
 
 class CategoryManagementView:
@@ -17,23 +18,50 @@ class CategoryManagementView:
         self.root = tk.Frame(parent, bg='#ecf0f1')
         self.root.pack(fill='both', expand=True)
         
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(parent)
+        
         # Callbacks
         self.on_refresh_callback = None
         self.on_search_callback = None
         self.on_create_callback = None
         self.on_edit_callback = None
         self.on_delete_callback = None
+        self.on_back_callback = None
+        
+        # Callbacks para navegación (navbar)
+        self.callbacks = {}
         
         # Variables
         self.search_var = tk.StringVar()
         self.search_var.trace('w', self._on_search_changed)
         
-        # Crear interfaz
+        # Crear interfaz base (sin navbar todavía)
         self.create_widgets()
     
     def create_widgets(self):
         """Crear widgets de la interfaz"""
         # Header
+        self.create_header()
+        
+        # El navbar se creará después de registrar callbacks
+        # en el método build_navbar()
+        
+        # Toolbar
+        self.create_toolbar()
+        
+        # Contenido principal
+        main_content = tk.Frame(self.root, bg='#ecf0f1')
+        main_content.pack(fill='both', expand=True, padx=30, pady=20)
+        
+        # Tabla de categorías
+        self.create_table(main_content)
+        
+        # Footer con estadísticas
+        self.create_footer()
+    
+    def create_header(self):
+        """Crear header"""
         header = tk.Frame(self.root, bg='#2c3e50', height=70)
         header.pack(fill='x')
         header.pack_propagate(False)
@@ -49,6 +77,15 @@ class CategoryManagementView:
             fg='white'
         ).pack(side='left', pady=15)
         
+        # Usuario actual (derecha, antes del botón)
+        tk.Label(
+            header_content,
+            text=f"Usuario: {self.current_user.get('full_name', 'N/A')}",
+            font=('Segoe UI', 10),
+            bg='#2c3e50',
+            fg='#ecf0f1'
+        ).pack(side='right', padx=10)
+        
         # Botón volver
         tk.Button(
             header_content,
@@ -63,7 +100,109 @@ class CategoryManagementView:
             padx=20,
             pady=8
         ).pack(side='right', pady=15)
+    
+    def build_navbar(self):
+        """Construir navbar DESPUÉS de registrar callbacks"""
+        # Encontrar el widget header para insertar el navbar después
+        header_widget = None
+        for widget in self.root.winfo_children():
+            if isinstance(widget, tk.Frame) and widget.cget('bg') == '#2c3e50':
+                header_widget = widget
+                break
         
+        if header_widget:
+            self.create_navbar(header_widget)
+    
+    def create_navbar(self, after_widget):
+        """Crear navbar personalizado - GLOBAL para todos los módulos"""
+        navbar_frame = tk.Frame(self.root, bg='#2c3e50', height=50)
+        navbar_frame.pack(fill='x', after=after_widget)
+        navbar_frame.pack_propagate(False)
+        
+        # Estilo de botones
+        btn_style = {
+            'font': ('Segoe UI', 11, 'bold'),
+            'bg': '#2c3e50',
+            'fg': 'white',
+            'activebackground': '#34495e',
+            'activeforeground': 'white',
+            'relief': 'flat',
+            'bd': 0,
+            'padx': 15,
+            'pady': 10,
+            'cursor': 'hand2'
+        }
+        
+        # Contenedor de botones
+        buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
+        buttons_container.pack(side='left', padx=10, pady=5)
+        
+        # Helper para ejecutar callbacks de forma segura
+        def safe_call(callback_name):
+            def wrapper():
+                print(f"🔄 Navbar: Intentando ejecutar '{callback_name}'")
+                callback = self.callbacks.get(callback_name)
+                if callback:
+                    print(f"   ✓ Callback encontrado, ejecutando...")
+                    callback()
+                else:
+                    print(f"   ✗ Callback no encontrado o es None")
+            return wrapper
+        
+        # Botón Archivo
+        file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
+        file_btn.pack(side='left', padx=2)
+        file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 10))
+        file_btn.config(menu=file_menu)
+        file_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+        file_menu.add_separator()
+        file_menu.add_command(label="Volver al Dashboard", command=self._on_back)
+        
+        # Botón Ventas
+        sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
+        sales_btn.pack(side='left', padx=2)
+        sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 10))
+        sales_btn.config(menu=sales_menu)
+        sales_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+        sales_menu.add_command(label="Historial de Ventas", command=safe_call('sales_history'))
+        
+        # Botón Inventario (ACTIVO)
+        inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
+        inv_btn.config(bg='#34495e')  # Resaltar activo
+        inv_btn.pack(side='left', padx=2)
+        inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 10))
+        inv_btn.config(menu=inv_menu)
+        inv_menu.add_command(label="Ver Productos", command=safe_call('view_products'))
+        inv_menu.add_command(label="Gestionar Categorías ✓", command=lambda: None)  # Actual
+        inv_menu.add_command(label="Control de Stock", command=safe_call('stock_control'))
+        
+        # Botón Reportes
+        reports_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
+        reports_btn.pack(side='left', padx=2)
+        reports_menu = tk.Menu(reports_btn, tearoff=0, font=('Segoe UI', 10))
+        reports_btn.config(menu=reports_menu)
+        reports_menu.add_command(label="Reporte Diario", command=safe_call('daily_report'))
+        reports_menu.add_command(label="Reporte Completo", command=safe_call('full_report'))
+        
+        # Botón Administración
+        admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
+        admin_btn.pack(side='left', padx=2)
+        admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 10))
+        admin_btn.config(menu=admin_menu)
+        admin_menu.add_command(label="Gestionar Usuarios", command=safe_call('manage_users'))
+        admin_menu.add_command(label="Gestionar Roles", command=safe_call('manage_roles'))
+        admin_menu.add_command(label="Configuración", command=safe_call('system_config'))
+        
+        # Botón Ayuda
+        help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
+        help_btn.pack(side='left', padx=2)
+        help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 10))
+        help_btn.config(menu=help_menu)
+        help_menu.add_command(label="Manual de Usuario", command=safe_call('show_manual'))
+        help_menu.add_command(label="Acerca de", command=safe_call('show_about'))
+    
+    def create_toolbar(self):
+        """Crear toolbar con búsqueda y botones"""
         # Toolbar
         toolbar = tk.Frame(self.root, bg='white', height=70)
         toolbar.pack(fill='x')
@@ -122,16 +261,6 @@ class CategoryManagementView:
             padx=20,
             pady=10
         ).pack(side='right', padx=(10, 0))
-        
-        # Contenido principal
-        main_content = tk.Frame(self.root, bg='#ecf0f1')
-        main_content.pack(fill='both', expand=True, padx=30, pady=20)
-        
-        # Tabla de categorías
-        self.create_table(main_content)
-        
-        # Footer con estadísticas
-        self.create_footer()
     
     def create_table(self, parent):
         """Crear tabla de categorías"""
@@ -329,7 +458,7 @@ class CategoryManagementView:
             for widget in self.root.winfo_children():
                 widget.destroy()
     
-    def register_callbacks(self, refresh, search, create, edit, delete, back=None):
+    def register_callbacks(self, refresh, search, create, edit, delete, back=None, **kwargs):
         """Registrar callbacks"""
         self.on_refresh_callback = refresh
         self.on_search_callback = search
@@ -337,3 +466,28 @@ class CategoryManagementView:
         self.on_edit_callback = edit
         self.on_delete_callback = delete
         self.on_back_callback = back
+        
+        # Registrar callbacks de navegación del navbar
+        self.callbacks = {
+            'new_sale': kwargs.get('new_sale'),
+            'sales_history': kwargs.get('sales_history'),
+            'view_products': kwargs.get('view_products'),
+            'view_categories': kwargs.get('view_categories'),
+            'stock_control': kwargs.get('stock_control'),
+            'daily_report': kwargs.get('daily_report'),
+            'full_report': kwargs.get('full_report'),
+            'manage_users': kwargs.get('manage_users'),
+            'manage_roles': kwargs.get('manage_roles'),
+            'system_config': kwargs.get('system_config'),
+            'show_manual': kwargs.get('show_manual'),
+            'show_about': kwargs.get('show_about')
+        }
+        
+        # Debug: Verificar callbacks registrados
+        print(f"📋 Callbacks registrados: {len(self.callbacks)} callbacks")
+        for key, value in self.callbacks.items():
+            print(f"   - {key}: {'✓ OK' if value else '✗ None'}")
+        
+        # IMPORTANTE: Crear el navbar DESPUÉS de registrar los callbacks
+        # Usar after() para asegurar que la interfaz esté lista
+        self.root.after(100, self.build_navbar)

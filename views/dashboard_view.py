@@ -9,6 +9,7 @@ from typing import Dict, Any, Callable
 from views.base_view import BaseView
 from models.role_model import RoleModel
 from services.permission_service import PermissionService
+from utils.responsive_utils import ResponsiveManager
 import os
 import json
 from PIL import Image, ImageTk
@@ -23,6 +24,10 @@ class DashboardView(BaseView):
         self.module_callbacks = {}
         self.permission_service = PermissionService()
         self.logo_image = None  # Guardar referencia de la imagen
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(self.root)
+        
         self.setup_dashboard()
     
     def setup_dashboard(self):
@@ -36,8 +41,10 @@ class DashboardView(BaseView):
     def setup_main_window(self):
         """Configurar ventana principal"""
         self.root.title("Sistema POS - Dashboard Principal")
-        self.root.geometry("1200x800")
-        self.root.state('zoomed')
+        
+        # Hacer ventana responsiva
+        self.responsive.make_window_responsive(self.root)
+        
         self.root.configure(bg='#f1f5f9')
     
     def create_header(self):

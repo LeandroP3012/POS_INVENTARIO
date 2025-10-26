@@ -137,8 +137,7 @@ class ProductModel(BaseModel):
     
     def create_product(self, product_data: Dict[str, Any]) -> Optional[int]:
         """
-        Crear un nuevo producto
-        COMPATIBLE con scriptDB.txt: usa 'code', 'active', 'current_stock', 'sale_price', 'cost_price'
+        Crear un nuevo producto - COMPATIBLE con estructura real de la tabla
         
         Args:
             product_data: Diccionario con datos del producto
@@ -154,69 +153,51 @@ class ProductModel(BaseModel):
             
             cursor = connection.cursor()
             
-            # Validar datos requeridos (compatible con ambos formatos)
+            # Validar datos requeridos
             name = product_data.get('name')
-            code = product_data.get('code') or product_data.get('sku')  # Soporta ambos
+            sku = product_data.get('sku') or product_data.get('code')
             category_id = product_data.get('category_id')
-            price = product_data.get('price') or product_data.get('sale_price', 0)
-            cost = product_data.get('cost') or product_data.get('cost_price', 0)
+            unit_id = product_data.get('unit_id', 1)  # Default: Unidad
+            price = product_data.get('price', 0)
+            cost = product_data.get('cost', 0)
             
             if not name or not name.strip():
                 self.logger.error("Campo requerido faltante: name")
                 return None
             
-            if not code or not code.strip():
-                self.logger.error("Campo requerido faltante: code/sku")
+            if not sku or not sku.strip():
+                self.logger.error("Campo requerido faltante: sku")
                 return None
             
             query = """
                 INSERT INTO products (
-                    code, name, description, category_id, supplier_id,
-                    barcode, brand, model,
-                    cost_price, sale_price, wholesale_price, min_price,
-                    current_stock, min_stock, max_stock, reorder_point,
-                    unit, weight, dimensions, tax_rate,
-                    active, is_service, track_stock, allow_negative_stock,
-                    image_path, tags, attributes, created_by
+                    sku, name, description, category_id, unit_id,
+                    barcode, price, cost,
+                    stock_quantity, min_stock, max_stock, tax_rate,
+                    status, image_path, created_by
                 ) VALUES (
                     %s, %s, %s, %s, %s,
                     %s, %s, %s,
                     %s, %s, %s, %s,
-                    %s, %s, %s, %s,
-                    %s, %s, %s, %s,
-                    %s, %s, %s, %s,
-                    %s, %s, %s, %s
+                    %s, %s, %s
                 )
             """
             
             values = (
-                code,
+                sku,
                 name,
                 product_data.get('description', ''),
                 category_id,
-                product_data.get('supplier_id'),
+                unit_id,
                 product_data.get('barcode', ''),
-                product_data.get('brand', ''),
-                product_data.get('model', ''),
-                cost,
                 price,
-                product_data.get('wholesale_price'),
-                product_data.get('min_price'),
-                product_data.get('stock_quantity') or product_data.get('current_stock', 0),
+                cost,
+                product_data.get('stock_quantity', 0),
                 product_data.get('min_stock', 0),
                 product_data.get('max_stock', 0),
-                product_data.get('reorder_point', 0),
-                product_data.get('unit', 'unidad'),
-                product_data.get('weight'),
-                product_data.get('dimensions'),
                 product_data.get('tax_rate', 18.0),
-                1 if product_data.get('active', True) else 0,
-                1 if product_data.get('is_service', False) else 0,
-                1 if product_data.get('track_stock', True) else 0,
-                1 if product_data.get('allow_negative_stock', False) else 0,
+                product_data.get('status', 'active'),
                 product_data.get('image_path'),
-                product_data.get('tags'),
-                product_data.get('attributes'),
                 product_data.get('created_by', 1)
             )
             
@@ -254,48 +235,37 @@ class ProductModel(BaseModel):
             
             cursor = connection.cursor(dictionary=True)
             
-            # Query compatible con scriptDB.txt
+            # Query compatible con estructura real de la tabla
             query = """
                 SELECT 
                     p.id,
-                    p.code,
+                    p.sku as code,
                     p.barcode,
                     p.name,
                     p.description,
                     p.category_id,
-                    p.supplier_id,
-                    p.brand,
-                    p.model,
-                    p.cost_price as cost,
-                    p.sale_price as price,
-                    p.wholesale_price,
-                    p.min_price,
-                    p.current_stock as stock_quantity,
+                    p.cost,
+                    p.price,
+                    p.stock_quantity,
                     p.min_stock,
                     p.max_stock,
-                    p.reorder_point,
-                    p.unit,
-                    p.weight,
-                    p.dimensions,
                     p.tax_rate,
-                    p.active,
-                    p.is_service,
-                    p.track_stock,
-                    p.allow_negative_stock,
                     p.image_path,
-                    p.tags,
-                    p.attributes,
+                    p.status,
                     p.created_at,
                     p.updated_at,
                     p.created_by,
+                    p.unit_id,
                     c.name as category_name,
-                    CASE WHEN p.active = 1 THEN 'active' ELSE 'inactive' END as status
+                    u.name as unit_name,
+                    u.symbol as unit_symbol
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id
+                LEFT JOIN units u ON p.unit_id = u.id
             """
             
             if not include_inactive:
-                query += " WHERE p.active = 1"
+                query += " WHERE p.status = 'active'"
             
             query += " ORDER BY p.name ASC"
             
@@ -354,24 +324,27 @@ class ProductModel(BaseModel):
             query = """
                 SELECT 
                     p.id,
-                    p.code,
+                    p.sku as code,
                     p.barcode,
                     p.name,
                     p.description,
                     p.category_id,
-                    p.supplier_id,
-                    p.cost_price as cost,
-                    p.sale_price as price,
-                    p.current_stock as stock_quantity,
+                    p.cost,
+                    p.price,
+                    p.stock_quantity,
                     p.min_stock,
                     p.max_stock,
-                    p.unit,
+                    p.unit_id,
                     p.tax_rate,
-                    p.active,
+                    p.status,
+                    p.created_at,
+                    p.updated_at,
                     c.name as category_name,
-                    CASE WHEN p.active = 1 THEN 'active' ELSE 'inactive' END as status
+                    u.name as unit_name,
+                    u.symbol as unit_symbol
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id
+                LEFT JOIN units u ON p.unit_id = u.id
                 WHERE p.id = %s
             """
             
@@ -413,41 +386,28 @@ class ProductModel(BaseModel):
             fields = []
             values = []
             
-            # Mapeo de campos para compatibilidad
+            # Mapeo de campos para compatibilidad con estructura real
             field_mapping = {
-                'sku': 'code',
-                'code': 'code',
+                'sku': 'sku',
+                'code': 'sku',
                 'name': 'name',
                 'description': 'description',
                 'category_id': 'category_id',
-                'supplier_id': 'supplier_id',
-                'price': 'sale_price',
-                'sale_price': 'sale_price',
-                'cost': 'cost_price',
-                'cost_price': 'cost_price',
-                'stock_quantity': 'current_stock',
-                'current_stock': 'current_stock',
+                'unit_id': 'unit_id',
+                'price': 'price',
+                'cost': 'cost',
+                'stock_quantity': 'stock_quantity',
                 'min_stock': 'min_stock',
                 'max_stock': 'max_stock',
                 'barcode': 'barcode',
-                'brand': 'brand',
-                'model': 'model',
-                'unit': 'unit',
                 'tax_rate': 'tax_rate',
-                'status': 'active',  # Convertir status a active
-                'active': 'active',
-                'is_service': 'is_service',
-                'track_stock': 'track_stock'
+                'status': 'status',
+                'image_path': 'image_path'
             }
             
             for key, value in product_data.items():
                 if key in field_mapping:
                     db_field = field_mapping[key]
-                    
-                    # Convertir status a active (boolean)
-                    if key == 'status':
-                        value = 1 if value == 'active' else 0
-                        
                     fields.append(f"{db_field} = %s")
                     values.append(value)
             
@@ -532,27 +492,29 @@ class ProductModel(BaseModel):
             query = """
                 SELECT 
                     p.id,
-                    p.code,
+                    p.sku as code,
                     p.barcode,
                     p.name,
                     p.description,
                     p.category_id,
-                    p.cost_price as cost,
-                    p.sale_price as price,
-                    p.current_stock as stock_quantity,
+                    p.cost,
+                    p.price,
+                    p.stock_quantity,
                     p.min_stock,
                     p.max_stock,
-                    p.unit,
+                    p.unit_id,
                     p.tax_rate,
-                    p.active,
+                    p.status,
                     c.name as category_name,
-                    CASE WHEN p.active = 1 THEN 'active' ELSE 'inactive' END as status
+                    u.name as unit_name,
+                    u.symbol as unit_symbol
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id
-                WHERE p.active = 1
+                LEFT JOIN units u ON p.unit_id = u.id
+                WHERE p.status = 'active'
                 AND (
                     p.name LIKE %s 
-                    OR p.code LIKE %s 
+                    OR p.sku LIKE %s 
                     OR p.barcode LIKE %s
                 )
                 ORDER BY p.name ASC
@@ -562,12 +524,6 @@ class ProductModel(BaseModel):
             cursor.execute(query, (search_pattern, search_pattern, search_pattern))
             products = cursor.fetchall()
             cursor.close()
-            
-            # Agregar alias para compatibilidad
-            for product in products:
-                product['sku'] = product['code']
-                product['unit_name'] = product.get('unit', 'Unidad')
-                product['unit_symbol'] = product.get('unit', 'un')
             
             return products
             
@@ -587,31 +543,28 @@ class ProductModel(BaseModel):
             query = """
                 SELECT 
                     p.id,
-                    p.code,
+                    p.sku as code,
                     p.barcode,
                     p.name,
-                    p.cost_price as cost,
+                    p.cost,
                     p.sale_price as price,
-                    p.current_stock as stock_quantity,
-                    p.unit,
-                    p.active,
+                    p.stock_quantity,
+                    p.unit_id,
+                    p.status,
                     c.name as category_name,
-                    CASE WHEN p.active = 1 THEN 'active' ELSE 'inactive' END as status
+                    u.name as unit_name,
+                    u.symbol as unit_symbol
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id
+                LEFT JOIN units u ON p.unit_id = u.id
                 WHERE p.barcode = %s
-                AND p.active = 1
+                AND p.status = 'active'
                 LIMIT 1
             """
             
             cursor.execute(query, (barcode,))
             product = cursor.fetchone()
             cursor.close()
-            
-            if product:
-                product['sku'] = product['code']
-                product['unit_name'] = product.get('unit', 'Unidad')
-                product['unit_symbol'] = product.get('unit', 'un')
             
             return product
             
@@ -680,14 +633,14 @@ class ProductModel(BaseModel):
             cursor = connection.cursor(dictionary=True)
             
             # Obtener stock actual
-            cursor.execute("SELECT current_stock FROM products WHERE id = %s", (product_id,))
+            cursor.execute("SELECT stock_quantity FROM products WHERE id = %s", (product_id,))
             result = cursor.fetchone()
             
             if not result:
                 self.logger.error(f"Producto {product_id} no encontrado")
                 return False
             
-            current_stock = result['current_stock'] or 0
+            current_stock = result['stock_quantity'] or 0
             new_stock = current_stock + quantity
             
             if new_stock < 0:
@@ -696,7 +649,7 @@ class ProductModel(BaseModel):
             
             # Actualizar stock
             cursor.execute(
-                "UPDATE products SET current_stock = %s, updated_at = NOW() WHERE id = %s",
+                "UPDATE products SET stock_quantity = %s, updated_at = NOW() WHERE id = %s",
                 (new_stock, product_id)
             )
             
@@ -757,7 +710,7 @@ class ProductModel(BaseModel):
             cursor = connection.cursor(dictionary=True)
             
             # Obtener stock actual
-            cursor.execute("SELECT current_stock FROM products WHERE id = %s", (product_id,))
+            cursor.execute("SELECT stock_quantity FROM products WHERE id = %s", (product_id,))
             result = cursor.fetchone()
             
             if not result:
@@ -765,13 +718,13 @@ class ProductModel(BaseModel):
                 return False
             
             # Convertir Decimal a float para evitar errores de tipo
-            current_stock = float(result['current_stock'] or 0)
+            current_stock = float(result['stock_quantity'] or 0)
             quantity = new_stock - current_stock  # Diferencia para el movimiento
             
             # Actualizar stock, min_stock y max_stock
             cursor.execute("""
                 UPDATE products 
-                SET current_stock = %s, 
+                SET stock_quantity = %s, 
                     min_stock = %s,
                     max_stock = %s,
                     updated_at = NOW() 
@@ -860,7 +813,7 @@ class ProductModel(BaseModel):
             return False
     
     def get_categories(self) -> List[Dict[str, Any]]:
-        """Obtener todas las categorías activas - COMPATIBLE con scriptDB.txt"""
+        """Obtener todas las categorías activas - COMPATIBLE con estructura real"""
         try:
             connection = self.get_connection()
             if not connection:
@@ -874,25 +827,20 @@ class ProductModel(BaseModel):
                     c.name,
                     c.description,
                     c.parent_id,
-                    c.color,
-                    c.icon,
-                    c.active,
-                    c.sort_order,
+                    c.status,
+                    c.created_at,
+                    c.updated_at,
                     COUNT(p.id) as product_count
                 FROM categories c
-                LEFT JOIN products p ON c.id = p.category_id AND p.active = 1
-                WHERE c.active = 1
-                GROUP BY c.id, c.name, c.description, c.parent_id, c.color, c.icon, c.active, c.sort_order
-                ORDER BY c.sort_order ASC, c.name ASC
+                LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
+                WHERE c.status = 'active'
+                GROUP BY c.id, c.name, c.description, c.parent_id, c.status, c.created_at, c.updated_at
+                ORDER BY c.name ASC
             """
             
             cursor.execute(query)
             categories = cursor.fetchall()
             cursor.close()
-            
-            # Agregar alias 'status' para compatibilidad
-            for cat in categories:
-                cat['status'] = 'active' if cat.get('active') else 'inactive'
             
             return categories
             
