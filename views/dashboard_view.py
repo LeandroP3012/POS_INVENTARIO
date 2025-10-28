@@ -216,6 +216,22 @@ class DashboardView(BaseView):
                 'permission': 'categories.view'
             },
             {
+                'id': 'user_management',
+                'title': 'Gestión de Usuarios',
+                'icon': '👥',
+                'color': '#8b5cf6',
+                'description': 'Administrar usuarios del sistema',
+                'permission': 'users.view'
+            },
+            {
+                'id': 'role_management',
+                'title': 'Gestión de Roles',
+                'icon': '🔐',
+                'color': '#6366f1',
+                'description': 'Administrar roles y permisos',
+                'permission': 'roles.view'
+            },
+            {
                 'id': 'stock_control',
                 'title': 'Control de Stock',
                 'icon': '📊',

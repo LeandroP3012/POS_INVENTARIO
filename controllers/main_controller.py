@@ -13,6 +13,7 @@ from controllers.auth_controller import AuthController
 from views.login_view import LoginView
 from config.settings import SystemSettings
 from models.role_model import RoleModel
+from services.permission_service import PermissionService
 from utils.responsive_utils import ResponsiveManager
 
 class MainController:
@@ -26,8 +27,9 @@ class MainController:
         self.is_running = False
         self.current_user = None
         
-        # Controladores
+        # Controladores y servicios
         self.auth_controller = AuthController()
+        self.permission_service = PermissionService()
         
         # Ventana principal (se crea después del login)
         self.main_window = None
@@ -332,15 +334,27 @@ class MainController:
                 rep_menu.add_command(label="Reporte Completo", command=self._full_report)
         
         # Botón Administración
-        if self.auth_controller.has_permission('users_manage'):
+        if self.permission_service.check_permission(self.current_user, 'users.view') or \
+           self.permission_service.check_permission(self.current_user, 'roles.view') or \
+           self.permission_service.check_permission(self.current_user, 'system.config'):
             admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
             admin_btn.pack(side='left', padx=2)
             admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
             admin_btn.config(menu=admin_menu)
-            admin_menu.add_command(label="Gestionar Usuarios", command=self._manage_users)
-            admin_menu.add_command(label="Gestionar Roles", command=self._manage_roles)
-            admin_menu.add_separator()
-            admin_menu.add_command(label="Configuración", command=self._system_config)
+            
+            # Gestionar Usuarios - solo si tiene permiso users.view
+            if self.permission_service.check_permission(self.current_user, 'users.view'):
+                admin_menu.add_command(label="Gestionar Usuarios", command=self._manage_users)
+            
+            # Gestionar Roles - solo si tiene permiso roles.view
+            if self.permission_service.check_permission(self.current_user, 'roles.view'):
+                admin_menu.add_command(label="Gestionar Roles", command=self._manage_roles)
+            
+            # Configuración del sistema - solo si tiene permiso system.config
+            if self.permission_service.check_permission(self.current_user, 'system.config'):
+                if admin_menu.index('end') is not None:  # Si hay items previos, agregar separador
+                    admin_menu.add_separator()
+                admin_menu.add_command(label="Configuración", command=self._system_config)
         
         # Botón Ayuda
         help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
@@ -1700,7 +1714,52 @@ class MainController:
     
     def _daily_sales_report(self):
         """Reporte de ventas diarias"""
-        messagebox.showinfo("Reporte Diario", "Módulo de reportes en desarrollo")
+        self._open_reports_module()
+    
+    def _full_report(self):
+        """Reporte completo"""
+        self._open_reports_module()
+    
+    def _open_reports_module(self):
+        """Abrir módulo de reportes"""
+        try:
+            print("📊 DEBUG: Abriendo módulo de reportes")
+            print(f"   - main_window tipo: {type(self.main_window)}")
+            print(f"   - current_user: {self.current_user.get('username')}")
+            
+            # Limpiar ventana principal
+            self._clear_main_content()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Importar vista y controlador de reportes
+            from views.reports_view import ReportsView
+            from controllers.report_controller import ReportController
+            print("   🔄 Creando ReportsView...")
+            
+            # Crear controlador de reportes
+            self.report_controller = ReportController()
+            
+            # Crear vista de reportes
+            self.reports_view = ReportsView(
+                parent=self.main_window,
+                controller=self.report_controller,
+                user_data=self.current_user,
+                on_back=self._show_dashboard
+            )
+            print("   ✅ ReportsView creada exitosamente")
+            
+            # Mostrar vista
+            self.reports_view.show()
+            print("   📺 Vista de reportes mostrada")
+            
+            # Restaurar geometría
+            self._restore_window_geometry()
+            
+        except Exception as e:
+            self.logger.error(f"Error abriendo módulo de reportes: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Error", f"No se pudo abrir el módulo de reportes:\n{str(e)}")
     
     def _config_tickets(self):
         """Configurar boletas"""
@@ -1726,10 +1785,6 @@ class MainController:
             import traceback
             traceback.print_exc()
             messagebox.showerror("Error", f"No se pudo abrir configuración de boletas:\n{str(e)}")
-    
-    def _full_report(self):
-        """Reporte completo"""
-        messagebox.showinfo("Reporte Completo", "Función en desarrollo")
     
     def _manage_users(self):
         """Gestionar usuarios"""

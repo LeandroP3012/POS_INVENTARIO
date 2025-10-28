@@ -213,24 +213,24 @@ class SaleController:
     def search_products_for_sale(self, search_text):
         """Busca productos disponibles para venta"""
         try:
-            # Si no hay texto de búsqueda, devolver todos los productos activos con stock
+            # Si no hay texto de búsqueda, devolver todos los productos activos (con o sin stock)
             if not search_text or search_text.strip() == "":
                 # Obtener todos los productos activos
                 products = self.product_model.get_all_products(include_inactive=False)
                 
-                # Filtrar solo activos con stock
+                # ✅ Mostrar TODOS los productos activos (incluso sin stock para ver catálogo completo)
                 available_products = [
                     p for p in products 
-                    if p.get('status') == 'active' and p.get('stock_quantity', 0) > 0
+                    if p.get('status') == 'active'
                 ]
             else:
-                # Buscar en base de datos
+                # Buscar en base de datos por SKU y NOMBRE
                 products = self.product_model.search_products(search_text)
                 
-                # Filtrar solo productos activos con stock
+                # ✅ Mostrar productos activos encontrados (incluso sin stock)
                 available_products = [
                     p for p in products 
-                    if p.get('status') == 'active' and p.get('stock_quantity', 0) > 0
+                    if p.get('status') == 'active'
                 ]
             
             return {

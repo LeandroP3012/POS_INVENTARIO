@@ -333,9 +333,44 @@ class UserManagementView(BaseView):
                 pady=12,
                 state='disabled'
             )
-            self.delete_user_btn.pack(side='left')
+            self.delete_user_btn.pack(side='left', padx=(0, 12))
         else:
             self.delete_user_btn = None
+        
+        # Botón activar/desactivar - Solo si tiene permiso users.activate o users.deactivate
+        if self.has_permission('users.activate') or self.has_permission('users.deactivate'):
+            self.toggle_status_btn = tk.Button(
+                buttons_frame,
+                text="✓ Activar",
+                command=self.toggle_user_status,
+                bg='#16a085',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12,
+                state='disabled'
+            )
+            self.toggle_status_btn.pack(side='left', padx=(0, 12))
+        else:
+            self.toggle_status_btn = None
+        
+        # Botón exportar - Solo si tiene permiso users.export
+        if self.has_permission('users.export'):
+            export_btn = tk.Button(
+                buttons_frame,
+                text="📄 Exportar Excel",
+                command=self.export_users_to_excel,
+                bg='#8e44ad',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12
+            )
+            export_btn.pack(side='left')
     
     def create_main_panel(self):
         """Crear panel principal con tabla de usuarios"""
@@ -593,12 +628,39 @@ class UserManagementView(BaseView):
                     self.delete_user_btn.configure(state='normal')
                 else:
                     self.delete_user_btn.configure(state='disabled')
+            
+            # Habilitar/configurar botón activar/desactivar
+            if self.toggle_status_btn and self.selected_user:
+                is_active = self.selected_user.get('status', 'active') == 'active'
+                is_current_user = self.selected_user.get('username') == self.user_data.get('username', '')
+                
+                # No permitir cambiar el estado del usuario actual
+                if is_current_user:
+                    self.toggle_status_btn.configure(state='disabled')
+                else:
+                    # Verificar permiso correspondiente
+                    if is_active and self.has_permission('users.deactivate'):
+                        self.toggle_status_btn.configure(
+                            text="⊗ Desactivar",
+                            bg='#e67e22',
+                            state='normal'
+                        )
+                    elif not is_active and self.has_permission('users.activate'):
+                        self.toggle_status_btn.configure(
+                            text="✓ Activar",
+                            bg='#16a085',
+                            state='normal'
+                        )
+                    else:
+                        self.toggle_status_btn.configure(state='disabled')
         else:
             self.selected_user = None
             if self.edit_user_btn:
                 self.edit_user_btn.configure(state='disabled')
             if self.delete_user_btn:
                 self.delete_user_btn.configure(state='disabled')
+            if self.toggle_status_btn:
+                self.toggle_status_btn.configure(state='disabled')
     
     def on_user_double_click(self, event):
         """Manejar doble clic en usuario"""
@@ -682,6 +744,221 @@ class UserManagementView(BaseView):
                     messagebox.showerror("Error", "❌ Error eliminando el usuario")
             except Exception as e:
                 messagebox.showerror("Error", f"❌ Error eliminando usuario: {str(e)}")
+    
+    def toggle_user_status(self):
+        """Activar o desactivar usuario seleccionado"""
+        if not self.selected_user:
+            return
+        
+        # Obtener estado actual
+        current_status = self.selected_user.get('status', 'active')
+        is_active = current_status == 'active'
+        new_status = 'inactive' if is_active else 'active'
+        
+        # Verificar permiso correspondiente
+        required_permission = 'users.deactivate' if is_active else 'users.activate'
+        if not self.has_permission(required_permission):
+            action = "desactivar" if is_active else "activar"
+            messagebox.showerror("Acceso Denegado", f"❌ No tienes permisos para {action} usuarios")
+            return
+        
+        # No permitir desactivar el usuario actual
+        if self.selected_user.get('username') == self.user_data.get('username', ''):
+            messagebox.showerror("Error", "❌ No puedes cambiar el estado de tu propio usuario")
+            return
+        
+        # Confirmar acción
+        action_text = "desactivar" if is_active else "activar"
+        icon = "⚠️" if is_active else "✓"
+        
+        if messagebox.askyesno("Confirmar Acción", 
+                             f"{icon} ¿Está seguro de que desea {action_text} al usuario '{self.selected_user.get('full_name', '')}'?"):
+            
+            try:
+                # Actualizar estado a través del controlador
+                success = self.user_controller.update_user_status(
+                    self.selected_user['id'], 
+                    new_status
+                )
+                
+                if success:
+                    self.selected_user = None
+                    self.load_users_data()  # Recargar datos
+                    
+                    # Deshabilitar botones
+                    if self.edit_user_btn:
+                        self.edit_user_btn.configure(state='disabled')
+                    if self.delete_user_btn:
+                        self.delete_user_btn.configure(state='disabled')
+                    if self.toggle_status_btn:
+                        self.toggle_status_btn.configure(state='disabled')
+                    
+                    success_text = "activado" if new_status == 'active' else "desactivado"
+                    messagebox.showinfo("Estado Actualizado", f"✅ Usuario {success_text} exitosamente")
+                else:
+                    messagebox.showerror("Error", "❌ Error actualizando el estado del usuario")
+            except Exception as e:
+                messagebox.showerror("Error", f"❌ Error actualizando estado: {str(e)}")
+    
+    def export_users_to_excel(self):
+        """Exportar lista de usuarios a Excel"""
+        # Verificar permiso
+        if not self.has_permission('users.export'):
+            messagebox.showerror("Acceso Denegado", "❌ No tienes permisos para exportar usuarios")
+            return
+        
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from tkinter import filedialog
+            from datetime import datetime as dt
+            
+            # Verificar si hay datos para exportar
+            if not self.filtered_users:
+                messagebox.showwarning("Sin Datos", "⚠️ No hay usuarios para exportar")
+                return
+            
+            # Solicitar ubicación de guardado
+            timestamp = dt.now().strftime('%Y%m%d_%H%M%S')
+            default_filename = f"usuarios_{timestamp}.xlsx"
+            
+            file_path = filedialog.asksaveasfilename(
+                defaultextension='.xlsx',
+                initialfile=default_filename,
+                filetypes=[('Excel files', '*.xlsx'), ('All files', '*.*')],
+                title='Guardar exportación de usuarios'
+            )
+            
+            if not file_path:
+                return  # Usuario canceló
+            
+            # Crear workbook
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Usuarios"
+            
+            # Estilos
+            header_font = Font(name='Segoe UI', size=12, bold=True, color='FFFFFF')
+            header_fill = PatternFill(start_color='2c3e50', end_color='2c3e50', fill_type='solid')
+            header_alignment = Alignment(horizontal='center', vertical='center')
+            
+            cell_font = Font(name='Segoe UI', size=11)
+            cell_alignment = Alignment(horizontal='left', vertical='center')
+            center_alignment = Alignment(horizontal='center', vertical='center')
+            
+            border = Border(
+                left=Side(style='thin', color='000000'),
+                right=Side(style='thin', color='000000'),
+                top=Side(style='thin', color='000000'),
+                bottom=Side(style='thin', color='000000')
+            )
+            
+            # Headers
+            headers = ['ID', 'Usuario', 'Nombre Completo', 'Email', 'Rol', 'Estado', 'Último Acceso', 'Fecha Creación']
+            ws.append(headers)
+            
+            # Aplicar estilo a headers
+            for col_num, header in enumerate(headers, 1):
+                cell = ws.cell(row=1, column=col_num)
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.alignment = header_alignment
+                cell.border = border
+            
+            # Agregar datos
+            for user in self.filtered_users:
+                status_text = 'Activo' if user.get('status', 'active') == 'active' else 'Inactivo'
+                last_login = self.format_datetime(user.get('last_login', 'Nunca'))
+                created_at = self.format_datetime(user.get('created_at', ''))
+                
+                row_data = [
+                    user.get('id', ''),
+                    user.get('username', ''),
+                    user.get('full_name', ''),
+                    user.get('email', ''),
+                    user.get('user_type', ''),
+                    status_text,
+                    last_login,
+                    created_at
+                ]
+                ws.append(row_data)
+            
+            # Aplicar estilos a las celdas de datos
+            for row_num in range(2, len(self.filtered_users) + 2):
+                for col_num in range(1, len(headers) + 1):
+                    cell = ws.cell(row=row_num, column=col_num)
+                    cell.font = cell_font
+                    cell.border = border
+                    
+                    # Alineación
+                    if col_num in [1, 5, 6]:  # ID, Rol, Estado - centrados
+                        cell.alignment = center_alignment
+                    else:
+                        cell.alignment = cell_alignment
+                    
+                    # Color para estado
+                    if col_num == 6:  # Columna Estado
+                        if cell.value == 'Activo':
+                            cell.fill = PatternFill(start_color='d4edda', end_color='d4edda', fill_type='solid')
+                            cell.font = Font(name='Segoe UI', size=11, bold=True, color='155724')
+                        else:
+                            cell.fill = PatternFill(start_color='f8d7da', end_color='f8d7da', fill_type='solid')
+                            cell.font = Font(name='Segoe UI', size=11, bold=True, color='721c24')
+            
+            # Ajustar ancho de columnas
+            column_widths = {
+                'A': 8,   # ID
+                'B': 18,  # Usuario
+                'C': 35,  # Nombre Completo
+                'D': 35,  # Email
+                'E': 20,  # Rol
+                'F': 12,  # Estado
+                'G': 20,  # Último Acceso
+                'H': 20   # Fecha Creación
+            }
+            
+            for col, width in column_widths.items():
+                ws.column_dimensions[col].width = width
+            
+            # Congelar primera fila
+            ws.freeze_panes = 'A2'
+            
+            # Agregar información adicional en una hoja separada
+            ws_info = wb.create_sheet("Información")
+            ws_info.append(["Sistema POS - Exportación de Usuarios"])
+            ws_info.append([])
+            ws_info.append(["Fecha de Exportación:", dt.now().strftime('%d/%m/%Y %H:%M:%S')])
+            ws_info.append(["Exportado por:", self.user_data.get('full_name', '')])
+            ws_info.append(["Total de usuarios:", len(self.filtered_users)])
+            ws_info.append(["Usuarios activos:", len([u for u in self.filtered_users if u.get('status') == 'active'])])
+            ws_info.append(["Usuarios inactivos:", len([u for u in self.filtered_users if u.get('status') == 'inactive'])])
+            
+            # Estilos para hoja de información
+            for row in ws_info.iter_rows(min_row=1, max_row=1):
+                for cell in row:
+                    cell.font = Font(name='Segoe UI', size=14, bold=True, color='2c3e50')
+            
+            ws_info.column_dimensions['A'].width = 25
+            ws_info.column_dimensions['B'].width = 30
+            
+            # Guardar archivo
+            wb.save(file_path)
+            
+            messagebox.showinfo(
+                "Exportación Exitosa", 
+                f"✅ {len(self.filtered_users)} usuarios exportados exitosamente\n\n"
+                f"📁 Archivo guardado en:\n{file_path}"
+            )
+            
+        except ImportError:
+            messagebox.showerror(
+                "Error", 
+                "❌ La librería 'openpyxl' no está instalada.\n\n"
+                "Por favor, ejecuta: pip install openpyxl"
+            )
+        except Exception as e:
+            messagebox.showerror("Error", f"❌ Error exportando a Excel: {str(e)}")
+    
     
     def format_datetime(self, datetime_str: str) -> str:
         """Formatear fecha y hora"""

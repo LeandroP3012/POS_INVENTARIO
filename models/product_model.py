@@ -239,7 +239,7 @@ class ProductModel(BaseModel):
             query = """
                 SELECT 
                     p.id,
-                    p.sku as code,
+                    p.sku,
                     p.barcode,
                     p.name,
                     p.description,
@@ -299,7 +299,6 @@ class ProductModel(BaseModel):
                     product['stock_status'] = 'normal'
                 
                 # Agregar campos para compatibilidad
-                product['sku'] = product['code']  # Alias para compatibilidad
                 product['unit_name'] = product.get('unit', 'Unidad')
                 product['unit_symbol'] = product.get('unit', 'un')
             
@@ -324,7 +323,7 @@ class ProductModel(BaseModel):
             query = """
                 SELECT 
                     p.id,
-                    p.sku as code,
+                    p.sku,
                     p.barcode,
                     p.name,
                     p.description,
@@ -492,7 +491,7 @@ class ProductModel(BaseModel):
             query = """
                 SELECT 
                     p.id,
-                    p.sku as code,
+                    p.sku,
                     p.barcode,
                     p.name,
                     p.description,
@@ -543,11 +542,11 @@ class ProductModel(BaseModel):
             query = """
                 SELECT 
                     p.id,
-                    p.sku as code,
+                    p.sku,
                     p.barcode,
                     p.name,
                     p.cost,
-                    p.sale_price as price,
+                    p.price,
                     p.stock_quantity,
                     p.unit_id,
                     p.status,

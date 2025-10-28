@@ -26,19 +26,19 @@ class LoginView(BaseView):
         self.root.configure(bg='#f5f5f5')
         
         # Login debe mantener tamaño original (NO usar make_window_responsive)
-        # Tamaño fijo optimizado para login
-        self.root.geometry("450x600")
+        # Tamaño fijo optimizado para login - AMPLIADO
+        self.root.geometry("500x650")
         
         # Centrar ventana de login
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
-        x = (screen_width - 450) // 2
-        y = (screen_height - 600) // 2
-        self.root.geometry(f"450x600+{x}+{y}")
+        x = (screen_width - 500) // 2
+        y = (screen_height - 650) // 2
+        self.root.geometry(f"500x650+{x}+{y}")
         
         # Tamaño mínimo y máximo (login no debe redimensionarse)
-        self.root.minsize(450, 600)
-        self.root.maxsize(450, 600)
+        self.root.minsize(500, 650)
+        self.root.maxsize(500, 650)
         self.root.resizable(False, False)
         
         self.create_widgets()
@@ -84,8 +84,8 @@ class LoginView(BaseView):
             fg='#666666'
         )
         
-        # CUADRO BLANCO - Solo para campos de entrada (optimizado para ventana más pequeña)
-        self.login_frame = tk.Frame(self.root, bg='#ffffff', width=340, height=320, relief='solid', bd=1)
+        # CUADRO BLANCO - Solo para campos de entrada (ampliado)
+        self.login_frame = tk.Frame(self.root, bg='#ffffff', width=400, height=360, relief='solid', bd=1)
         self.login_frame.pack_propagate(False)
         
         # Campo de usuario con icono (DENTRO del cuadro blanco)
@@ -102,7 +102,7 @@ class LoginView(BaseView):
         self.user_entry = tk.Entry(
             user_frame,
             font=('Arial', 12),
-            width=32,
+            width=36,
             relief='solid',
             bd=1,
             bg='#ffffff',
@@ -132,7 +132,7 @@ class LoginView(BaseView):
         self.password_entry = tk.Entry(
             password_input_frame,
             font=('Arial', 12),
-            width=28,
+            width=32,
             show='*',
             relief='flat',
             bd=0,
@@ -172,14 +172,14 @@ class LoginView(BaseView):
             relief='flat'
         )
         
-        # Botón de login (DENTRO del cuadro blanco)
+        # Botón de login (DENTRO del cuadro blanco) - Más ancho
         self.login_button = tk.Button(
             self.login_frame,
             text="🔓 Iniciar Sesión",
             font=('Arial', 13, 'bold'),
             bg='#2196f3',
             fg='white',
-            width=32,
+            width=36,
             height=2,
             cursor='hand2',
             relief='flat',

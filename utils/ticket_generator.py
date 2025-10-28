@@ -196,7 +196,10 @@ class TicketGenerator:
         if sale_data.get('discount', 0) > 0:
             ticket.append(self._left_right('DESCUENTO:', f"S/ -{sale_data['discount']:.2f}"))
         
-        ticket.append(self._left_right('IGV (18%):', f"S/ {sale_data['igv']:.2f}"))
+        # ✅ Solo mostrar IGV si es mayor a 0 (cuando está activado)
+        if sale_data.get('igv', 0) > 0:
+            ticket.append(self._left_right('IGV (18%):', f"S/ {sale_data['igv']:.2f}"))
+        
         ticket.append(self._separator('-'))
         ticket.append(self._left_right('TOTAL:', f"S/ {sale_data['total']:.2f}"))
         ticket.append(self._separator('='))
@@ -477,11 +480,16 @@ class TicketGenerator:
         </div>
 """
         
-        html += f"""
+        # ✅ Solo agregar IGV si es mayor a 0 (cuando está activado)
+        if sale_data.get('igv', 0) > 0:
+            html += f"""
         <div class='total-row'>
             <span>IGV (18%):</span>
             <span>S/ {sale_data['igv']:.2f}</span>
         </div>
+"""
+        
+        html += f"""
         <div class='total-row total-final'>
             <span>TOTAL:</span>
             <span>S/ {sale_data['total']:.2f}</span>

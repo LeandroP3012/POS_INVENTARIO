@@ -241,43 +241,90 @@ class RoleModel(BaseModel):
     def update_role(self, role_id: int, role_data: Dict[str, Any]) -> bool:
         """Actualizar rol existente"""
         try:
+            print(f"\n{'='*80}")
+            print(f"🔄 ROLE_MODEL.UPDATE_ROLE - INICIADO")
+            print(f"{'='*80}")
+            print(f"📌 Role ID: {role_id}")
+            print(f"📦 Datos recibidos: {role_data}")
+            print(f"📊 Tipo de 'permissions': {type(role_data.get('permissions'))}")
+            
             # Verificar que el rol existe
             existing_role = self.get_role_by_id(role_id)
             if not existing_role:
+                print(f"❌ Rol {role_id} no encontrado")
                 self.logger.error(f"Rol {role_id} no encontrado")
                 return False
             
+            print(f"✅ Rol encontrado: {existing_role['name']}")
+            print(f"📋 Permisos actuales: {existing_role.get('permissions', [])[:5]}... (primeros 5)")
+            
             # No permitir editar roles del sistema protegidos
             if existing_role.get('system_role') and existing_role.get('code') in ['super_admin']:
+                print(f"❌ No se puede editar Super Admin")
                 self.logger.error(f"No se puede editar el rol del sistema: {existing_role.get('code')}")
                 return False
             
+            print(f"✅ Rol puede ser editado")
+            
             # Validar datos
+            print(f"🔍 Validando datos...")
             is_valid, errors = self.validate_role_data(role_data, is_update=True)
+            print(f"📊 Validación: válido={is_valid}, errores={errors}")
+            
             if not is_valid:
+                print(f"❌ Datos inválidos: {errors}")
                 self.logger.error(f"Datos de rol inválidos: {errors}")
                 return False
             
+            print(f"✅ Datos válidos")
+            
             # Preparar datos
+            print(f"🔧 Sanitizando datos...")
             role_data = self.sanitize_input(role_data)
+            print(f"✅ Datos sanitizados: {role_data}")
             
             # Convertir permisos a JSON si es necesario
             if isinstance(role_data.get('permissions'), list):
                 import json
-                role_data['permissions'] = json.dumps(role_data['permissions'])
+                perms_list = role_data['permissions']
+                print(f"🔄 Convirtiendo {len(perms_list)} permisos a JSON...")
+                print(f"📝 Permisos: {perms_list[:5]}... (primeros 5)")
+                role_data['permissions'] = json.dumps(perms_list)
+                print(f"✅ JSON generado: {role_data['permissions'][:100]}... (primeros 100 chars)")
             
             role_data['updated_at'] = datetime.now()
+            print(f"📅 updated_at establecido: {role_data['updated_at']}")
             
+            print(f"🔌 Verificando conexión a BD...")
             if self.db and self.connect():
+                print(f"✅ Conectado a BD")
+                print(f"💾 Ejecutando UPDATE en tabla 'roles' con ID={role_id}...")
+                print(f"📦 Datos a actualizar: {role_data}")
+                
                 success = self.update(role_id, role_data)
+                
+                print(f"📊 Resultado del UPDATE: {success}")
+                
                 if success:
+                    print(f"✅ ROL ACTUALIZADO EXITOSAMENTE")
                     self.logger.info(f"Rol actualizado exitosamente: ID {role_id}")
+                else:
+                    print(f"❌ UPDATE retornó False")
+                
+                print(f"{'='*80}\n")
                 return success
-            
-            return False
+            else:
+                print(f"❌ No se pudo conectar a la BD")
+                print(f"   self.db: {self.db}")
+                print(f"{'='*80}\n")
+                return False
             
         except Exception as e:
+            print(f"❌ EXCEPCIÓN en update_role: {e}")
+            import traceback
+            traceback.print_exc()
             self.logger.error(f"Error actualizando rol {role_id}: {e}")
+            print(f"{'='*80}\n")
             return False
     
     def delete_role(self, role_id: int) -> bool:
@@ -367,48 +414,14 @@ class RoleModel(BaseModel):
     
     def get_all_available_permissions(self) -> List[str]:
         """Obtener todos los permisos disponibles en el sistema"""
-        return [
-            # Gestión de usuarios
-            'users.view', 'users.create', 'users.edit', 'users.delete',
-            'users.activate', 'users.deactivate', 'users.export',
-            
-            # Gestión de roles
-            'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
-            'roles.assign', 'roles.permissions',
-            
-            # Sistema
-            'system.config', 'system.backup', 'system.restore',
-            'system.logs', 'system.maintenance', 'system.reports',
-            
-            # Dashboard
-            'dashboard.view', 'dashboard.stats', 'dashboard.analytics',
-            
-            # Inventario
-            'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.delete',
-            'inventory.stock', 'inventory.reports', 'inventory.export',
-            
-            # Ventas
-            'sales.view', 'sales.create', 'sales.edit', 'sales.delete',
-            'sales.view_own', 'sales.reports', 'sales.export',
-            
-            # Caja
-            'cash.register', 'cash.open', 'cash.close', 'cash.reports',
-            
-            # Productos
-            'products.view', 'products.create', 'products.edit', 'products.delete',
-            'products.prices', 'products.categories',
-            
-            # Clientes
-            'customers.view', 'customers.create', 'customers.edit', 'customers.delete',
-            'customers.export',
-            
-            # Proveedores
-            'suppliers.view', 'suppliers.create', 'suppliers.edit', 'suppliers.delete',
-            
-            # Reportes
-            'reports.sales', 'reports.inventory', 'reports.users',
-            'reports.financial', 'reports.export'
-        ]
+        # ⭐ USAR get_permissions_by_category() COMO FUENTE ÚNICA DE VERDAD
+        all_permissions = []
+        permissions_by_category = self.get_permissions_by_category()
+        
+        for category, perms in permissions_by_category.items():
+            all_permissions.extend(perms)
+        
+        return all_permissions
     
     def get_permissions_by_category(self) -> Dict[str, List[str]]:
         """Obtener permisos organizados por categoría"""
@@ -495,13 +508,36 @@ class RoleModel(BaseModel):
         # Validar permisos
         if 'permissions' in data:
             permissions = data.get('permissions')
+            print(f"\n🔍 VALIDANDO PERMISOS...")
+            print(f"📦 Tipo de permissions: {type(permissions)}")
+            print(f"📊 Cantidad de permisos: {len(permissions) if isinstance(permissions, list) else 'N/A'}")
+            
             if not isinstance(permissions, list):
+                print(f"❌ Los permisos NO son una lista")
                 errors.append("Los permisos deben ser una lista")
             else:
+                print(f"✅ Los permisos son una lista")
                 available_permissions = self.get_all_available_permissions() + ['*']
+                print(f"📋 Permisos disponibles en sistema: {len(available_permissions)}")
+                print(f"📝 Primeros 10 disponibles: {available_permissions[:10]}")
+                
+                invalid_perms = []
                 for perm in permissions:
                     if perm not in available_permissions:
+                        invalid_perms.append(perm)
+                
+                if invalid_perms:
+                    print(f"❌ PERMISOS INVÁLIDOS DETECTADOS: {len(invalid_perms)}")
+                    print(f"📝 Permisos inválidos: {invalid_perms[:10]}... (primeros 10)")
+                    for perm in invalid_perms[:10]:
                         errors.append(f"Permiso inválido: {perm}")
+                else:
+                    print(f"✅ Todos los {len(permissions)} permisos son válidos")
+        
+        print(f"\n📊 RESULTADO DE VALIDACIÓN:")
+        print(f"   Errores encontrados: {len(errors)}")
+        if errors:
+            print(f"   Lista de errores: {errors}")
         
         return len(errors) == 0, errors
     

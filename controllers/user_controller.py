@@ -256,11 +256,33 @@ class UserController:
                 except Exception as role_error:
                     self.logger.warning(f"Error obteniendo roles: {role_error}")
             
+            # 🔧 APLICAR MAPEO DE user_type (igual que en create_user)
+            # Función para mapear nombre de rol a user_type válido de BD
+            def get_user_type_simplified(role_name):
+                """Mapear cualquier rol a un user_type válido del ENUM de BD"""
+                role_lower = role_name.lower()
+                
+                # Mapeo: cualquier rol se categoriza en los 4 tipos técnicos
+                if 'admin' in role_lower or 'sistema' in role_lower:
+                    return 'admin'
+                elif 'supervis' in role_lower or 'gerente' in role_lower or 'jefe' in role_lower:
+                    return 'supervisor'
+                elif 'cajer' in role_lower or 'vend' in role_lower:
+                    return 'cashier'
+                else:
+                    return 'user'  # Por defecto
+            
+            # Obtener user_type mapeado si se proporcionó
+            db_user_type = existing_user.get('user_type')  # Mantener el actual por defecto
+            if new_role_name:
+                db_user_type = get_user_type_simplified(new_role_name)
+                print(f"DEBUG UPDATE_USER - Mapeo: '{new_role_name}' -> '{db_user_type}' (role_id: {role_id})")
+            
             # Preparar datos para actualizar
             update_data = {
                 'full_name': user_data.get('full_name', existing_user.get('full_name')),
                 'email': user_data.get('email', existing_user.get('email')),
-                'user_type': user_data.get('user_type', existing_user.get('user_type')),
+                'user_type': db_user_type,  # ✅ Usar valor mapeado
                 'role_id': role_id,
                 'active': user_data.get('status', 'active') == 'active',
                 'phone': user_data.get('phone', existing_user.get('phone', '')),
@@ -360,6 +382,10 @@ class UserController:
         except Exception as e:
             self.logger.error(f"Error cambiando estado de usuario {user_id}: {str(e)}")
             return False
+    
+    def update_user_status(self, user_id: int, status: str) -> bool:
+        """Actualizar estado de usuario (activo/inactivo) - Alias para change_user_status"""
+        return self.change_user_status(user_id, status)
     
     def change_password(self, user_id: int, new_password: str) -> bool:
         """Cambiar contraseña de usuario"""

@@ -170,13 +170,18 @@ class SaleModel(BaseModel):
     
     def _create_inventory_movement(self, cursor, movement):
         """Registra un movimiento de inventario"""
+        from decimal import Decimal
+        
         # Obtener stock actual
         cursor.execute("SELECT stock_quantity FROM products WHERE id = %s", (movement['product_id'],))
         result = cursor.fetchone()
-        current_stock = result[0] if result else 0
+        current_stock = result[0] if result else Decimal('0')
+        
+        # Convertir quantity a Decimal para evitar errores de tipo
+        quantity = Decimal(str(movement['quantity']))
         
         movement['previous_stock'] = current_stock
-        movement['new_stock'] = current_stock + movement['quantity']
+        movement['new_stock'] = current_stock + quantity
         
         query = """
             INSERT INTO inventory_movements (

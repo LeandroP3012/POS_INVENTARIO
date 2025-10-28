@@ -16,6 +16,15 @@ mysql-connector-python>=8.0.33
 # Manejo de imágenes (para logos y avatares en la interfaz)
 Pillow>=10.0.0
 
+# Widget calendario para selección de fechas
+tkcalendar>=1.6.1
+
+# Gráficos y reportes visuales
+matplotlib>=3.7.0
+
+# Excel export/import (requerido para exportación de usuarios)
+openpyxl>=3.1.0
+
 # ─────────────────────────────────────────────────────────────────────────────
 # DEPENDENCIAS OPCIONALES
 # ─────────────────────────────────────────────────────────────────────────────
@@ -26,8 +35,7 @@ Pillow>=10.0.0
 # Reportes en PDF (descomentar si necesitas generar reportes PDF)
 # reportlab>=4.0.0
 
-# Excel export/import (descomentar si necesitas exportar a Excel)
-# openpyxl>=3.1.0
+# Análisis de datos (descomentar si necesitas análisis avanzado)
 # pandas>=2.0.0
 
 # Windows-specific - REQUERIDO para impresoras térmicas
