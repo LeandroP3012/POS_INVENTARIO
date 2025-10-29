@@ -242,12 +242,12 @@ class MainController:
                 inventory_menu.add_command(label="Gestionar Inventario", command=self._manage_inventory)
         
         # Menú Reportes (solo supervisores y admins)
-        if self.auth_controller.has_permission('reports_basic'):
+        if self.auth_controller.has_permission('reports.basic'):
             reports_menu = tk.Menu(menubar, tearoff=0)
             menubar.add_cascade(label="Reportes", menu=reports_menu, font=('Segoe UI', 13, 'bold'))
             reports_menu.add_command(label="Ventas del Día", command=self._daily_sales_report)
             
-            if self.auth_controller.has_permission('reports_full'):
+            if self.auth_controller.has_permission('reports.full'):
                 reports_menu.add_command(label="Reporte Completo", command=self._full_report)
         
         # Menú Administración (solo admins)
@@ -323,14 +323,14 @@ class MainController:
                 inv_menu.add_command(label="Gestionar Inventario", command=self._manage_inventory)
         
         # Botón Reportes
-        if self.auth_controller.has_permission('reports_basic'):
+        if self.auth_controller.has_permission('reports.basic'):
             rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
             rep_btn.pack(side='left', padx=2)
             rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
             rep_btn.config(menu=rep_menu)
             rep_menu.add_command(label="Ventas del Día", command=self._daily_sales_report)
             
-            if self.auth_controller.has_permission('reports_full'):
+            if self.auth_controller.has_permission('reports.full'):
                 rep_menu.add_command(label="Reporte Completo", command=self._full_report)
         
         # Botón Administración
@@ -680,14 +680,14 @@ class MainController:
                 'command': self._view_products,
                 'permission': 'inventory.view'
             })
-        
-        if self.auth_controller.has_permission('reports_basic'):
+
+        if self.auth_controller.has_permission('reports.basic'):
             modules.append({
                 'title': 'Reportes',
                 'icon': '📊',
                 'color': '#9b59b6',
                 'command': self._daily_sales_report,
-                'permission': 'reports_basic'
+                'permission': 'reports.basic'
             })
         
         if self.auth_controller.has_permission('users.view'):
@@ -1008,7 +1008,7 @@ class MainController:
         })
         
         # Botón Reportes (si tiene permisos)
-        if self.auth_controller.has_permission('reports_basic'):
+        if self.auth_controller.has_permission('reports.basic'):
             buttons.append({
                 'text': '📊\nReportes',
                 'command': self._daily_sales_report,

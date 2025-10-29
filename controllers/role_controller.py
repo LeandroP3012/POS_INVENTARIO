@@ -12,6 +12,7 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.role_model import RoleModel
+from config.permissions_catalog import get_permission_info
 
 class RoleController:
     """Controlador para gestión de roles y permisos"""
@@ -431,88 +432,28 @@ class RoleController:
     
     def get_permission_description(self, permission: str) -> str:
         """Obtener descripción amigable de un permiso"""
-        descriptions = {
-            # Usuarios
-            'users.view': 'Ver lista de usuarios',
-            'users.create': 'Crear nuevos usuarios',
-            'users.edit': 'Editar usuarios existentes',
-            'users.delete': 'Eliminar usuarios',
-            'users.activate': 'Activar usuarios',
-            'users.deactivate': 'Desactivar usuarios',
-            'users.export': 'Exportar datos de usuarios',
-            
-            # Roles
-            'roles.view': 'Ver lista de roles',
-            'roles.create': 'Crear nuevos roles',
-            'roles.edit': 'Editar roles existentes',
-            'roles.delete': 'Eliminar roles',
-            'roles.assign': 'Asignar roles a usuarios',
-            'roles.permissions': 'Gestionar permisos de roles',
-            
-            # Sistema
-            'system.config': 'Configurar sistema',
-            'system.backup': 'Crear respaldos',
-            'system.restore': 'Restaurar sistema',
-            'system.logs': 'Ver logs del sistema',
-            'system.maintenance': 'Modo mantenimiento',
-            'system.reports': 'Reportes del sistema',
-            
-            # Dashboard
-            'dashboard.view': 'Ver dashboard principal',
-            'dashboard.stats': 'Ver estadísticas',
-            'dashboard.analytics': 'Ver análisis avanzados',
-            
-            # Inventario
-            'inventory.view': 'Ver inventario',
-            'inventory.create': 'Agregar productos al inventario',
-            'inventory.edit': 'Editar productos del inventario',
-            'inventory.delete': 'Eliminar productos del inventario',
-            'inventory.stock': 'Gestionar stock',
-            'inventory.reports': 'Reportes de inventario',
-            'inventory.export': 'Exportar inventario',
-            
-            # Ventas
-            'sales.view': 'Ver todas las ventas',
-            'sales.create': 'Realizar ventas',
-            'sales.edit': 'Editar ventas',
-            'sales.delete': 'Eliminar ventas',
-            'sales.view_own': 'Ver solo sus propias ventas',
-            'sales.reports': 'Reportes de ventas',
-            'sales.export': 'Exportar datos de ventas',
-            
-            # Caja
-            'cash.register': 'Operar caja registradora',
-            'cash.open': 'Abrir caja',
-            'cash.close': 'Cerrar caja',
-            'cash.reports': 'Reportes de caja',
-            
-            # Productos
-            'products.view': 'Ver catálogo de productos',
-            'products.create': 'Crear nuevos productos',
-            'products.edit': 'Editar productos',
-            'products.delete': 'Eliminar productos',
-            'products.prices': 'Gestionar precios',
-            'products.categories': 'Gestionar categorías',
-            
-            # Clientes
-            'customers.view': 'Ver lista de clientes',
-            'customers.create': 'Crear nuevos clientes',
-            'customers.edit': 'Editar clientes',
-            'customers.delete': 'Eliminar clientes',
-            'customers.export': 'Exportar datos de clientes',
-            
-            # Proveedores
-            'suppliers.view': 'Ver lista de proveedores',
-            'suppliers.create': 'Crear nuevos proveedores',
-            'suppliers.edit': 'Editar proveedores',
-            'suppliers.delete': 'Eliminar proveedores',
-            
-            # Reportes
-            'reports.sales': 'Reportes de ventas',
-            'reports.inventory': 'Reportes de inventario',
-            'reports.users': 'Reportes de usuarios',
-            'reports.financial': 'Reportes financieros',
-            'reports.export': 'Exportar reportes'
-        }
-        
-        return descriptions.get(permission, permission)
+        info = get_permission_info(permission)
+        if not info:
+            return permission
+        description = info.get('description') or info.get('label') or permission
+        return str(description)
+
+    def get_permission_metadata(self, permission: str) -> Dict[str, Any]:
+        """Recuperar metadatos completos del permiso."""
+        info = get_permission_info(permission)
+        if not info:
+            return {
+                'code': permission,
+                'label': permission,
+                'description': permission,
+                'scope': 'read',
+                'assignable': True,
+            }
+
+        metadata = dict(info)
+        metadata.setdefault('code', permission)
+        metadata.setdefault('label', permission)
+        metadata.setdefault('description', permission)
+        metadata.setdefault('scope', 'read')
+        metadata.setdefault('assignable', True)
+        return metadata

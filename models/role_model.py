@@ -4,14 +4,22 @@ Modelo para gestión de roles del sistema
 
 import os
 import sys
+import json
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 
 # Agregar el directorio raíz al path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.base_model import BaseModel
+from config.permissions_catalog import (
+    get_permissions_by_category as catalog_permissions_by_category,
+    get_all_permission_codes,
+    get_permission_info,
+    normalize_permission_code,
+    normalize_permissions,
+)
 
 class RoleModel(BaseModel):
     """Modelo para gestión de roles"""
@@ -105,14 +113,16 @@ class RoleModel(BaseModel):
                 conditions = {} if include_inactive else {'active': True}
                 roles = self.find_all(conditions)
                 
-                # Procesar permisos (convertir de JSON string a lista si es necesario)
+                # Procesar permisos (normalizar y detectar desconocidos)
                 for role in roles:
-                    if isinstance(role.get('permissions'), str):
-                        import json
-                        try:
-                            role['permissions'] = json.loads(role['permissions'])
-                        except:
-                            role['permissions'] = []
+                    permissions, unknown = self._coerce_permissions(role.get('permissions'))
+                    role['permissions'] = permissions
+                    if unknown:
+                        self.logger.warning(
+                            "Permisos desconocidos ignorados en rol %s: %s",
+                            role.get('name', role.get('id')),
+                            ', '.join(unknown),
+                        )
                 
                 return roles
             else:
@@ -133,13 +143,14 @@ class RoleModel(BaseModel):
                 role = self.find_by_id(role_id)
                 
                 if role:
-                    if isinstance(role.get('permissions'), str):
-                        import json
-                        try:
-                            role['permissions'] = json.loads(role['permissions'])
-                        except:
-                            role['permissions'] = []
-                    
+                    permissions, unknown = self._coerce_permissions(role.get('permissions'))
+                    role['permissions'] = permissions
+                    if unknown:
+                        self.logger.warning(
+                            "Permisos desconocidos ignorados en rol %s: %s",
+                            role.get('name', role.get('id')),
+                            ', '.join(unknown),
+                        )
                     return role
                 
             # Buscar en roles por defecto
@@ -163,12 +174,15 @@ class RoleModel(BaseModel):
             if self.db and self.connect():
                 role = self.find_by_field('code', code)
                 
-                if role and isinstance(role.get('permissions'), str):
-                    import json
-                    try:
-                        role['permissions'] = json.loads(role['permissions'])
-                    except:
-                        role['permissions'] = []
+                if role:
+                    permissions, unknown = self._coerce_permissions(role.get('permissions'))
+                    role['permissions'] = permissions
+                    if unknown:
+                        self.logger.warning(
+                            "Permisos desconocidos ignorados en rol %s: %s",
+                            role.get('name', role.get('id')),
+                            ', '.join(unknown),
+                        )
                 
                 return role
             else:
@@ -205,9 +219,9 @@ class RoleModel(BaseModel):
             print("DEBUG ROLE_MODEL - Preparando datos...")
             role_data = self.sanitize_input(role_data)
             
-            # Convertir permisos a JSON si es necesario
+            # Normalizar y convertir permisos a JSON si es necesario
             if isinstance(role_data.get('permissions'), list):
-                import json
+                role_data['permissions'] = normalize_permissions(role_data['permissions'])
                 role_data['permissions'] = json.dumps(role_data['permissions'])
             
             # Establecer valores por defecto
@@ -285,9 +299,8 @@ class RoleModel(BaseModel):
             
             # Convertir permisos a JSON si es necesario
             if isinstance(role_data.get('permissions'), list):
-                import json
-                perms_list = role_data['permissions']
-                print(f"🔄 Convirtiendo {len(perms_list)} permisos a JSON...")
+                perms_list = normalize_permissions(role_data['permissions'])
+                print(f"🔄 Normalizando {len(perms_list)} permisos...")
                 print(f"📝 Permisos: {perms_list[:5]}... (primeros 5)")
                 role_data['permissions'] = json.dumps(perms_list)
                 print(f"✅ JSON generado: {role_data['permissions'][:100]}... (primeros 100 chars)")
@@ -418,60 +431,11 @@ class RoleModel(BaseModel):
     
     def get_all_available_permissions(self) -> List[str]:
         """Obtener todos los permisos disponibles en el sistema"""
-        # ⭐ USAR get_permissions_by_category() COMO FUENTE ÚNICA DE VERDAD
-        all_permissions = []
-        permissions_by_category = self.get_permissions_by_category()
-        
-        for category, perms in permissions_by_category.items():
-            all_permissions.extend(perms)
-        
-        return all_permissions
+        return get_all_permission_codes(assignable_only=False)
     
     def get_permissions_by_category(self) -> Dict[str, List[str]]:
         """Obtener permisos organizados por categoría"""
-        return {
-            'Usuarios': [
-                'users.view', 'users.create', 'users.edit', 'users.delete',
-                'users.activate', 'users.deactivate', 'users.export'
-            ],
-            'Roles y Permisos': [
-                'roles.view', 'roles.create', 'roles.edit', 'roles.delete',
-                'roles.assign', 'roles.permissions'
-            ],
-            'Sistema': [
-                'system.config', 'system.backup', 'system.restore',
-                'system.logs', 'system.maintenance', 'system.reports'
-            ],
-            'Dashboard': [
-                'dashboard.view', 'dashboard.stats', 'dashboard.analytics'
-            ],
-            'Inventario': [
-                'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.delete',
-                'inventory.stock', 'inventory.reports', 'inventory.export'
-            ],
-            'Ventas': [
-                'sales.view', 'sales.create', 'sales.edit', 'sales.delete',
-                'sales.view_own', 'sales.reports', 'sales.export'
-            ],
-            'Caja': [
-                'cash.register', 'cash.open', 'cash.close', 'cash.reports'
-            ],
-            'Productos': [
-                'products.view', 'products.create', 'products.edit', 'products.delete',
-                'products.prices', 'products.categories'
-            ],
-            'Clientes': [
-                'customers.view', 'customers.create', 'customers.edit', 'customers.delete',
-                'customers.export'
-            ],
-            'Proveedores': [
-                'suppliers.view', 'suppliers.create', 'suppliers.edit', 'suppliers.delete'
-            ],
-            'Reportes': [
-                'reports.sales', 'reports.inventory', 'reports.users',
-                'reports.financial', 'reports.export'
-            ]
-        }
+        return catalog_permissions_by_category(assignable_only=True)
     
     def validate_role_data(self, data: Dict[str, Any], is_update: bool = False) -> tuple[bool, List[str]]:
         """Validar datos del rol"""
@@ -520,23 +484,70 @@ class RoleModel(BaseModel):
                 print(f"❌ Los permisos NO son una lista")
                 errors.append("Los permisos deben ser una lista")
             else:
-                print(f"✅ Los permisos son una lista")
-                available_permissions = self.get_all_available_permissions() + ['*']
-                print(f"📋 Permisos disponibles en sistema: {len(available_permissions)}")
-                print(f"📝 Primeros 10 disponibles: {available_permissions[:10]}")
-                
-                invalid_perms = []
+                available_permissions = set(self.get_all_available_permissions() + ['*'])
+                normalized_permissions: List[str] = []
+                invalid_perms: List[str] = []
+                seen: set[str] = set()
+
                 for perm in permissions:
-                    if perm not in available_permissions:
+                    canonical = normalize_permission_code(perm)
+                    target = canonical if canonical in available_permissions else perm
+
+                    if target == '*':
+                        if target not in seen:
+                            normalized_permissions.append(target)
+                            seen.add(target)
+                        continue
+
+                    if canonical in available_permissions:
+                        if canonical not in seen:
+                            normalized_permissions.append(canonical)
+                            seen.add(canonical)
+                    else:
                         invalid_perms.append(perm)
-                
+
                 if invalid_perms:
                     print(f"❌ PERMISOS INVÁLIDOS DETECTADOS: {len(invalid_perms)}")
                     print(f"📝 Permisos inválidos: {invalid_perms[:10]}... (primeros 10)")
                     for perm in invalid_perms[:10]:
                         errors.append(f"Permiso inválido: {perm}")
                 else:
-                    print(f"✅ Todos los {len(permissions)} permisos son válidos")
+                    print(f"✅ Todos los {len(normalized_permissions)} permisos son válidos")
+
+                if not invalid_perms:
+                    normalized_set = set(normalized_permissions)
+                    pending = list(normalized_permissions)
+                    added_dependencies: List[Tuple[str, str]] = []
+
+                    while pending:
+                        current_perm = pending.pop()
+                        info = get_permission_info(current_perm)
+                        if not info:
+                            continue
+
+                        required_perms = info.get('requires') or []
+                        if isinstance(required_perms, str):
+                            required_perms = [required_perms]
+
+                        for required in required_perms:
+                            canonical_required = normalize_permission_code(required)
+                            if canonical_required not in available_permissions:
+                                continue
+
+                            if canonical_required not in normalized_set:
+                                normalized_permissions.append(canonical_required)
+                                pending.append(canonical_required)
+                                normalized_set.add(canonical_required)
+                                added_dependencies.append((canonical_required, current_perm))
+
+                    if added_dependencies:
+                        added_details = ", ".join(
+                            f"{req} ← {perm}" for req, perm in added_dependencies
+                        )
+                        print(f"   🔁 Dependencias agregadas automáticamente: {added_details}")
+
+                # Actualizar datos con la lista normalizada (incluye dependencias)
+                data['permissions'] = normalized_permissions
         
         print(f"\n📊 RESULTADO DE VALIDACIÓN:")
         print(f"   Errores encontrados: {len(errors)}")
@@ -544,6 +555,42 @@ class RoleModel(BaseModel):
             print(f"   Lista de errores: {errors}")
         
         return len(errors) == 0, errors
+
+    def _coerce_permissions(self, raw_permissions: Any) -> Tuple[List[str], List[str]]:
+        """Normalizar permisos provenientes de la BD o formularios."""
+        if isinstance(raw_permissions, str):
+            try:
+                raw_permissions = json.loads(raw_permissions)
+            except json.JSONDecodeError:
+                self.logger.warning("No se pudo parsear permisos desde JSON, se retorna lista vacía")
+                return [], []
+
+        if not isinstance(raw_permissions, list):
+            return [], []
+
+        available = set(self.get_all_available_permissions() + ['*'])
+        normalized = normalize_permissions(raw_permissions, drop_unknown=False)
+
+        valid: List[str] = []
+        unknown: List[str] = []
+        seen: set[str] = set()
+
+        for perm in normalized:
+            canonical = normalize_permission_code(perm)
+
+            if canonical in available:
+                if canonical not in seen:
+                    valid.append(canonical)
+                    seen.add(canonical)
+            elif perm == '*':
+                if '*' not in seen:
+                    valid.append('*')
+                    seen.add('*')
+            else:
+                if perm not in unknown:
+                    unknown.append(perm)
+
+        return valid, unknown
     
     def _code_exists(self, code: str) -> bool:
         """Verificar si existe un rol con el código dado"""

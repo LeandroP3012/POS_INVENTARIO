@@ -500,7 +500,7 @@ class UserController:
             
             # Definir permisos por tipo de usuario
             permissions = {
-                'admin': ['all_modules', 'users_manage', 'system_config', 'reports_full', 'super_admin'],
+                'admin': ['all_modules', 'users_manage', 'system_config', 'reports.full', 'super_admin'],
                 'supervisor': ['sales', 'inventory', 'reports_limited', 'users_view'],
                 'cajero': ['sales', 'basic_reports']
             }

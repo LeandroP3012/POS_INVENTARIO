@@ -1440,6 +1440,7 @@ class PermissionsDialog:
         
         # Variables para permisos
         self.permission_vars = {}
+        self.permission_metadata = {}
         self.permission_frames = {}
         self.category_vars = {}  # Para checkboxes de categorías
         
@@ -1797,8 +1798,21 @@ class PermissionsDialog:
                     inner_frame = tk.Frame(perm_frame, bg=perm_frame['bg'], padx=10, pady=8)
                     inner_frame.pack(fill='both', expand=True)
                     
-                    # Obtener descripción del permiso
-                    description = self.role_controller.get_permission_description(permission)
+                    # Obtener metadatos del permiso
+                    metadata = self.role_controller.get_permission_metadata(permission)
+                    self.permission_metadata[permission] = metadata
+
+                    label = str(metadata.get('label', permission))
+                    description = str(metadata.get('description', label))
+                    scope_value = str(metadata.get('scope', '')).lower()
+                    scope_labels = {
+                        'read': 'VER',
+                        'write': 'GESTIONAR',
+                        'admin': 'ADMIN',
+                    }
+                    scope_badge = scope_labels.get(scope_value, scope_value.upper() if scope_value else '')
+                    scope_prefix = f"[{scope_badge}] " if scope_badge else ''
+                    permission_text = f"{scope_prefix}{label} ({permission}) - {description}"
                     
                     # 4️⃣ Configurar el valor inicial ANTES de agregar trace
                     var.set(has_permission)
@@ -1817,7 +1831,7 @@ class PermissionsDialog:
                     # Checkbox del permiso con texto incluido
                     perm_checkbox = tk.Checkbutton(
                         inner_frame,
-                        text=f"{permission} - {description}",
+                        text=permission_text,
                         variable=var,
                         command=make_update_callback(category_name, category_count_label, permission),  # ✅ Con callback
                         bg=perm_frame['bg'],
@@ -1961,9 +1975,16 @@ class PermissionsDialog:
         search_text = self.search_var.get().lower()
         
         for permission, frame in self.permission_frames.items():
-            description = self.role_controller.get_permission_description(permission).lower()
+            metadata = self.permission_metadata.get(permission) or self.role_controller.get_permission_metadata(permission)
+            searchable_parts = [
+                permission,
+                str(metadata.get('label', '')),
+                str(metadata.get('description', '')),
+                str(metadata.get('scope', '')),
+            ]
+            searchable = ' '.join(searchable_parts).lower()
             
-            if search_text in permission.lower() or search_text in description:
+            if search_text in searchable:
                 frame.pack(fill='x', padx=10, pady=3)
             else:
                 frame.pack_forget()
