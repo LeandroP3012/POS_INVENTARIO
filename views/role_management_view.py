@@ -734,7 +734,13 @@ class RoleManagementView(BaseView):
                 )
                 
                 if success:
-                    messagebox.showinfo("Éxito", message)
+                    messagebox.showinfo(
+                        "Éxito", 
+                        f"{message}\n\n"
+                        "⚠️ IMPORTANTE: Los usuarios con este rol deben\n"
+                        "cerrar sesión y volver a iniciar sesión para que\n"
+                        "los cambios surtan efecto."
+                    )
                     self.refresh_roles()
                 else:
                     messagebox.showerror("Error", message)
@@ -901,7 +907,45 @@ class RoleManagementView(BaseView):
                 print(f"{'='*80}\n")
                 
                 if success:
-                    messagebox.showinfo("Éxito", "Permisos actualizados exitosamente")
+                    # Verificar si el usuario actual tiene este rol
+                    current_role_id = self.current_user.get('role_id')
+                    if current_role_id == role_id:
+                        # El usuario modificó sus propios permisos
+                        response = messagebox.askyesno(
+                            "Permisos Actualizados",
+                            "Permisos actualizados exitosamente.\n\n"
+                            "Has modificado los permisos de tu propio rol.\n"
+                            "¿Deseas recargar tus permisos ahora?\n\n"
+                            "Si seleccionas 'No', deberás cerrar sesión\n"
+                            "y volver a iniciar sesión para ver los cambios."
+                        )
+                        
+                        if response:  # Usuario eligió recargar permisos
+                            # Llamar callback para recargar permisos
+                            if hasattr(self, 'callbacks') and 'reload_permissions' in self.callbacks:
+                                reload_success = self.callbacks['reload_permissions']()
+                                if reload_success:
+                                    messagebox.showinfo(
+                                        "Éxito",
+                                        "Tus permisos han sido recargados exitosamente.\n"
+                                        "Los cambios ya están activos."
+                                    )
+                                else:
+                                    messagebox.showwarning(
+                                        "Advertencia",
+                                        "No se pudieron recargar los permisos automáticamente.\n"
+                                        "Por favor, cierra sesión y vuelve a iniciar sesión."
+                                    )
+                    else:
+                        # Modificó permisos de otro rol
+                        messagebox.showinfo(
+                            "Éxito", 
+                            "Permisos actualizados exitosamente.\n\n"
+                            "⚠️ IMPORTANTE: Los usuarios con este rol deben\n"
+                            "cerrar sesión y volver a iniciar sesión para que\n"
+                            "los cambios surtan efecto."
+                        )
+                    
                     self.refresh_roles()
                 else:
                     messagebox.showerror("Error", message)

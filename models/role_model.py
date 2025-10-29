@@ -308,6 +308,10 @@ class RoleModel(BaseModel):
                 if success:
                     print(f"✅ ROL ACTUALIZADO EXITOSAMENTE")
                     self.logger.info(f"Rol actualizado exitosamente: ID {role_id}")
+                    
+                    # Limpiar caché de permisos para todos los usuarios con este rol
+                    print(f"🧹 Limpiando caché de permisos para usuarios con role_id={role_id}...")
+                    self._clear_permissions_cache_for_role(role_id)
                 else:
                     print(f"❌ UPDATE retornó False")
                 
@@ -584,3 +588,34 @@ class RoleModel(BaseModel):
                 'system_roles': 0,
                 'custom_roles': 0
             }
+    
+    def _clear_permissions_cache_for_role(self, role_id: int):
+        """Limpiar caché de permisos para todos los usuarios con este rol"""
+        try:
+            # Importar aquí para evitar circular imports
+            from services.permission_service import PermissionService
+            from models.user_model import UserModel
+            
+            permission_service = PermissionService()
+            user_model = UserModel()
+            
+            # Obtener todos los usuarios con este rol
+            users = user_model.find_all({'role_id': role_id})
+            
+            if users:
+                print(f"   📋 Encontrados {len(users)} usuarios con este rol")
+                for user in users:
+                    user_id = user.get('id')
+                    if user_id:
+                        permission_service.clear_user_cache(user_id)
+                        print(f"   🧹 Caché limpiado para usuario ID={user_id}")
+            else:
+                print(f"   ℹ️ No hay usuarios con este rol")
+            
+            # También limpiar todo el caché por seguridad
+            permission_service.clear_all_cache()
+            print(f"   ✅ Caché de permisos completamente limpiado")
+            
+        except Exception as e:
+            self.logger.error(f"Error limpiando caché de permisos: {e}")
+            print(f"   ⚠️ Error limpiando caché: {e}")

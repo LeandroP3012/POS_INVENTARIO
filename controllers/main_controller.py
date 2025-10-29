@@ -231,13 +231,13 @@ class MainController:
         sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
         
         # Menú Inventario (solo si tiene permisos)
-        if self.auth_controller.has_permission('inventory_view'):
+        if self.auth_controller.has_permission('inventory.view'):
             inventory_menu = tk.Menu(menubar, tearoff=0)
             menubar.add_cascade(label="Inventario", menu=inventory_menu, font=('Segoe UI', 13, 'bold'))
             inventory_menu.add_command(label="Ver Productos", command=self._view_products)
             inventory_menu.add_command(label="Gestionar Categorías", command=self._view_categories)
             
-            if self.auth_controller.has_permission('inventory_manage'):
+            if self.auth_controller.has_permission('inventory.edit'):
                 inventory_menu.add_command(label="Agregar Producto", command=self._add_product)
                 inventory_menu.add_command(label="Gestionar Inventario", command=self._manage_inventory)
         
@@ -251,7 +251,7 @@ class MainController:
                 reports_menu.add_command(label="Reporte Completo", command=self._full_report)
         
         # Menú Administración (solo admins)
-        if self.auth_controller.has_permission('users_manage'):
+        if self.auth_controller.has_permission('users.view'):
             admin_menu = tk.Menu(menubar, tearoff=0)
             menubar.add_cascade(label="Administración", menu=admin_menu, font=('Segoe UI', 13, 'bold'))
             admin_menu.add_command(label="Gestionar Usuarios", command=self._manage_users)
@@ -308,7 +308,7 @@ class MainController:
         sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
         
         # Botón Inventario
-        if self.auth_controller.has_permission('inventory_view'):
+        if self.auth_controller.has_permission('inventory.view'):
             inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
             inv_btn.pack(side='left', padx=2)
             inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
@@ -317,7 +317,7 @@ class MainController:
             inv_menu.add_command(label="Gestionar Categorías", command=self._view_categories)
             inv_menu.add_command(label="Control de Stock", command=self._view_stock_control)
             
-            if self.auth_controller.has_permission('inventory_manage'):
+            if self.auth_controller.has_permission('inventory.edit'):
                 inv_menu.add_separator()
                 inv_menu.add_command(label="Agregar Producto", command=self._add_product)
                 inv_menu.add_command(label="Gestionar Inventario", command=self._manage_inventory)
@@ -672,13 +672,13 @@ class MainController:
         ]
         
         # Módulos según permisos
-        if self.auth_controller.has_permission('inventory_view'):
+        if self.auth_controller.has_permission('inventory.view'):
             modules.append({
                 'title': 'Productos',
                 'icon': '📦',
                 'color': '#e74c3c',
                 'command': self._view_products,
-                'permission': 'inventory_view'
+                'permission': 'inventory.view'
             })
         
         if self.auth_controller.has_permission('reports_basic'):
@@ -690,13 +690,13 @@ class MainController:
                 'permission': 'reports_basic'
             })
         
-        if self.auth_controller.has_permission('users_manage'):
+        if self.auth_controller.has_permission('users.view'):
             modules.append({
                 'title': 'Usuarios',
                 'icon': '👥',
                 'color': '#f39c12',
                 'command': self._manage_users,
-                'permission': 'users_manage'
+                'permission': 'users.view'
             })
         
         modules.extend([
@@ -848,16 +848,89 @@ class MainController:
             if not self.current_user:
                 return False
             
-            # Verificar primero si el usuario tiene permisos específicos
-            user_permissions = self.current_user.get('permissions', {})
-            if user_permissions.get(permission):
-                return True
+            # Obtener permisos del usuario
+            user_permissions = self.current_user.get('permissions')
             
-            # Usar el servicio de permisos centralizado
+            # Si no hay permisos, denegar
+            if not user_permissions:
+                print(f"   ⚠️ Usuario sin permisos asignados")
+                return False
+            
+            # Si es una lista (sistema nuevo de roles)
+            if isinstance(user_permissions, list):
+                # Verificar si tiene el permiso o si tiene '*' (todos)
+                has_perm = permission in user_permissions or '*' in user_permissions
+                print(f"   🔍 Verificando permiso '{permission}': {has_perm}")
+                return has_perm
+            
+            # Si es un dict (sistema antiguo de permisos individuales)
+            elif isinstance(user_permissions, dict):
+                # Verificar permisos especiales de super admin
+                if user_permissions.get('all_modules', False) or user_permissions.get('super_admin', False):
+                    print(f"   🔍 Verificando permiso '{permission}' (dict): True [SUPER ADMIN]")
+                    return True
+                
+                # Verificar permiso específico
+                has_perm = user_permissions.get(permission, False)
+                print(f"   🔍 Verificando permiso '{permission}' (dict): {has_perm}")
+                return has_perm
+            
+            # Fallback: usar servicio de permisos centralizado
             return self.auth_controller.has_permission(permission)
+            
         except Exception as e:
             print(f"   ❌ Error verificando permisos: {e}")
+            import traceback
+            traceback.print_exc()
             self.logger.error(f"Error verificando permisos: {e}")
+            return False
+    
+    def reload_current_user_permissions(self):
+        """Recargar permisos del usuario actual desde la base de datos"""
+        try:
+            if not self.current_user:
+                return False
+            
+            user_id = self.current_user.get('id')
+            if not user_id:
+                return False
+            
+            print(f"\n🔄 Recargando permisos para usuario ID={user_id}...")
+            
+            # Importar UserModel aquí para evitar circular imports
+            from models.user_model import UserModel
+            user_model = UserModel()
+            
+            # Obtener datos frescos del usuario desde la BD
+            fresh_user = user_model.get_user_by_id(user_id)
+            if not fresh_user:
+                print(f"❌ Usuario no encontrado")
+                return False
+            
+            # Preparar datos de usuario con permisos actualizados
+            updated_user_data = user_model.prepare_user_data(fresh_user)
+            
+            # Actualizar current_user con los nuevos permisos
+            old_permissions = self.current_user.get('permissions')
+            self.current_user['permissions'] = updated_user_data.get('permissions')
+            
+            print(f"✅ Permisos actualizados!")
+            print(f"   Permisos anteriores: {old_permissions}")
+            print(f"   Permisos nuevos: {self.current_user.get('permissions')}")
+            
+            # Limpiar caché de permisos
+            from services.permission_service import PermissionService
+            permission_service = PermissionService()
+            permission_service.clear_user_cache(user_id)
+            print(f"🧹 Caché de permisos limpiado")
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error recargando permisos: {e}")
+            import traceback
+            traceback.print_exc()
+            self.logger.error(f"Error recargando permisos: {e}")
             return False
     
     def _back_to_dashboard(self):
@@ -920,7 +993,7 @@ class MainController:
         })
         
         # Botón Productos (si tiene permisos)
-        if self.auth_controller.has_permission('inventory_view'):
+        if self.auth_controller.has_permission('inventory.view'):
             buttons.append({
                 'text': '📦\nProductos',
                 'command': self._view_products,
@@ -943,7 +1016,7 @@ class MainController:
             })
         
         # Botón Administración (solo admins)
-        if self.auth_controller.has_permission('users_manage'):
+        if self.auth_controller.has_permission('users.view'):
             buttons.append({
                 'text': '⚙️\nAdministración',
                 'command': self._manage_users,
@@ -1794,7 +1867,7 @@ class MainController:
             print(f"   - current_user: {self.current_user}")
             
             # Verificar permisos del usuario
-            if not self._check_user_permission('users_manage'):
+            if not self._check_user_permission('users.view'):
                 messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder a la gestión de usuarios")
                 return
             
@@ -1852,7 +1925,7 @@ class MainController:
             print(f"   - current_user: {self.current_user}")
             
             # Verificar permisos del usuario
-            if not self._check_user_permission('roles_manage'):
+            if not self._check_user_permission('roles.view'):
                 messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder a la gestión de roles")
                 return
             
@@ -1890,6 +1963,10 @@ class MainController:
             self.roles_view.bind_callback('system_config', self._system_config)
             self.roles_view.bind_callback('show_manual', self._show_manual)
             self.roles_view.bind_callback('show_about', self._show_about)
+            
+            # Callback especial para recargar permisos
+            self.roles_view.bind_callback('reload_permissions', self.reload_current_user_permissions)
+            
             print("   ✅ Callbacks registrados")
             
             # IMPORTANTE: Restaurar geometría después de cargar vista

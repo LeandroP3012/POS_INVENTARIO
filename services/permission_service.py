@@ -67,18 +67,25 @@ class PermissionService:
         """Verificación detallada de permisos - SOLO permisos explícitamente asignados"""
         try:
             # 1. Verificar permisos específicos del usuario (tienen prioridad)
-            user_permissions = user.get('permissions', {})
-            if isinstance(user_permissions, dict):
-                # Convertir formato anterior a nuevo formato
+            user_permissions = user.get('permissions')
+            
+            # Si los permisos son una LISTA (nuevo sistema de roles)
+            if isinstance(user_permissions, list):
+                # Verificar si tiene el permiso específico o el comodín '*'
+                return permission in user_permissions or '*' in user_permissions
+            
+            # Si los permisos son un DICT (sistema antiguo)
+            elif isinstance(user_permissions, dict):
+                # Super admin o all_modules tienen acceso a todo
+                if user_permissions.get('super_admin') or user_permissions.get('all_modules'):
+                    return True
+                
+                # Buscar permiso en formato antiguo (con guión bajo)
                 permission_key = permission.replace('.', '_')
                 if user_permissions.get(permission_key):
                     return True
-                
-                # Super admin o all_modules
-                if user_permissions.get('super_admin') or user_permissions.get('all_modules'):
-                    return True
             
-            # 2. Verificar permisos por rol (PRIORIDAD PRINCIPAL)
+            # 2. Verificar permisos por rol (si tiene role_id)
             role_id = user.get('role_id')
             if role_id:
                 has_role_permission = self.role_model.role_has_permission(role_id, permission)
