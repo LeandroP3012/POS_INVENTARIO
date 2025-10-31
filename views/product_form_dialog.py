@@ -1144,26 +1144,41 @@ class ProductFormDialog:
             # Pegar código de barras
             new_img.paste(img, (0, 30))
             
-            # Obtener impresora configurada
+            # ============================================
+            # DETECCIÓN DE TIPO DE IMPRESORA
+            # ============================================
             printer_name = None
+            is_thermal = False
+            
             try:
-                # Intentar leer configuración del sistema
+                # Leer configuración del sistema
                 import json
                 config_path = os.path.join('config', 'system_config.json')
                 if os.path.exists(config_path):
                     with open(config_path, 'r', encoding='utf-8') as f:
                         system_config = json.load(f)
-                        # La impresora está directamente en la raíz del JSON
                         printer_name = system_config.get('printer')
-                        print(f"📄 Configuración leída: printer='{printer_name}'")
+                        print(f"🖨️ Impresora configurada: {printer_name}")
+                        
+                        # Detectar si es impresora térmica por nombre
+                        if printer_name:
+                            thermal_keywords = ['thermal', 'térmica', 'termica', 'tp-', 'tm-', 'pos', 'esc/pos', 'epson tm']
+                            printer_lower = printer_name.lower()
+                            is_thermal = any(keyword in printer_lower for keyword in thermal_keywords)
+                            
+                            if is_thermal:
+                                print(f"   ✓ Detectada como impresora TÉRMICA")
+                            else:
+                                print(f"   ✓ Detectada como impresora ESTÁNDAR")
+                                
             except Exception as e:
-                print(f"⚠️ No se pudo leer configuración de impresora: {e}")
+                print(f"⚠️ Error leyendo configuración: {e}")
             
             if not printer_name or printer_name == "":
                 # Usar impresora predeterminada
                 try:
                     printer_name = win32print.GetDefaultPrinter()
-                    print(f"📄 Usando impresora predeterminada del sistema: {printer_name}")
+                    print(f"📄 Usando impresora predeterminada: {printer_name}")
                 except Exception as e:
                     messagebox.showerror(
                         "Error",
@@ -1171,56 +1186,100 @@ class ProductFormDialog:
                         "Verifica que tengas al menos una impresora instalada."
                     )
                     return
-            else:
-                print(f"✅ Usando impresora configurada en sistema: {printer_name}")
             
-            # Verificar que la impresora existe
-            try:
-                available_printers = [printer[2] for printer in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)]
-                print(f"🖨️ Impresoras disponibles: {available_printers}")
+            # ============================================
+            # IMPRESIÓN EN IMPRESORA TÉRMICA
+            # ============================================
+            if is_thermal:
+                print(f"🖨️ Usando módulo de impresión térmica para código de barras...")
+                try:
+                    from utils.thermal_printer import ThermalPrinter
+                    
+                    # Crear instancia de impresora térmica
+                    thermal = ThermalPrinter(printer_name)
+                    
+                    # Imprimir código de barras en térmica
+                    success = thermal.print_barcode_image(new_img, name, sku)
+                    
+                    if success:
+                        print(f"   ✅ Código de barras enviado a impresora térmica")
+                        
+                        # Limpiar archivo temporal
+                        try:
+                            os.remove(img_path)
+                        except:
+                            pass
+                        
+                        messagebox.showinfo(
+                            "Impresión Exitosa",
+                            f"Código de barras enviado a impresora térmica:\n{printer_name}"
+                        )
+                        return  # Salir exitosamente
+                    else:
+                        print(f"   ⚠️ Error en impresión térmica, usando método estándar...")
+                        is_thermal = False  # Fallback a impresión estándar
+                        
+                except ImportError as ie:
+                    print(f"   ⚠️ Módulo thermal_printer no disponible: {ie}")
+                    print(f"   🔄 Usando impresión estándar...")
+                    is_thermal = False  # Fallback
+                    
+                except Exception as e:
+                    print(f"   ❌ Error en impresión térmica: {e}")
+                    print(f"   🔄 Usando impresión estándar...")
+                    is_thermal = False  # Fallback
+            
+            # ============================================
+            # IMPRESIÓN EN IMPRESORA ESTÁNDAR
+            # ============================================
+            if not is_thermal:
+                # Verificar que la impresora existe
+                try:
+                    available_printers = [printer[2] for printer in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)]
+                    print(f"🖨️ Impresoras disponibles: {available_printers}")
+                    
+                    if printer_name not in available_printers:
+                        print(f"⚠️ Impresora '{printer_name}' no encontrada en el sistema")
+                        messagebox.showwarning(
+                            "Impresora No Encontrada",
+                            f"La impresora configurada '{printer_name}' no está disponible.\n\n" +
+                            f"Impresoras disponibles:\n" + "\n".join(f"  • {p}" for p in available_printers) +
+                            f"\n\nSe usará la impresora predeterminada."
+                        )
+                        printer_name = win32print.GetDefaultPrinter()
+                        print(f"📄 Usando impresora predeterminada: {printer_name}")
+                except Exception as e:
+                    print(f"⚠️ Error al verificar impresoras: {e}")
                 
-                if printer_name not in available_printers:
-                    print(f"⚠️ Impresora '{printer_name}' no encontrada en el sistema")
-                    messagebox.showwarning(
-                        "Impresora No Encontrada",
-                        f"La impresora configurada '{printer_name}' no está disponible.\n\n" +
-                        f"Impresoras disponibles:\n" + "\n".join(f"  • {p}" for p in available_printers) +
-                        f"\n\nSe usará la impresora predeterminada."
-                    )
-                    printer_name = win32print.GetDefaultPrinter()
-                    print(f"📄 Usando impresora predeterminada: {printer_name}")
-            except Exception as e:
-                print(f"⚠️ Error al verificar impresoras: {e}")
-            
-            # Imprimir
-            print(f"🖨️ Iniciando impresión en: {printer_name}")
-            hDC = win32ui.CreateDC()
-            hDC.CreatePrinterDC(printer_name)
-            hDC.StartDoc(f"Código de Barras - {sku}")
-            hDC.StartPage()
-            
-            # Convertir imagen para Windows
-            dib = ImageWin.Dib(new_img)
-            
-            # Calcular posición centrada en la página
-            printer_size = hDC.GetDeviceCaps(110), hDC.GetDeviceCaps(111)  # PHYSICALWIDTH, PHYSICALHEIGHT
-            img_size = new_img.size
-            
-            # Escalar imagen para que quepa bien (no muy grande)
-            scale = min(printer_size[0] / img_size[0], printer_size[1] / img_size[1]) * 0.5
-            scaled_width = int(img_size[0] * scale)
-            scaled_height = int(img_size[1] * scale)
-            
-            # Centrar
-            x = (printer_size[0] - scaled_width) // 2
-            y = (printer_size[1] - scaled_height) // 4  # Más arriba
-            
-            # Dibujar en la página
-            dib.draw(hDC.GetHandleOutput(), (x, y, x + scaled_width, y + scaled_height))
-            
-            hDC.EndPage()
-            hDC.EndDoc()
-            hDC.DeleteDC()
+                # Imprimir
+                print(f"🖨️ Iniciando impresión estándar en: {printer_name}")
+                hDC = win32ui.CreateDC()
+                hDC.CreatePrinterDC(printer_name)
+                hDC.StartDoc(f"Código de Barras - {sku}")
+                hDC.StartPage()
+                
+                # Convertir imagen para Windows
+                dib = ImageWin.Dib(new_img)
+                
+                # Calcular posición centrada en la página
+                printer_size = hDC.GetDeviceCaps(110), hDC.GetDeviceCaps(111)  # PHYSICALWIDTH, PHYSICALHEIGHT
+                img_size = new_img.size
+                
+                # Escalar imagen para que quepa bien (no muy grande)
+                scale = min(printer_size[0] / img_size[0], printer_size[1] / img_size[1]) * 0.5
+                scaled_width = int(img_size[0] * scale)
+                scaled_height = int(img_size[1] * scale)
+                
+                # Centrar
+                x = (printer_size[0] - scaled_width) // 2
+                y = (printer_size[1] - scaled_height) // 4  # Más arriba
+                
+                # Dibujar en la página
+                dib.draw(hDC.GetHandleOutput(), (x, y, x + scaled_width, y + scaled_height))
+                
+                hDC.EndPage()
+                hDC.EndDoc()
+                hDC.DeleteDC()
             
             # Limpiar archivo temporal
             try:

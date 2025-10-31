@@ -186,7 +186,7 @@ class DashboardView(BaseView):
             {
                 'id': 'sales_register',
                 'title': 'Nueva Venta',
-                'icon': '�',
+                'icon_path': 'assets/images/cart.png',
                 'color': '#ea580c',
                 'description': 'Registrar una venta en el POS',
                 'permission': 'sales.create'
@@ -194,7 +194,7 @@ class DashboardView(BaseView):
             {
                 'id': 'sales_history',
                 'title': 'Historial de Ventas',
-                'icon': '�',
+                'icon_path': 'assets/images/history.png',
                 'color': '#be123c',
                 'description': 'Revisar ventas realizadas',
                 'permission': 'sales.view'
@@ -202,7 +202,7 @@ class DashboardView(BaseView):
             {
                 'id': 'products',
                 'title': 'Gestión de Productos',
-                'icon': '�',
+                'icon_path': 'assets/images/box.png',
                 'color': '#2563eb',
                 'description': 'Administrar catálogo de productos',
                 'permission': 'inventory.view'
@@ -210,7 +210,7 @@ class DashboardView(BaseView):
             {
                 'id': 'categories',
                 'title': 'Categorías de Producto',
-                'icon': '�',
+                'icon_path': 'assets/images/folder.png',
                 'color': '#dc2626',
                 'description': 'Organizar categorías',
                 'permission': 'inventory.view'
@@ -218,7 +218,7 @@ class DashboardView(BaseView):
             {
                 'id': 'stock_control',
                 'title': 'Control de Stock',
-                'icon': '📊',
+                'icon_path': 'assets/images/chart.png',
                 'color': '#f59e0b',
                 'description': 'Ajustar inventario y mínimos',
                 'permission': 'inventory.edit'
@@ -226,7 +226,7 @@ class DashboardView(BaseView):
             {
                 'id': 'user_management',
                 'title': 'Gestión de Usuarios',
-                'icon': '�',
+                'icon_path': 'assets/images/users.png',
                 'color': '#8b5cf6',
                 'description': 'Crear y administrar usuarios',
                 'permission': 'users.view'
@@ -234,7 +234,7 @@ class DashboardView(BaseView):
             {
                 'id': 'role_management',
                 'title': 'Gestión de Roles y Permisos',
-                'icon': '�',
+                'icon_path': 'assets/images/lock.png',
                 'color': '#6366f1',
                 'description': 'Configurar roles y permisos',
                 'permission': 'roles.view'
@@ -242,7 +242,7 @@ class DashboardView(BaseView):
             {
                 'id': 'income_report',
                 'title': 'Reporte Diario',
-                'icon': '�',
+                'icon_path': 'assets/images/trending.png',
                 'color': '#0ea5e9',
                 'description': 'Consultar ventas del día',
                 'permission': 'reports.basic'
@@ -250,7 +250,7 @@ class DashboardView(BaseView):
             {
                 'id': 'reports',
                 'title': 'Reportes Avanzados',
-                'icon': '📋',
+                'icon_path': 'assets/images/clipboard.png',
                 'color': '#475569',
                 'description': 'Generar reportes detallados',
                 'permission': 'reports.full'
@@ -258,7 +258,7 @@ class DashboardView(BaseView):
             {
                 'id': 'business',
                 'title': 'Configuración del Sistema',
-                'icon': '🏢',
+                'icon_path': 'assets/images/building.png',
                 'color': '#0d9488',
                 'description': 'Datos de la empresa y ajustes',
                 'permission': 'system.config'
@@ -266,7 +266,7 @@ class DashboardView(BaseView):
             {
                 'id': 'responsive_config',
                 'title': 'Escalado Responsivo',
-                'icon': '🖥️',
+                'icon_path': 'assets/images/monitor.png',
                 'color': '#0891b2',
                 'description': 'Abrir configurador de tamaños',
                 'permission': 'system.config'
@@ -274,7 +274,7 @@ class DashboardView(BaseView):
             {
                 'id': 'ticket_config',
                 'title': 'Configuración de Boletas',
-                'icon': '🎫',
+                'icon_path': 'assets/images/ticket.png',
                 'color': '#9b59b6',
                 'description': 'Personalizar formatos de ticket',
                 'permission': 'system.config'
@@ -282,7 +282,7 @@ class DashboardView(BaseView):
             {
                 'id': 'support',
                 'title': 'Soporte Técnico',
-                'icon': '💬',
+                'icon_path': 'assets/images/message.png',
                 'color': '#15803d',
                 'description': 'Información de contacto',
                 'permission': None
@@ -290,7 +290,7 @@ class DashboardView(BaseView):
             {
                 'id': 'help',
                 'title': 'Ayuda',
-                'icon': '❓',
+                'icon_path': 'assets/images/help.png',
                 'color': '#b91c1c',
                 'description': 'Manual y guías del sistema',
                 'permission': None
@@ -600,10 +600,10 @@ class DashboardView(BaseView):
     def create_fullscreen_module_card(self, parent, module, row, col):
         """Crear tarjeta moderna con diseño limpio y auto-escalado"""
         
-        # Obtener tamaños escalados automáticamente
-        card_width = self.scaler.scale_value(220)
-        card_height = self.scaler.scale_value(140)
-        card_padding = self.scaler.scale_padding(12)
+        # Obtener tamaños escalados automáticamente - AUMENTADOS
+        card_width = self.scaler.scale_value(320)  # Era 220
+        card_height = self.scaler.scale_value(250)  # Era 140
+        card_padding = self.scaler.scale_padding(15)  # Era 12
         
         # Contenedor principal con sombra - tamaño escalado
         shadow_container = tk.Frame(parent, bg='#e2e8f0', width=card_width, height=card_height)
@@ -620,66 +620,78 @@ class DashboardView(BaseView):
             bg=module['color'],
             highlightthickness=0,
             relief='flat',
-            bd=0
+            bd=0,
+            width=card_width,
+            height=card_height
         )
         canvas.pack(fill='both', expand=True)
         
-        # Función para crear contenido con efectos visuales
-        def on_canvas_configure(event):
-            canvas_width = event.width if hasattr(event, 'width') else card_width
-            canvas_height = event.height if hasattr(event, 'height') else card_height
-            
-            # Evitar tamaños muy pequeños
-            if canvas_width < 50 or canvas_height < 50:
-                return
-            
-            # Limpiar canvas
-            canvas.delete("all")
-            
-            # Crear fondo del módulo
-            canvas.create_rectangle(0, 0, canvas_width, canvas_height, fill=module['color'], outline='')
-            
-            # Calcular posiciones centradas
-            center_x = canvas_width // 2
-            icon_y = canvas_height * 0.35
-            title_y = canvas_height * 0.72
-            
-            # Tamaños de fuente escalados
-            icon_size = self.scaler.scale_font(36)
-            title_size = self.scaler.scale_font(11)
-            
-            # Círculo blanco de fondo para el icono (escalado)
-            icon_radius = self.scaler.scale_value(28)
+        # Calcular posiciones centradas
+        center_x = card_width // 2
+        icon_y = int(card_height * 0.35)
+        title_y = int(card_height * 0.72)
+        
+        # Tamaños de fuente e iconos escalados - AUMENTADOS
+        title_size = self.scaler.scale_font(13)  # Era 11
+        icon_radius = self.scaler.scale_value(35)  # Era 28
+        icon_display_size = self.scaler.scale_value(60)  # Era 50
+        
+        # Crear fondo del módulo
+        canvas.create_rectangle(0, 0, card_width, card_height, fill=module['color'], outline='')
+        
+        # Círculo blanco de fondo para el icono
+        canvas.create_oval(
+            center_x - icon_radius, icon_y - icon_radius,
+            center_x + icon_radius, icon_y + icon_radius,
+            fill='white', outline='', width=0
+        )
+        
+        # Cargar y mostrar imagen del ícono DIRECTAMENTE (sin callback)
+        if 'icon_path' in module:
+            try:
+                # Construir ruta absoluta
+                base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                icon_path = os.path.join(base_dir, module['icon_path'])
+                
+                if os.path.exists(icon_path):
+                    icon_img = Image.open(icon_path)
+                    icon_img = icon_img.resize((icon_display_size, icon_display_size), Image.Resampling.LANCZOS)
+                    # Crear PhotoImage y guardar referencia en el canvas
+                    icon_photo = ImageTk.PhotoImage(icon_img, master=self.root)
+                    canvas.image = icon_photo  # Guardar referencia para evitar GC
+                    canvas.create_image(center_x, icon_y, image=icon_photo, anchor='center')
+                else:
+                    # Fallback: círculo de color
+                    canvas.create_oval(
+                        center_x - 18, icon_y - 18,
+                        center_x + 18, icon_y + 18,
+                        fill=module['color'], outline='white', width=3
+                    )
+            except Exception as e:
+                print(f"✗ Error: {e}")
+                # Fallback: círculo de color
+                canvas.create_oval(
+                    center_x - 18, icon_y - 18,
+                    center_x + 18, icon_y + 18,
+                    fill=module['color'], outline='white', width=3
+                )
+        else:
+            # No hay icon_path: círculo de color
             canvas.create_oval(
-                center_x - icon_radius, icon_y - icon_radius,
-                center_x + icon_radius, icon_y + icon_radius,
-                fill='white', outline='', width=0
-            )
-            
-            # Icono principal
-            canvas.create_text(
-                center_x, icon_y,
-                text=module['icon'],
-                font=('Segoe UI Emoji', icon_size),
-                fill=module['color'],
-                anchor='center'
-            )
-            
-            # Título principal con buen contraste
-            canvas.create_text(
-                center_x, title_y,
-                text=module['title'],
-                font=('Segoe UI', title_size, 'bold'),
-                fill='white',
-                anchor='center',
-                width=canvas_width - 20
+                center_x - 18, icon_y - 18,
+                center_x + 18, icon_y + 18,
+                fill=module['color'], outline='white', width=3
             )
         
-        # Bind para redimensionamiento
-        canvas.bind('<Configure>', on_canvas_configure)
-        
-        # Dibujar contenido inicial inmediatamente con tamaños escalados
-        canvas.after(1, lambda: on_canvas_configure(type('Event', (), {'width': card_width, 'height': card_height})()))
+        # Título principal con buen contraste
+        canvas.create_text(
+            center_x, title_y,
+            text=module['title'],
+            font=('Segoe UI', title_size, 'bold'),
+            fill='white',
+            anchor='center',
+            width=card_width - 20
+        )
         
         # Sistema de eventos con efectos mejorados
         self.setup_enhanced_card_events(canvas, module, card_container)

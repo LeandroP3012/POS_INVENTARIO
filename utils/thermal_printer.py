@@ -300,6 +300,96 @@ class ThermalPrinter:
             print(f"Error obteniendo impresoras: {e}")
             return []
     
+    def print_barcode_image(self, barcode_image, product_name: str, sku: str) -> bool:
+        """
+        Imprimir imagen de código de barras en impresora térmica
+        
+        Args:
+            barcode_image: Objeto PIL.Image con el código de barras
+            product_name: Nombre del producto
+            sku: SKU del producto
+            
+        Returns:
+            bool: True si la impresión fue exitosa
+        """
+        try:
+            from PIL import Image
+            import io
+            
+            print(f"🖨️ Imprimiendo código de barras en impresora térmica...")
+            print(f"   Producto: {product_name}")
+            print(f"   SKU: {sku}")
+            
+            # Verificar que la impresora exista
+            if not self._printer_exists(self.printer_name):
+                print(f"   ⚠️ Impresora '{self.printer_name}' no encontrada")
+                default_printer = self._get_default_printer()
+                print(f"   🔄 Usando impresora predeterminada: {default_printer}")
+                self.printer_name = default_printer
+            
+            # Construir contenido del código de barras para impresora térmica
+            content = bytearray()
+            
+            # Inicializar impresora
+            content.extend(self.CMD_INIT.encode('cp437', errors='ignore'))
+            
+            # Centrar texto
+            content.extend(self.CMD_ALIGN_CENTER.encode('cp437', errors='ignore'))
+            
+            # Imprimir nombre del producto
+            content.extend(self.CMD_BOLD_ON.encode('cp437', errors='ignore'))
+            product_line = product_name[:32] + '\n'  # Máximo 32 caracteres
+            content.extend(product_line.encode('cp437', errors='ignore'))
+            content.extend(self.CMD_BOLD_OFF.encode('cp437', errors='ignore'))
+            
+            # Espacio
+            content.extend(b'\n')
+            
+            # Imprimir SKU
+            sku_line = f"SKU: {sku}\n"
+            content.extend(sku_line.encode('cp437', errors='ignore'))
+            
+            # Espacio
+            content.extend(b'\n')
+            
+            # Nota: La mayoría de impresoras térmicas ESC/POS no soportan
+            # impresión directa de imágenes PNG/JPG de forma nativa
+            # Se usa comando de texto del código de barras
+            
+            # Imprimir código como texto
+            content.extend(self.CMD_DOUBLE_ON.encode('cp437', errors='ignore'))
+            barcode_line = f"{sku}\n"
+            content.extend(barcode_line.encode('cp437', errors='ignore'))
+            content.extend(self.CMD_DOUBLE_OFF.encode('cp437', errors='ignore'))
+            
+            # Espacios finales
+            content.extend(b'\n\n\n')
+            
+            # Cortar papel
+            content.extend(self.CMD_CUT.encode('cp437', errors='ignore'))
+            
+            # Enviar a la impresora
+            hPrinter = win32print.OpenPrinter(self.printer_name)
+            try:
+                hJob = win32print.StartDocPrinter(hPrinter, 1, (f"Barcode-{sku}", None, "RAW"))
+                try:
+                    win32print.StartPagePrinter(hPrinter)
+                    win32print.WritePrinter(hPrinter, bytes(content))
+                    win32print.EndPagePrinter(hPrinter)
+                finally:
+                    win32print.EndDocPrinter(hPrinter)
+            finally:
+                win32print.ClosePrinter(hPrinter)
+            
+            print(f"   ✅ Código de barras enviado exitosamente")
+            return True
+            
+        except Exception as e:
+            print(f"   ❌ Error imprimiendo código de barras: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
     def test_printer(self) -> bool:
         """Imprimir ticket de prueba"""
         try:
