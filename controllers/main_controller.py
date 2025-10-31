@@ -463,19 +463,20 @@ class MainController:
         
         self.dashboard_view = DashboardView(self.main_window, self.current_user)
         
-        # Registrar callbacks para los módulos
-        self.dashboard_view.bind_module_callback('clients', lambda: self._manage_clients())
+        # Registrar callbacks para los módulos realmente disponibles
         self.dashboard_view.bind_module_callback('products', lambda: self._view_products())
         self.dashboard_view.bind_module_callback('categories', lambda: self._view_categories())
         self.dashboard_view.bind_module_callback('stock_control', lambda: self._view_stock_control())
-        self.dashboard_view.bind_module_callback('purchases', lambda: self._manage_purchases())
-        self.dashboard_view.bind_module_callback('quick_sale', lambda: self._new_sale())
-        self.dashboard_view.bind_module_callback('results', lambda: self._daily_sales_report())
+        self.dashboard_view.bind_module_callback('sales_register', lambda: self._new_sale())
+        self.dashboard_view.bind_module_callback('sales_history', lambda: self._sales_history())
+        self.dashboard_view.bind_module_callback('user_management', lambda: self._manage_users())
+        self.dashboard_view.bind_module_callback('role_management', lambda: self._manage_roles())
+        self.dashboard_view.bind_module_callback('income_report', lambda: self._daily_sales_report())
+        self.dashboard_view.bind_module_callback('reports', lambda: self._full_report())
         self.dashboard_view.bind_module_callback('business', lambda: self._system_config())
         self.dashboard_view.bind_module_callback('ticket_config', lambda: self._config_tickets())
         self.dashboard_view.bind_module_callback('support', lambda: self._show_support())
         self.dashboard_view.bind_module_callback('help', lambda: self._show_manual())
-        self.dashboard_view.bind_module_callback('reports', lambda: self._full_report())
     
     def _create_stats_dashboard(self, parent):
         """Crear dashboard con estadísticas"""

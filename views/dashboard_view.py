@@ -184,131 +184,83 @@ class DashboardView(BaseView):
         """Obtener módulos disponibles según permisos del usuario"""
         base_modules = [
             {
+                'id': 'sales_register',
+                'title': 'Nueva Venta',
+                'icon': '�',
+                'color': '#ea580c',
+                'description': 'Registrar una venta en el POS',
+                'permission': 'sales.create'
+            },
+            {
+                'id': 'sales_history',
+                'title': 'Historial de Ventas',
+                'icon': '�',
+                'color': '#be123c',
+                'description': 'Revisar ventas realizadas',
+                'permission': 'sales.view'
+            },
+            {
                 'id': 'products',
-                'title': 'Registro de Productos',
-                'icon': '📦',
+                'title': 'Gestión de Productos',
+                'icon': '�',
                 'color': '#2563eb',
-                'description': 'Invoices',
+                'description': 'Administrar catálogo de productos',
                 'permission': 'inventory.view'
             },
             {
-                'id': 'clients',
-                'title': 'Registro de Clientes',
-                'icon': '👤',
-                'color': '#7c3aed',
-                'description': 'Clients',
-                'permission': 'users.view'
-            },
-            {
-                'id': 'suppliers',
-                'title': 'Registro de Proveedores',
-                'icon': '👥',
-                'color': '#0891b2',
-                'description': 'Application',
-                'permission': 'suppliers.view'
-            },
-            {
                 'id': 'categories',
-                'title': 'Registro de Categorías',
-                'icon': '📁',
+                'title': 'Categorías de Producto',
+                'icon': '�',
                 'color': '#dc2626',
-                'description': 'Reports',
-                'permission': 'categories.view'
-            },
-            {
-                'id': 'user_management',
-                'title': 'Gestión de Usuarios',
-                'icon': '👥',
-                'color': '#8b5cf6',
-                'description': 'Administrar usuarios del sistema',
-                'permission': 'users.view'
-            },
-            {
-                'id': 'role_management',
-                'title': 'Gestión de Roles',
-                'icon': '🔐',
-                'color': '#6366f1',
-                'description': 'Administrar roles y permisos',
-                'permission': 'roles.view'
+                'description': 'Organizar categorías',
+                'permission': 'inventory.view'
             },
             {
                 'id': 'stock_control',
                 'title': 'Control de Stock',
                 'icon': '📊',
                 'color': '#f59e0b',
-                'description': 'Actualizar inventario',
+                'description': 'Ajustar inventario y mínimos',
                 'permission': 'inventory.edit'
             },
             {
-                'id': 'expenses',
-                'title': 'Registro de Egresos',
-                'icon': '💰',
-                'color': '#9333ea',
-                'description': 'Reports',
-                'permission': 'expenses.view'
+                'id': 'user_management',
+                'title': 'Gestión de Usuarios',
+                'icon': '�',
+                'color': '#8b5cf6',
+                'description': 'Crear y administrar usuarios',
+                'permission': 'users.view'
             },
             {
-                'id': 'cash_register',
-                'title': 'Registro de Caja',
-                'icon': '💵',
-                'color': '#059669',
-                'description': 'Help',
-                'permission': 'cash.view'
-            },
-            {
-                'id': 'sales_register',
-                'title': 'Ventas - Registrar Ventas',
-                'icon': '🛍️',
-                'color': '#ea580c',
-                'description': 'Reports',
-                'permission': 'sales.create'
-            },
-            {
-                'id': 'purchases',
-                'title': 'Compras - Registrar Compras',
-                'icon': '⚙️',
-                'color': '#7c2d12',
-                'description': 'DevComponents',
-                'permission': 'inventory.create'
+                'id': 'role_management',
+                'title': 'Gestión de Roles y Permisos',
+                'icon': '�',
+                'color': '#6366f1',
+                'description': 'Configurar roles y permisos',
+                'permission': 'roles.view'
             },
             {
                 'id': 'income_report',
-                'title': 'Informe de Ingresos a Caja',
-                'icon': '📊',
-                'color': '#c026d3',
-                'description': 'Invoices',
-                'permission': 'sales.reports'
+                'title': 'Reporte Diario',
+                'icon': '�',
+                'color': '#0ea5e9',
+                'description': 'Consultar ventas del día',
+                'permission': 'reports.basic'
             },
             {
-                'id': 'sales_history',
-                'title': 'Ventas Realizadas',
+                'id': 'reports',
+                'title': 'Reportes Avanzados',
                 'icon': '📋',
-                'color': '#be123c',
-                'description': 'Reports',
-                'permission': 'sales.view'
-            },
-            {
-                'id': 'purchase_history',
-                'title': 'Compras Realizadas',
-                'icon': '📋',
-                'color': '#65a30d',
-                'description': 'Invoices',
-                'permission': 'purchases.view'
-            },
-            {
-                'id': 'monthly_sales',
-                'title': 'Ventas Mensuales',
-                'icon': '📈',
-                'color': '#0369a1',
-                'description': 'Reports',
-                'permission': 'sales.reports'
+                'color': '#475569',
+                'description': 'Generar reportes detallados',
+                'permission': 'reports.full'
             },
             {
                 'id': 'business',
-                'title': 'Mi negocio',
+                'title': 'Configuración del Sistema',
                 'icon': '🏢',
                 'color': '#0d9488',
-                'description': 'Configuración general',
+                'description': 'Datos de la empresa y ajustes',
                 'permission': 'system.config'
             },
             {
@@ -316,7 +268,7 @@ class DashboardView(BaseView):
                 'title': 'Escalado Responsivo',
                 'icon': '🖥️',
                 'color': '#0891b2',
-                'description': 'Ajustar tamaños por resolución',
+                'description': 'Abrir configurador de tamaños',
                 'permission': 'system.config'
             },
             {
@@ -324,15 +276,15 @@ class DashboardView(BaseView):
                 'title': 'Configuración de Boletas',
                 'icon': '🎫',
                 'color': '#9b59b6',
-                'description': 'Personalizar tickets',
-                'permission': None
+                'description': 'Personalizar formatos de ticket',
+                'permission': 'system.config'
             },
             {
                 'id': 'support',
-                'title': 'Chat de soporte',
+                'title': 'Soporte Técnico',
                 'icon': '💬',
                 'color': '#15803d',
-                'description': 'Ayuda y soporte',
+                'description': 'Información de contacto',
                 'permission': None
             },
             {
@@ -340,16 +292,8 @@ class DashboardView(BaseView):
                 'title': 'Ayuda',
                 'icon': '❓',
                 'color': '#b91c1c',
-                'description': 'Manual y guías',
+                'description': 'Manual y guías del sistema',
                 'permission': None
-            },
-            {
-                'id': 'reports',
-                'title': 'Reportes',
-                'icon': '📋',
-                'color': '#475569',
-                'description': 'Informes detallados',
-                'permission': 'reports.sales'
             }
         ]
         
