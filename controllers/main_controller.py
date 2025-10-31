@@ -219,7 +219,8 @@ class MainController:
         # Menú Archivo
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Archivo", menu=file_menu, font=('Segoe UI', 13, 'bold'))
-        file_menu.add_command(label="Nueva Venta", command=self._new_sale)
+        if self._check_user_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=self._new_sale)
         file_menu.add_separator()
         file_menu.add_command(label="Cerrar Sesión", command=self._logout)
         file_menu.add_command(label="Salir", command=self._exit_application)
@@ -227,8 +228,12 @@ class MainController:
         # Menú Ventas
         sales_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Ventas", menu=sales_menu, font=('Segoe UI', 13, 'bold'))
-        sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
-        sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
+        if self._check_user_permission('sales.create'):
+            sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
+        if self._check_user_permission('sales.view'):
+            sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
         
         # Menú Inventario (solo si tiene permisos)
         if self.auth_controller.has_permission('inventory.view'):
@@ -294,8 +299,9 @@ class MainController:
         file_btn.pack(side='left', padx=2)
         file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
         file_btn.config(menu=file_menu)
-        file_menu.add_command(label="Nueva Venta", command=self._new_sale)
-        file_menu.add_separator()
+        if self._check_user_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=self._new_sale)
+            file_menu.add_separator()
         file_menu.add_command(label="Cerrar Sesión", command=self._logout)
         file_menu.add_command(label="Salir", command=self._exit_application)
         
@@ -304,8 +310,14 @@ class MainController:
         sales_btn.pack(side='left', padx=2)
         sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
         sales_btn.config(menu=sales_menu)
-        sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
-        sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
+        can_create_sales = self._check_user_permission('sales.create')
+        can_view_sales = self._check_user_permission('sales.view')
+        if can_create_sales:
+            sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
+        if can_view_sales:
+            sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
         
         # Botón Inventario
         if self.auth_controller.has_permission('inventory.view'):
@@ -386,18 +398,19 @@ class MainController:
         quick_buttons_frame = tk.Frame(toolbar_frame, bg=self.settings.get_colors()['surface'])
         quick_buttons_frame.pack(side='right', padx=10)
         
-        # Botón Nueva Venta
-        new_sale_btn = tk.Button(
-            quick_buttons_frame,
-            text="Nueva Venta",
-            command=self._new_sale,
-            bg=self.settings.get_colors()['primary'],
-            fg='white',
-            font=('Segoe UI', 10, 'bold'),
-            padx=20,
-            pady=5
-        )
-        new_sale_btn.pack(side='left', padx=5)
+        can_create_sales = self._check_user_permission('sales.create')
+        if can_create_sales:
+            new_sale_btn = tk.Button(
+                quick_buttons_frame,
+                text="Nueva Venta",
+                command=self._new_sale,
+                bg=self.settings.get_colors()['primary'],
+                fg='white',
+                font=('Segoe UI', 10, 'bold'),
+                padx=20,
+                pady=5
+            )
+            new_sale_btn.pack(side='left', padx=5)
         
         # Botón Configuración de Boletas
         config_btn = tk.Button(
@@ -1086,6 +1099,10 @@ class MainController:
     def _new_sale(self):
         """Iniciar nueva venta - Abrir POS"""
         try:
+            if not self._check_user_permission('sales.create'):
+                messagebox.showerror("Acceso Denegado", "No tienes permisos para registrar nuevas ventas")
+                return
+
             print("🛒 DEBUG: Abriendo Punto de Venta desde main_controller")
             print(f"   - main_window tipo: {type(self.main_window)}")
             print(f"   - current_user: {self.current_user}")
@@ -1126,7 +1143,139 @@ class MainController:
     
     def _sales_history(self):
         """Mostrar historial de ventas"""
-        messagebox.showinfo("Historial", "Módulo de historial en desarrollo")
+        try:
+            if not self._check_user_permission('sales.view'):
+                messagebox.showerror("Acceso Denegado", "No tienes permisos para ver el historial de ventas")
+                return
+
+            print("💰 DEBUG: Abriendo historial de ventas desde main_controller")
+            self._clear_main_content()
+
+            from views.sales_history_view import SalesHistoryView
+            from controllers.sale_controller import SaleController
+
+            if not hasattr(self, 'sale_controller') or self.sale_controller is None:
+                self.sale_controller = SaleController()
+
+            self.sales_history_view = SalesHistoryView(self.main_window, self.current_user)
+
+            # Navegación principal
+            self.sales_history_view.bind_callback('back_to_dashboard', self._show_dashboard)
+            self.sales_history_view.bind_callback('new_sale', self._new_sale)
+            self.sales_history_view.bind_callback('sales_history', self._sales_history)
+            self.sales_history_view.bind_callback('view_products', self._view_products)
+            self.sales_history_view.bind_callback('view_categories', self._view_categories)
+            self.sales_history_view.bind_callback('stock_control', self._show_inventory_management)
+            self.sales_history_view.bind_callback('daily_report', self._daily_sales_report)
+            self.sales_history_view.bind_callback('full_report', self._full_report)
+            self.sales_history_view.bind_callback('manage_users', self._manage_users)
+            self.sales_history_view.bind_callback('manage_roles', self._manage_roles)
+            self.sales_history_view.bind_callback('system_config', self._system_config)
+            self.sales_history_view.bind_callback('show_manual', self._show_manual)
+            self.sales_history_view.bind_callback('show_about', self._show_about)
+
+            # Eventos específicos del módulo
+            self.sales_history_view.bind_callback('refresh', lambda: self._load_sales_history(self.sales_filters))
+            self.sales_history_view.bind_callback('apply_filters', self._apply_sales_filters)
+            self.sales_history_view.bind_callback('reset_filters', self._reset_sales_filters)
+            self.sales_history_view.bind_callback('get_sale_detail', self._load_sale_detail)
+            self.sales_history_view.bind_callback('delete_sale', self._delete_sale_from_history)
+
+            # Estado inicial de filtros y carga
+            self.sales_filters = {'status': 'completed'}
+            self._load_sales_history(self.sales_filters)
+
+            self._restore_window_geometry()
+
+        except Exception as e:
+            self.logger.error(f"Error al abrir historial de ventas: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Error", f"No se pudo abrir el historial de ventas:\n{str(e)}")
+
+    def _load_sales_history(self, filters: dict | None = None):
+        """Cargar ventas hacia la vista de historial"""
+        try:
+            if not hasattr(self, 'sale_controller') or self.sale_controller is None:
+                from controllers.sale_controller import SaleController
+                self.sale_controller = SaleController()
+
+            filters = filters or {}
+            result = self.sale_controller.get_sales_list(filters)
+
+            if result.get('success'):
+                sales = result.get('sales', [])
+                if hasattr(self, 'sales_history_view') and self.sales_history_view:
+                    self.sales_history_view.load_sales(sales)
+            else:
+                message = result.get('message', 'No se pudieron obtener las ventas')
+                messagebox.showerror("Historial de ventas", message)
+
+        except Exception as e:
+            self.logger.error(f"Error cargando historial de ventas: {e}")
+            messagebox.showerror("Error", f"Error cargando historial de ventas: {str(e)}")
+
+    def _apply_sales_filters(self, filters: dict):
+        """Aplicar filtros recibidos desde la vista"""
+        self.sales_filters = filters.copy() if filters else {}
+        self._load_sales_history(self.sales_filters)
+
+    def _reset_sales_filters(self):
+        """Restablecer filtros a los valores por defecto"""
+        self.sales_filters = {'status': 'completed'}
+        self._load_sales_history(self.sales_filters)
+
+    def _load_sale_detail(self, sale_id: int):
+        """Cargar detalle específico de una venta"""
+        if sale_id is None:
+            return
+
+        try:
+            result = self.sale_controller.get_sale_detail(sale_id)
+            if result.get('success'):
+                sale = result.get('sale')
+                if sale and hasattr(self, 'sales_history_view'):
+                    self.sales_history_view.show_sale_detail(sale)
+            else:
+                if hasattr(self, 'sales_history_view'):
+                    self.sales_history_view.show_sale_detail(None)
+                messagebox.showerror("Detalle de venta", result.get('message', 'No se pudo obtener el detalle'))
+
+        except Exception as e:
+            self.logger.error(f"Error obteniendo detalle de venta {sale_id}: {e}")
+            messagebox.showerror("Error", f"Error al cargar el detalle de la venta: {str(e)}")
+
+    def _delete_sale_from_history(self, sale_id: int, reason: str | None = None):
+        """Eliminar (cancelar) una venta desde el historial"""
+        if sale_id is None:
+            return
+
+        if not self._check_user_permission('sales.delete'):
+            messagebox.showerror("Acceso Denegado", "No tienes permisos para eliminar ventas")
+            return
+
+        try:
+            user_id = self.current_user.get('id') if self.current_user else None
+            reason_text = reason or 'Eliminada desde historial de ventas'
+            result = self.sale_controller.cancel_sale(sale_id, user_id, reason_text)
+
+            if result.get('success'):
+                if hasattr(self, 'sales_history_view'):
+                    message = result.get('message', 'Venta eliminada exitosamente')
+                    restored_items = result.get('restored_items') or []
+                    if restored_items:
+                        total_items = sum(item.get('quantity', 0) for item in restored_items)
+                        message += f"\nStock restaurado para {len(restored_items)} producto(s), total devuelto: {total_items:.2f} unidades."
+                    self.sales_history_view.show_success("Venta eliminada", message)
+                    self.sales_history_view.clear_sale_detail()
+                self._load_sales_history(self.sales_filters)
+            else:
+                if hasattr(self, 'sales_history_view'):
+                    self.sales_history_view.show_error("Error", result.get('message', 'No se pudo eliminar la venta'))
+
+        except Exception as e:
+            self.logger.error(f"Error eliminando venta {sale_id}: {e}")
+            messagebox.showerror("Error", f"No se pudo eliminar la venta: {str(e)}")
     
     def _view_products(self):
         """Ver productos - Abrir módulo de inventario"""

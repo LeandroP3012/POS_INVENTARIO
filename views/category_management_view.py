@@ -163,16 +163,21 @@ class CategoryManagementView:
         sales_btn.pack(side='left', padx=2)
         sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 10))
         sales_btn.config(menu=sales_menu)
-        sales_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
-        sales_menu.add_command(label="Historial de Ventas", command=safe_call('sales_history'))
+        if self.has_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+            file_menu.add_separator()
         
         # Botón Inventario (ACTIVO)
         inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
         inv_btn.config(bg='#34495e')  # Resaltar activo
         inv_btn.pack(side='left', padx=2)
         inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 10))
-        inv_btn.config(menu=inv_menu)
-        inv_menu.add_command(label="Ver Productos", command=safe_call('view_products'))
+        if self.has_permission('sales.create'):
+            sales_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+        if self.has_permission('sales.view'):
+            sales_menu.add_command(label="Historial de Ventas", command=safe_call('sales_history'))
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
         inv_menu.add_command(label="Gestionar Categorías ✓", command=lambda: None)  # Actual
         inv_menu.add_command(label="Control de Stock", command=safe_call('stock_control'))
         

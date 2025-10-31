@@ -317,8 +317,8 @@ PERMISSIONS_CATALOG: PermissionCatalog = {
             "module": "sales",
             "action": "view",
             "scope": "read",
-            "assignable": False,
-            "status": "legacy",
+            "assignable": True,
+            "status": "active",
         },
         {
             "code": "sales.create",
@@ -327,8 +327,8 @@ PERMISSIONS_CATALOG: PermissionCatalog = {
             "module": "sales",
             "action": "create",
             "scope": "write",
-            "assignable": False,
-            "status": "legacy",
+            "assignable": True,
+            "status": "active",
         },
         {
             "code": "sales.edit",
@@ -347,8 +347,8 @@ PERMISSIONS_CATALOG: PermissionCatalog = {
             "module": "sales",
             "action": "delete",
             "scope": "write",
-            "assignable": False,
-            "status": "legacy",
+            "assignable": True,
+            "status": "active",
         },
         {
             "code": "sales.view_own",

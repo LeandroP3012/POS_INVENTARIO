@@ -166,8 +166,9 @@ class ProductManagementView(BaseView):
         file_btn.pack(side='left', padx=2)
         file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
         file_btn.config(menu=file_menu)
-        file_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
-        file_menu.add_separator()
+        if self.has_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+            file_menu.add_separator()
         file_menu.add_command(label="Volver al Dashboard", command=safe_call('back_to_dashboard'))
         
         # Botón Ventas
@@ -175,8 +176,12 @@ class ProductManagementView(BaseView):
         sales_btn.pack(side='left', padx=2)
         sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
         sales_btn.config(menu=sales_menu)
-        sales_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
-        sales_menu.add_command(label="Historial de Ventas", command=safe_call('sales_history'))
+        if self.has_permission('sales.create'):
+            sales_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+        if self.has_permission('sales.view'):
+            sales_menu.add_command(label="Historial de Ventas", command=safe_call('sales_history'))
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
         
         # Botón Inventario
         inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)

@@ -227,6 +227,20 @@ class SaleModel(BaseModel):
                     query += " AND s.status = %s"
                     params.append(filters['status'])
                 
+                if filters.get('sale_number'):
+                    query += " AND s.sale_number LIKE %s"
+                    params.append(f"%{filters['sale_number']}%")
+
+                if filters.get('customer_text'):
+                    like_value = f"%{filters['customer_text']}%"
+                    query += " AND (COALESCE(c.name, '') LIKE %s OR COALESCE(c.document_number, '') LIKE %s)"
+                    params.extend([like_value, like_value])
+
+                if filters.get('cashier_text'):
+                    like_cashier = f"%{filters['cashier_text']}%"
+                    query += " AND (u.username LIKE %s OR u.full_name LIKE %s)"
+                    params.extend([like_cashier, like_cashier])
+
                 if filters.get('date_from'):
                     query += " AND DATE(s.sale_date) >= %s"
                     params.append(filters['date_from'])
@@ -304,47 +318,80 @@ class SaleModel(BaseModel):
             return None
     
     def cancel_sale(self, sale_id, user_id, reason):
-        """Cancela una venta y revierte el inventario"""
+        """Cancela una venta, revierte inventario y retorna detalle del proceso"""
         connection = None
         cursor = None
+        reason = (reason or '').strip()
         
         try:
             connection = self.get_connection()
             cursor = connection.cursor(dictionary=True)
-            
             connection.start_transaction()
-            
-            # Verificar que la venta existe y está completada
-            cursor.execute(
-                "SELECT * FROM sales WHERE id = %s AND status = 'completed'",
-                (sale_id,)
-            )
+
+            cursor.execute("SELECT * FROM sales WHERE id = %s", (sale_id,))
             sale = cursor.fetchone()
-            
+
             if not sale:
-                print("❌ Venta no encontrada o ya está cancelada")
-                return False
-            
-            # Obtener items de la venta
+                if connection:
+                    connection.rollback()
+                return {
+                    'success': False,
+                    'message': 'La venta solicitada no existe o ya fue removida.'
+                }
+
+            current_status = (sale.get('status') or '').lower()
+            if current_status in {'cancelled', 'canceled', 'annulled', 'void'}:
+                if connection:
+                    connection.rollback()
+                return {
+                    'success': False,
+                    'message': 'La venta ya estaba cancelada previamente.'
+                }
+
+            allowed_status = {'completed', 'finalized', 'paid'}
+            if current_status not in allowed_status:
+                if connection:
+                    connection.rollback()
+                return {
+                    'success': False,
+                    'message': f"No se puede cancelar una venta con estado '{sale.get('status', 'desconocido')}'."
+                }
+
             cursor.execute("SELECT * FROM sale_items WHERE sale_id = %s", (sale_id,))
-            items = cursor.fetchall()
-            
-            # Revertir stock de cada producto
+            items = cursor.fetchall() or []
+
+            if not items:
+                if connection:
+                    connection.rollback()
+                return {
+                    'success': False,
+                    'message': 'La venta no tiene productos registrados para revertir.'
+                }
+
+            restored_items = []
+
             for item in items:
-                self._update_product_stock(cursor, item['product_id'], item['quantity'])
-                
-                # Registrar movimiento de devolución
+                quantity = Decimal(str(item.get('quantity', 0) or 0))
+                if quantity <= 0:
+                    continue
+
+                self._update_product_stock(cursor, item['product_id'], quantity)
                 self._create_inventory_movement(cursor, {
                     'product_id': item['product_id'],
                     'movement_type': 'return',
-                    'quantity': item['quantity'],
+                    'quantity': quantity,
                     'reference_type': 'sale',
                     'reference_id': sale_id,
                     'user_id': user_id,
-                    'notes': f"Cancelación de venta {sale['sale_number']}"
+                    'notes': f"Cancelación de venta {sale.get('sale_number', sale_id)}"
                 })
-            
-            # Actualizar estado de la venta
+
+                restored_items.append({
+                    'product_id': item['product_id'],
+                    'product_name': item.get('product_name'),
+                    'quantity': float(quantity)
+                })
+
             update_query = """
                 UPDATE sales 
                 SET status = 'cancelled',
@@ -353,18 +400,24 @@ class SaleModel(BaseModel):
                     cancellation_reason = %s
                 WHERE id = %s
             """
-            cursor.execute(update_query, (user_id, reason, sale_id))
-            
+            cursor.execute(update_query, (user_id, reason or 'Cancelado desde historial de ventas', sale_id))
+
             connection.commit()
-            
-            print(f"✅ Venta {sale['sale_number']} cancelada exitosamente")
-            return True
-            
+
+            return {
+                'success': True,
+                'message': f"Venta {sale.get('sale_number', sale_id)} cancelada y stock restaurado.",
+                'restored_items': restored_items
+            }
+
         except Exception as e:
             if connection:
                 connection.rollback()
             print(f"❌ Error al cancelar venta: {e}")
-            return False
+            return {
+                'success': False,
+                'message': f"Error al cancelar la venta: {e}"
+            }
         finally:
             if cursor:
                 cursor.close()

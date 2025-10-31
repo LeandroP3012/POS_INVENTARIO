@@ -153,18 +153,15 @@ class SaleController:
     def cancel_sale(self, sale_id, user_id, reason):
         """Cancela una venta"""
         try:
-            success = self.sale_model.cancel_sale(sale_id, user_id, reason)
-            
-            if success:
-                return {
-                    'success': True,
-                    'message': 'Venta cancelada exitosamente'
-                }
-            else:
-                return {
-                    'success': False,
-                    'message': 'No se pudo cancelar la venta'
-                }
+            result = self.sale_model.cancel_sale(sale_id, user_id, reason)
+
+            if isinstance(result, dict):
+                return result
+
+            return {
+                'success': bool(result),
+                'message': 'Venta cancelada exitosamente' if result else 'No se pudo cancelar la venta'
+            }
         
         except Exception as e:
             return {

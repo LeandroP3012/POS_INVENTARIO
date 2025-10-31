@@ -8,6 +8,7 @@ from tkinter import ttk, messagebox
 from typing import Dict, Any, List
 from views.base_view import BaseView
 from utils.responsive_utils import ResponsiveManager
+from services.permission_service import PermissionService
 
 
 class StockControlView(BaseView):
@@ -18,6 +19,7 @@ class StockControlView(BaseView):
         self.user_data = user_data or {}
         self.products = []
         self.filtered_products = []
+        self.permission_service = PermissionService()
         
         # Inicializar gestor responsivo
         self.responsive = ResponsiveManager(self.root)
@@ -51,6 +53,14 @@ class StockControlView(BaseView):
         
         # Footer
         self.create_footer()
+
+    def has_permission(self, permission: str) -> bool:
+        """Verificar permisos usando el servicio central"""
+        try:
+            return self.permission_service.check_permission(self.user_data, permission)
+        except Exception as exc:  # pragma: no cover - defensivo
+            print(f"Error verificando permiso {permission}: {exc}")
+            return False
     
     def create_header(self):
         """Crear header"""
@@ -119,8 +129,9 @@ class StockControlView(BaseView):
         file_btn.pack(side='left', padx=2)
         file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
         file_btn.config(menu=file_menu)
-        file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
-        file_menu.add_separator()
+        if self.has_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+            file_menu.add_separator()
         file_menu.add_command(label="Volver al Dashboard", command=self._on_back)
         
         # Botón Ventas
@@ -128,8 +139,12 @@ class StockControlView(BaseView):
         sales_btn.pack(side='left', padx=2)
         sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
         sales_btn.config(menu=sales_menu)
-        sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
-        sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        if self.has_permission('sales.create'):
+            sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        if self.has_permission('sales.view'):
+            sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
         
         # Botón Inventario
         inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)

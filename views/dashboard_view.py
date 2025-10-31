@@ -110,7 +110,7 @@ class DashboardView(BaseView):
         # Subtítulo con color degradado
         subtitle = tk.Label(
             title_frame,
-            text="Sistema de Gestión Empresarial",
+            text="ManagementPro POS v1.0",
             font=('Segoe UI', subtitle_font_size),
             fg='#64748b',
             bg='#ffffff'
