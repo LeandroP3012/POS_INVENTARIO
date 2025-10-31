@@ -707,7 +707,22 @@ class UserManagementView(BaseView):
                 # Actualizar usuario a través del controlador
                 success = self.user_controller.update_user(self.selected_user['id'], dialog.result)
                 if success:
+                    updated_id = self.selected_user['id']
                     self.load_users_data()  # Recargar datos
+
+                    # Reasignar usuario seleccionado con información actualizada
+                    self.selected_user = next((u for u in self.users_data if u.get('id') == updated_id), None)
+
+                    # Intentar resaltar el registro actualizado en la tabla
+                    if self.selected_user:
+                        for item in self.users_tree.get_children():
+                            values = self.users_tree.item(item, 'values')
+                            if values and str(values[0]) == str(updated_id):
+                                self.users_tree.selection_set(item)
+                                self.users_tree.focus(item)
+                                self.users_tree.see(item)
+                                break
+
                     messagebox.showinfo("Usuario Actualizado", f"✅ Usuario '{dialog.result['username']}' actualizado exitosamente")
                 else:
                     messagebox.showerror("Error", "❌ Error actualizando el usuario")
@@ -1053,6 +1068,30 @@ class UserDialog:
         self.is_edit = bool(user_data)
         self.roles_data = roles_data or []
         
+        # DEBUG: Ver qué datos estamos recibiendo
+        if self.is_edit:
+            print(f"\n🔍 DEBUG UserDialog - Modo EDICIÓN")
+            print(f"   user_data recibido: {self.user_data}")
+            print(f"   username: '{self.user_data.get('username', 'N/A')}'")
+            print(f"   full_name: '{self.user_data.get('full_name', 'N/A')}'")
+            print(f"   email: '{self.user_data.get('email', 'N/A')}'")
+            print(f"   user_type: '{self.user_data.get('user_type', 'N/A')}'")
+            print(f"   role_name: '{self.user_data.get('role_name', 'N/A')}'")
+            print(f"   role_id: '{self.user_data.get('role_id', 'N/A')}'")
+            print(f"   status/active: '{self.user_data.get('status', self.user_data.get('active', 'N/A'))}'")
+        
+        self.role_lookup = {}
+        for role in self.roles_data:
+            name_key = str(role.get('name', '')).strip().lower()
+            code_key = str(role.get('code', '')).strip().lower()
+            id_key = str(role.get('id')) if role.get('id') is not None else ''
+            if name_key:
+                self.role_lookup[name_key] = role
+            if code_key:
+                self.role_lookup[code_key] = role
+            if id_key:
+                self.role_lookup[id_key] = role
+        
         # Inicializar variables PRIMERO
         self.username_var = tk.StringVar(value=self.user_data.get('username', '') if self.user_data else '')
         self.full_name_var = tk.StringVar(value=self.user_data.get('full_name', '') if self.user_data else '')
@@ -1060,14 +1099,36 @@ class UserDialog:
         self.password_var = tk.StringVar()
         self.confirm_password_var = tk.StringVar()
         
+        # DEBUG: Verificar valores de StringVar
+        if self.is_edit:
+            print(f"\n📋 DEBUG StringVar inicializadas:")
+            print(f"   username_var: '{self.username_var.get()}'")
+            print(f"   full_name_var: '{self.full_name_var.get()}'")
+            print(f"   email_var: '{self.email_var.get()}'")
+        
         # Para el rol, usar el rol del usuario o el primer rol disponible como default
         default_role = self.user_data.get('user_type', '') if self.user_data else ''
+        if not default_role and self.user_data.get('role_id'):
+            lookup_role = self.role_lookup.get(str(self.user_data['role_id']))
+            if lookup_role:
+                default_role = lookup_role.get('name', default_role)
+        if not default_role and self.user_data.get('role_name'):
+            default_role = self.user_data.get('role_name')
         if not default_role and self.roles_data:
             # Si no hay rol seleccionado, usar el último rol (generalmente Cajero)
             default_role = self.roles_data[-1].get('name', 'Cajero')
         
         self.user_type_var = tk.StringVar(value=default_role)
-        self.status_var = tk.StringVar(value='active' if self.user_data and self.user_data.get('status', 'active') == 'active' else 'active')
+        
+        # DEBUG: Verificar rol seleccionado
+        if self.is_edit:
+            print(f"   user_type_var (rol): '{self.user_type_var.get()}'")
+
+        # Normalizar estado inicial a valores del backend
+        raw_status = str(self.user_data.get('status', 'active') if self.user_data else 'active').strip().lower()
+        status_default = 'inactive' if raw_status in {'inactive', 'inactivo', '0', 'false', 'no'} else 'active'
+        self.status_var = tk.StringVar(value=status_default)
+        self.status_display_var = tk.StringVar(value='Activo' if status_default == 'active' else 'Inactivo')
         
         # Crear ventana de diálogo
         self.dialog = tk.Toplevel(parent)
@@ -1084,8 +1145,51 @@ class UserDialog:
         # Crear interfaz
         self.create_dialog_interface()
         
+        # CRÍTICO: Forzar actualización de widgets con valores de StringVar
+        if self.is_edit:
+            self.dialog.after(50, self.force_widget_update)
+        
         # Enfocar primer campo y forzar actualización
         self.dialog.after(100, lambda: self.username_entry.focus_set())
+    
+    def force_widget_update(self):
+        """Forzar actualización visual de widgets con valores de StringVar"""
+        try:
+            print(f"\n🔄 DEBUG - Forzando actualización de widgets...")
+            
+            # Actualizar Entry widgets
+            if hasattr(self, 'username_entry'):
+                current_val = self.username_var.get()
+                self.username_entry.delete(0, tk.END)
+                self.username_entry.insert(0, current_val)
+                print(f"   ✅ username_entry actualizado: '{current_val}'")
+            
+            if hasattr(self, 'fullname_entry'):
+                current_val = self.full_name_var.get()
+                self.fullname_entry.delete(0, tk.END)
+                self.fullname_entry.insert(0, current_val)
+                print(f"   ✅ fullname_entry actualizado: '{current_val}'")
+            
+            if hasattr(self, 'email_entry'):
+                current_val = self.email_var.get()
+                self.email_entry.delete(0, tk.END)
+                self.email_entry.insert(0, current_val)
+                print(f"   ✅ email_entry actualizado: '{current_val}'")
+            
+            # Actualizar ComboBox de rol
+            if hasattr(self, 'user_type_combo'):
+                current_val = self.user_type_var.get()
+                self.user_type_combo.set(current_val)
+                print(f"   ✅ user_type_combo actualizado: '{current_val}'")
+            
+            # Actualizar ComboBox de status
+            if hasattr(self, 'status_combo'):
+                current_val = self.status_display_var.get()
+                self.status_combo.set(current_val)
+                print(f"   ✅ status_combo actualizado: '{current_val}'")
+                
+        except Exception as e:
+            print(f"   ❌ Error forzando actualización: {e}")
     
     def create_dialog_interface(self):
         """Crear interfaz del diálogo"""
@@ -1146,10 +1250,13 @@ class UserDialog:
                                       font=('Segoe UI', 11), relief='solid', bd=1)
         self.username_entry.pack(fill='x', pady=(0, 15))
         
-        # Si hay datos existentes, forzar actualización visual
-        if self.user_data and self.user_data.get('username'):
-            self.username_entry.delete(0, tk.END)
-            self.username_entry.insert(0, self.user_data.get('username', ''))
+        # Agregar binding para sincronización bidireccional
+        def _on_username_change(*args):
+            current = self.username_entry.get()
+            if self.username_var.get() != current:
+                self.username_var.set(current)
+        self.username_entry.bind('<KeyRelease>', _on_username_change)
+        self.username_entry.bind('<FocusOut>', _on_username_change)
         
         # Full name
         tk.Label(inner_frame, text="📝 Nombre Completo:", bg='white',
@@ -1158,10 +1265,13 @@ class UserDialog:
                 font=('Segoe UI', 11), relief='solid', bd=1)
         self.fullname_entry.pack(fill='x', pady=(0, 15))
         
-        # Si hay datos existentes, forzar actualización visual
-        if self.user_data and self.user_data.get('full_name'):
-            self.fullname_entry.delete(0, tk.END)
-            self.fullname_entry.insert(0, self.user_data.get('full_name', ''))
+        # Agregar binding para sincronización bidireccional
+        def _on_fullname_change(*args):
+            current = self.fullname_entry.get()
+            if self.full_name_var.get() != current:
+                self.full_name_var.set(current)
+        self.fullname_entry.bind('<KeyRelease>', _on_fullname_change)
+        self.fullname_entry.bind('<FocusOut>', _on_fullname_change)
         
         # Email
         tk.Label(inner_frame, text="📧 Email:", bg='white',
@@ -1170,10 +1280,13 @@ class UserDialog:
                 font=('Segoe UI', 11), relief='solid', bd=1)
         self.email_entry.pack(fill='x', pady=(0, 15))
         
-        # Si hay datos existentes, forzar actualización visual
-        if self.user_data and self.user_data.get('email'):
-            self.email_entry.delete(0, tk.END)
-            self.email_entry.insert(0, self.user_data.get('email', ''))
+        # Agregar binding para sincronización bidireccional
+        def _on_email_change(*args):
+            current = self.email_entry.get()
+            if self.email_var.get() != current:
+                self.email_var.set(current)
+        self.email_entry.bind('<KeyRelease>', _on_email_change)
+        self.email_entry.bind('<FocusOut>', _on_email_change)
         
         # User Type (Role)
         tk.Label(inner_frame, text="🎭 Rol:", bg='white',
@@ -1184,9 +1297,9 @@ class UserDialog:
         if not role_values:  # Fallback si no hay roles
             role_values = ['Admin', 'Manager', 'Employee', 'Cashier']
         
-        user_type_combo = ttk.Combobox(inner_frame, textvariable=self.user_type_var,
+        self.user_type_combo = ttk.Combobox(inner_frame, textvariable=self.user_type_var,
                                       values=role_values, state='readonly', font=('Segoe UI', 11))
-        user_type_combo.pack(fill='x', pady=(0, 15))
+        self.user_type_combo.pack(fill='x', pady=(0, 15))
         
         # Si hay datos existentes, forzar actualización visual del rol
         if self.user_data and self.user_data.get('user_type'):
@@ -1194,27 +1307,44 @@ class UserDialog:
             # Buscar el nombre del rol correspondiente
             for role in self.roles_data:
                 if role.get('name', '').lower() == user_type.lower() or role.get('code', '').lower() == user_type.lower():
-                    user_type_combo.set(role.get('name', ''))
+                    self.user_type_combo.set(role.get('name', ''))
+                    self.user_type_var.set(role.get('name', ''))  # Actualizar la variable también
                     break
             else:
                 # Si no se encuentra, usar el valor directo
-                user_type_combo.set(user_type)
+                self.user_type_combo.set(user_type)
+                self.user_type_var.set(user_type)
+        
+        # CRÍTICO: Binding para actualizar la variable cuando cambia el ComboBox
+        def _on_role_change(event=None):
+            selected_role_name = self.user_type_combo.get()
+            self.user_type_var.set(selected_role_name)
+            print(f"🎭 DEBUG - Rol seleccionado: '{selected_role_name}'")
+        
+        self.user_type_combo.bind("<<ComboboxSelected>>", _on_role_change)
         
         # Status (solo en edición)
         if self.is_edit:
             tk.Label(inner_frame, text="📊 Estado:", bg='white',
                     font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
             
-            status_combo = ttk.Combobox(inner_frame, textvariable=self.status_var,
-                                       values=['activo', 'inactivo'], state='readonly', font=('Segoe UI', 11))
-            status_combo.pack(fill='x', pady=(0, 15))
+            self.status_combo = ttk.Combobox(
+                inner_frame,
+                textvariable=self.status_display_var,
+                values=['Activo', 'Inactivo'],
+                state='readonly',
+                font=('Segoe UI', 11)
+            )
+            self.status_combo.pack(fill='x', pady=(0, 15))
             
-            # Si hay datos existentes, forzar actualización visual del estado
-            if self.user_data:
-                current_status = self.user_data.get('status', 'activo')
-                # Normalizar el valor del estado
-                status_value = 'activo' if current_status in ['active', 'activo', 'Active', 'ACTIVE'] else 'inactivo'
-                status_combo.set(status_value)
+            # Establecer valor inicial coherente con el backend
+            self.status_combo.set('Activo' if self.status_var.get() == 'active' else 'Inactivo')
+
+            def _on_status_change(event=None):
+                display_value = self.status_display_var.get().strip().lower()
+                self.status_var.set('inactive' if display_value.startswith('inac') else 'active')
+
+            self.status_combo.bind("<<ComboboxSelected>>", _on_status_change)
         
         # Contraseña
         password_label = "🔒 Nueva Contraseña:" if self.is_edit else "🔒 Contraseña:"
@@ -1227,6 +1357,14 @@ class UserDialog:
                 show='*', relief='solid', bd=1)
         self.password_entry.pack(fill='x', pady=(0, 15))
         
+        # Binding para sincronización de password
+        def _on_password_change(*args):
+            current = self.password_entry.get()
+            if self.password_var.get() != current:
+                self.password_var.set(current)
+        self.password_entry.bind('<KeyRelease>', _on_password_change)
+        self.password_entry.bind('<FocusOut>', _on_password_change)
+        
         # Confirmar contraseña
         confirm_label = "🔒 Confirmar Nueva Contraseña:" if self.is_edit else "🔒 Confirmar Contraseña:"
         
@@ -1236,6 +1374,14 @@ class UserDialog:
         self.confirm_password_entry = tk.Entry(inner_frame, textvariable=self.confirm_password_var, font=('Segoe UI', 11), 
                 show='*', relief='solid', bd=1)
         self.confirm_password_entry.pack(fill='x', pady=(0, 15))
+        
+        # Binding para sincronización de confirm password
+        def _on_confirm_password_change(*args):
+            current = self.confirm_password_entry.get()
+            if self.confirm_password_var.get() != current:
+                self.confirm_password_var.set(current)
+        self.confirm_password_entry.bind('<KeyRelease>', _on_confirm_password_change)
+        self.confirm_password_entry.bind('<FocusOut>', _on_confirm_password_change)
         
         # Nota para edición
         if self.is_edit:
@@ -1385,21 +1531,71 @@ class UserDialog:
         username = self.username_var.get().strip()
         if not username and hasattr(self, 'username_entry'):
             username = self.username_entry.get().strip()
+        print(f"👤 DEBUG SAVE - Username: '{username}'")
             
         full_name = self.full_name_var.get().strip()
         if not full_name and hasattr(self, 'fullname_entry'):
             full_name = self.fullname_entry.get().strip()
+        print(f"📝 DEBUG SAVE - Full name: '{full_name}'")
             
         email = self.email_var.get().strip()
         if not email and hasattr(self, 'email_entry'):
             email = self.email_entry.get().strip()
+        print(f"📧 DEBUG SAVE - Email: '{email}'")
         
         password = self.password_var.get()
         if not password and hasattr(self, 'password_entry'):
             password = self.password_entry.get()
+        print(f"🔒 DEBUG SAVE - Password: '{'*' * len(password) if password else '(vacío)'}'")
             
         user_type = self.user_type_var.get()
+        print(f"🎭 DEBUG SAVE - user_type desde StringVar: '{user_type}'")
+        
         status = self.status_var.get() if self.is_edit else 'active'
+        print(f"📊 DEBUG SAVE - status: '{status}'")
+
+        # Determinar rol seleccionado para incluir ID/código en el resultado
+        selected_role = None
+        lookup_candidates = [str(user_type).strip().lower()]
+        lookup_candidates.append(str(self.user_data.get('role_code', '')).strip().lower())
+        lookup_candidates.append(str(self.user_data.get('role_id', '')).strip())
+
+        for key in lookup_candidates:
+            if not key:
+                continue
+            candidate = self.role_lookup.get(key)
+            if candidate:
+                selected_role = candidate
+                break
+
+        if not selected_role:
+            normalized_target = str(user_type).strip().lower()
+            for role in self.roles_data:
+                if str(role.get('name', '')).strip().lower() == normalized_target:
+                    selected_role = role
+                    break
+
+        role_id = None
+        role_code = None
+        if selected_role:
+            role_id = selected_role.get('id')
+            role_code = selected_role.get('code')
+            print(f"✅ DEBUG SAVE - Rol resuelto: ID={role_id}, Code={role_code}, Name={selected_role.get('name')}")
+        else:
+            print(f"⚠️  DEBUG SAVE - No se pudo resolver el rol desde user_type='{user_type}'")
+
+        if role_id is None and self.user_data.get('role_id') is not None:
+            role_id = self.user_data.get('role_id')
+            print(f"🔄 DEBUG SAVE - Usando role_id del usuario existente: {role_id}")
+
+        if role_code is None and self.user_data.get('role_code'):
+            role_code = self.user_data.get('role_code')
+            print(f"🔄 DEBUG SAVE - Usando role_code del usuario existente: {role_code}")
+        
+        try:
+            role_id = int(role_id) if role_id is not None else None
+        except (ValueError, TypeError):
+            role_id = None
         
         # Crear resultado
         self.result = {
@@ -1409,6 +1605,11 @@ class UserDialog:
             'user_type': user_type,
             'status': status
         }
+
+        if role_id is not None:
+            self.result['role_id'] = role_id
+        if role_code:
+            self.result['role_code'] = role_code
         
         # Agregar contraseña si se proporcionó
         if password:

@@ -19,6 +19,28 @@ class UserController:
         self.role_model = RoleModel()
         self.logger = logging.getLogger(__name__)
     
+    @staticmethod
+    def _simplify_user_type(primary: Optional[str], secondary: Optional[str] = None) -> str:
+        """Reducir nombre/código de rol a los tipos técnicos admitidos por la BD."""
+        candidates = []
+        if primary:
+            candidates.append(str(primary).strip().lower())
+        if secondary:
+            candidates.append(str(secondary).strip().lower())
+        candidates.append('')  # Garantizar al menos un elemento para fallback
+
+        for value in candidates:
+            if not value:
+                continue
+            if any(keyword in value for keyword in ('admin', 'super_admin', 'sistema', 'root')):
+                return 'admin'
+            if any(keyword in value for keyword in ('supervis', 'gerente', 'manager', 'jefe')):
+                return 'supervisor'
+            if any(keyword in value for keyword in ('cajer', 'cashier', 'vend', 'seller')):
+                return 'cashier'
+
+        return 'user'
+
     def get_all_users(self) -> List[Dict[str, Any]]:
         """Obtener todos los usuarios con sus roles"""
         try:
@@ -38,6 +60,7 @@ class UserController:
                     'email': user.get('email'),
                     'user_type': role_name,  # Usar el nombre del rol
                     'role_id': user.get('role_id'),
+                    'role_code': user.get('role_code'),
                     'status': 'active' if user.get('active') else 'inactive',
                     'last_login': user.get('last_login'),
                     'created_at': user.get('created_at'),
@@ -152,50 +175,57 @@ class UserController:
             
             print("DEBUG CREATE_USER - Usuario y email únicos, continuando...")
             
-            # Buscar el rol por nombre para obtener el role_id
-            role_id = None
-            role_name = user_data['user_type']
-            print(f"DEBUG CREATE_USER - Buscando rol: {role_name}")
-            
+            # Resolver rol seleccionado desde la vista (id / código / nombre)
+            input_role_name = user_data.get('user_type', '')
+            role_id = user_data.get('role_id')
+            role_code = user_data.get('role_code')
+            print(f"DEBUG CREATE_USER - Intentando resolver rol: nombre='{input_role_name}', id='{role_id}', código='{role_code}'")
+
+            if role_id is not None:
+                try:
+                    role_id = int(role_id)
+                except (TypeError, ValueError):
+                    print(f"DEBUG CREATE_USER - role_id '{role_id}' no es numérico, descartando")
+                    role_id = None
+
+            resolved_role_name = input_role_name
+
             try:
                 roles = self.role_model.get_all_roles()
                 print(f"DEBUG CREATE_USER - Roles encontrados: {len(roles)}")
                 for role in roles:
-                    print(f"DEBUG CREATE_USER - Comparando '{role.get('name', '')}' con '{role_name}'")
-                    if role.get('name', '').lower() == role_name.lower():
-                        role_id = role.get('id')
-                        print(f"DEBUG CREATE_USER - Rol encontrado, ID: {role_id}")
+                    role_name_db = role.get('name', '')
+                    role_code_db = role.get('code', '')
+                    role_id_db = role.get('id')
+
+                    if role_id is not None and role_id_db == role_id:
+                        resolved_role_name = role_name_db or resolved_role_name
+                        role_code = role_code or role_code_db
+                        print(f"DEBUG CREATE_USER - Rol resuelto por ID: {role_id_db}")
                         break
-                
+
+                    if input_role_name and role_name_db.lower() == input_role_name.lower():
+                        role_id = role_id_db
+                        resolved_role_name = role_name_db
+                        role_code = role_code or role_code_db
+                        print(f"DEBUG CREATE_USER - Rol resuelto por nombre: {resolved_role_name} (ID: {role_id})")
+                        break
+
+                    if role_code and role_code_db and role_code_db.lower() == str(role_code).lower():
+                        role_id = role_id_db
+                        resolved_role_name = role_name_db or resolved_role_name
+                        print(f"DEBUG CREATE_USER - Rol resuelto por código: {role_code_db} (ID: {role_id})")
+                        break
+
                 if role_id is None:
-                    print(f"DEBUG CREATE_USER - Rol no encontrado: {role_name}")
-                    
+                    print(f"DEBUG CREATE_USER - No se pudo determinar el role_id para '{input_role_name}'")
+
             except Exception as role_error:
                 print(f"DEBUG CREATE_USER - Error obteniendo roles: {role_error}")
                 self.logger.warning(f"Error obteniendo roles: {role_error}")
-            
-            # Preparar datos para crear usuario
-            # Sistema simplificado: user_type es solo técnico, permisos vienen del role_id
-            def get_user_type_simplified(role_name):
-                """Sistema simplificado de mapeo de tipos de usuario"""
-                
-                # Solo mapear roles específicos del sistema que necesitan acceso especial
-                system_roles_mapping = {
-                    'Super Admin': 'admin',      # Acceso total al sistema
-                    'Administrador': 'admin',    # Acceso total al sistema
-                }
-                
-                # Si es rol de sistema con acceso especial, usar mapeo específico
-                if role_name in system_roles_mapping:
-                    return system_roles_mapping[role_name]
-                
-                # Para TODOS los demás roles (incluidos roles personalizados):
-                # - Los permisos reales vienen del role_id, no del user_type
-                # - user_type es solo una categoría técnica genérica
-                return 'user'  # Tipo genérico para todos los usuarios normales
-            
-            db_user_type = get_user_type_simplified(user_data['user_type'])
-            print(f"DEBUG CREATE_USER - Mapeo simplificado: '{user_data['user_type']}' -> '{db_user_type}' (permisos vienen del role_id: {role_id})")
+
+            db_user_type = self._simplify_user_type(role_code, resolved_role_name)
+            print(f"DEBUG CREATE_USER - Mapeo simplificado: rol='{resolved_role_name}' código='{role_code}' -> user_type='{db_user_type}' (role_id: {role_id})")
             
             create_data = {
                 'username': user_data['username'],
@@ -236,58 +266,88 @@ class UserController:
     def update_user(self, user_id: int, user_data: Dict[str, Any]) -> bool:
         """Actualizar usuario existente"""
         try:
+            safe_payload = {k: ('***' if 'password' in k else v) for k, v in user_data.items()}
+            self.logger.info("Actualizando usuario %s con datos recibidos: %s", user_id, safe_payload)
+            print(f"DEBUG UPDATE_USER - Payload recibido: {safe_payload}")
+
             # Verificar que el usuario existe
             existing_user = self.user_model.get_user_by_id(user_id)
             if not existing_user:
                 self.logger.error(f"Usuario no encontrado: {user_id}")
                 return False
             
-            # Buscar el rol por nombre para obtener el role_id si cambió
-            role_id = existing_user.get('role_id')
-            new_role_name = user_data.get('user_type')
-            
-            if new_role_name and new_role_name != existing_user.get('user_type'):
+            # Resolver rol seleccionado desde la vista
+            existing_role_id = existing_user.get('role_id')
+            incoming_role_id = user_data.get('role_id')
+            resolved_role_id = existing_role_id
+            resolved_role_code = user_data.get('role_code')
+            resolved_role_name = user_data.get('user_type') or ''
+
+            if incoming_role_id is not None:
                 try:
-                    roles = self.role_model.get_all_roles()
-                    for role in roles:
-                        if role.get('name', '').lower() == new_role_name.lower():
-                            role_id = role.get('id')
-                            break
-                except Exception as role_error:
-                    self.logger.warning(f"Error obteniendo roles: {role_error}")
-            
-            # 🔧 APLICAR MAPEO DE user_type (igual que en create_user)
-            # Función para mapear nombre de rol a user_type válido de BD
-            def get_user_type_simplified(role_name):
-                """Mapear cualquier rol a un user_type válido del ENUM de BD"""
-                role_lower = role_name.lower()
-                
-                # Mapeo: cualquier rol se categoriza en los 4 tipos técnicos
-                if 'admin' in role_lower or 'sistema' in role_lower:
-                    return 'admin'
-                elif 'supervis' in role_lower or 'gerente' in role_lower or 'jefe' in role_lower:
-                    return 'supervisor'
-                elif 'cajer' in role_lower or 'vend' in role_lower:
-                    return 'cashier'
-                else:
-                    return 'user'  # Por defecto
-            
-            # Obtener user_type mapeado si se proporcionó
+                    resolved_role_id = int(incoming_role_id)
+                except (TypeError, ValueError):
+                    self.logger.warning(f"ID de rol inválido recibido: {incoming_role_id}")
+                    resolved_role_id = existing_role_id
+
+            try:
+                roles = self.role_model.get_all_roles()
+                self.logger.debug(f"Roles disponibles para actualización: {len(roles)}")
+                for role in roles:
+                    role_name_db = role.get('name', '')
+                    role_code_db = role.get('code', '')
+                    role_id_db = role.get('id')
+
+                    if resolved_role_id is not None and role_id_db == resolved_role_id:
+                        resolved_role_name = resolved_role_name or role_name_db
+                        resolved_role_code = resolved_role_code or role_code_db
+                        break
+
+                    if resolved_role_name and role_name_db.lower() == resolved_role_name.lower():
+                        resolved_role_id = role_id_db
+                        resolved_role_code = resolved_role_code or role_code_db
+                        resolved_role_name = role_name_db
+                        break
+
+                    if resolved_role_code and role_code_db and role_code_db.lower() == str(resolved_role_code).lower():
+                        resolved_role_id = role_id_db
+                        resolved_role_name = role_name_db or resolved_role_name
+                        break
+
+            except Exception as role_error:
+                self.logger.warning(f"Error obteniendo roles: {role_error}")
+
+            # Simplificar user_type con la información resuelta
             db_user_type = existing_user.get('user_type')  # Mantener el actual por defecto
-            if new_role_name:
-                db_user_type = get_user_type_simplified(new_role_name)
-                print(f"DEBUG UPDATE_USER - Mapeo: '{new_role_name}' -> '{db_user_type}' (role_id: {role_id})")
+            role_reference_name = resolved_role_name or existing_user.get('user_type', '')
+            if resolved_role_code or role_reference_name or resolved_role_id != existing_role_id:
+                db_user_type = self._simplify_user_type(resolved_role_code, role_reference_name)
+                print(f"DEBUG UPDATE_USER - Mapeo: '{role_reference_name}' (código: '{resolved_role_code}') -> '{db_user_type}' (role_id: {resolved_role_id})")
+            self.logger.info(
+                "Usuario %s -> rol resuelto id=%s código=%s nombre='%s' user_type='%s'",
+                user_id,
+                resolved_role_id,
+                resolved_role_code,
+                role_reference_name,
+                db_user_type,
+            )
             
+            # Normalizar estado proporcionado por la vista (puede venir en español)
+            status_raw = str(user_data.get('status', 'active')).strip().lower()
+            is_active = status_raw not in {'inactive', 'inactivo', '0', 'false', 'no'}
+
             # Preparar datos para actualizar
             update_data = {
                 'full_name': user_data.get('full_name', existing_user.get('full_name')),
                 'email': user_data.get('email', existing_user.get('email')),
                 'user_type': db_user_type,  # ✅ Usar valor mapeado
-                'role_id': role_id,
-                'active': user_data.get('status', 'active') == 'active',
+                'role_id': resolved_role_id,
+                'active': is_active,
                 'phone': user_data.get('phone', existing_user.get('phone', '')),
                 'avatar_path': user_data.get('avatar_path', existing_user.get('avatar_path', ''))
             }
+            self.logger.info("Payload final para update_user %s: %s", user_id, update_data)
+            print(f"DEBUG UPDATE_USER - Payload final para modelo: {update_data}")
             
             # Actualizar contraseña si se proporcionó
             if 'password' in user_data and user_data['password']:
@@ -311,8 +371,17 @@ class UserController:
             
             # Actualizar usuario
             success = self.user_model.update_user(user_id, update_data)
+            self.logger.info("Resultado de update_user %s: %s", user_id, success)
             
             if success:
+                updated = self.user_model.get_user_by_id(user_id)
+                self.logger.info(
+                    "Usuario %s actualizado. role_id=%s, user_type=%s, active=%s",
+                    user_id,
+                    updated.get('role_id') if updated else None,
+                    updated.get('user_type') if updated else None,
+                    updated.get('active') if updated else None,
+                )
                 self.logger.info(f"Usuario actualizado exitosamente: ID {user_id}")
                 return True
             

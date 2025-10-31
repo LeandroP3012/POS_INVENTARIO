@@ -74,8 +74,11 @@ class UserModel(BaseModel):
             return self.default_users.get(username)
         
         try:
-            result = self.find_by_field('username', username)
-            return result
+                query = "SELECT * FROM users WHERE username = %s"
+                self.logger.debug("find_by_username query: %s params: (%s,)", query, username)
+                result = self.execute_query(query, (username,))
+                self.logger.debug("find_by_username result: %s", result)
+                return result[0] if result else None
         except Exception as e:
             self.logger.error(f"Error buscando usuario {username}: {e}")
             return self.default_users.get(username)
@@ -318,10 +321,38 @@ class UserModel(BaseModel):
             user_data['permissions'] = json.dumps(user_data['permissions'])
         
         try:
-            success = self.update(user_id, user_data)
-            if success:
-                self.log_activity('UPDATE_USER', user_id, f"Usuario actualizado", updated_by_id)
-            return success
+            self.logger.info("UserModel.update_user -> id=%s data=%s", user_id, user_data)
+            update_result = self.update(user_id, user_data)
+            self.logger.info("Resultado de BaseModel.update para usuario %s: %s", user_id, update_result)
+
+            if update_result:
+                self.log_activity('UPDATE_USER', user_id, "Usuario actualizado", updated_by_id)
+                return True
+
+            # Si no hubo filas afectadas, verificar si los datos ya coincidían
+            current = self.get_user_by_id(user_id)
+            if not current:
+                return False
+
+            def _normalize(value):
+                if isinstance(value, bool):
+                    return value
+                if value in (0, 1):
+                    return bool(value)
+                return value
+
+            matches = True
+            for key, value in user_data.items():
+                current_value = current.get(key)
+                if _normalize(current_value) != _normalize(value):
+                    matches = False
+                    break
+
+            if matches:
+                self.logger.debug(f"Usuario {user_id} ya tenía los datos solicitados, sin cambios aplicados")
+                return True
+
+            return False
         except Exception as e:
             self.logger.error(f"Error actualizando usuario: {e}")
             return False

@@ -170,25 +170,37 @@ class DatabaseConnection:
                     return None
             
             cursor = self.connection.cursor(dictionary=True)
+            
+            # Log detallado de la query antes de ejecutar
+            self.logger.info(f"📝 EJECUTANDO SQL: {query}")
+            self.logger.info(f"📦 PARÁMETROS: {params}")
+            print(f"📝 SQL: {query}")
+            print(f"📦 PARAMS: {params}")
+            
             cursor.execute(query, params or ())
             
             if fetch and query.strip().upper().startswith('SELECT'):
                 result = cursor.fetchall()
+                self.logger.info(f"✅ SELECT retornó {len(result) if result else 0} filas")
+                print(f"✅ SELECT: {len(result) if result else 0} filas")
                 cursor.close()
                 return result
             else:
                 self.connection.commit()
                 affected_rows = cursor.rowcount
+                self.logger.info(f"✅ UPDATE/INSERT afectó {affected_rows} filas")
+                print(f"✅ AFFECTED ROWS: {affected_rows}")
                 cursor.close()
                 return affected_rows
                 
         except Error as e:
-            self.logger.error(f"Error ejecutando query: {e}")
+            self.logger.error(f"❌ Error ejecutando query: {e}")
             self.logger.error(f"Query: {query}")
             self.logger.error(f"Params: {params}")
+            print(f"❌ ERROR SQL: {e}")
             return None
         except Exception as e:
-            self.logger.error(f"Error inesperado en query: {e}")
+            self.logger.error(f"❌ Error inesperado en query: {e}")
             print(f"ERROR QUERY DB: {e}")  # Debug adicional
             import traceback
             print(f"QUERY TRACEBACK: {traceback.format_exc()}")

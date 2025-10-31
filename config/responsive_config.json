@@ -26,8 +26,8 @@
         }
     },
     "base_sizes": {
-        "title_font": 16,
-        "subtitle_font": 12,
+        "title_font": 24,
+        "subtitle_font": 18,
         "default_font": 10,
         "small_font": 8,
         "padding_lg": 20,
