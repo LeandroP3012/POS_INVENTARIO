@@ -155,7 +155,8 @@ class POSView:
         self.search_entry.bind('<KeyRelease>', lambda e: self.on_search_change())
         
         # Bind enter para agregar rápido
-        self.search_entry.bind('<Return>', lambda e: self.quick_add_product())
+        # MODIFICADO: Ejecutar búsqueda síncrona antes de agregar
+        self.search_entry.bind('<Return>', lambda e: self.quick_add_product_with_search())
         
         # Instrucciones mejoradas
         instruction_frame = tk.Frame(search_frame, bg='#e8f4f8', relief='solid', borderwidth=1)
@@ -898,6 +899,45 @@ class POSView:
             self.products_tree.focus(first_item)
             self.products_tree.see(first_item)
             self.add_selected_product()
+    
+    def quick_add_product_with_search(self):
+        """
+        Agregar producto con búsqueda síncrona (para pistola de código de barras)
+        
+        Este método resuelve el problema de que la pistola es más rápida que la búsqueda:
+        1. Cancela cualquier búsqueda pendiente
+        2. Ejecuta búsqueda inmediatamente (sin delay)
+        3. Espera a que termine
+        4. Luego agrega el producto
+        """
+        # Obtener texto de búsqueda actual
+        search_text = self.search_entry.get().strip()
+        
+        print(f"\n🔫 DEBUG pistola de código de barras:")
+        print(f"   Código escaneado: '{search_text}'")
+        
+        # Si está vacío, no hacer nada
+        if not search_text:
+            print(f"   ⚠️ Texto vacío - ignorando")
+            return
+        
+        # Cancelar búsqueda programada si existe (importante!)
+        if self.search_timer:
+            print(f"   ⏸️ Cancelando búsqueda programada")
+            self.main_frame.after_cancel(self.search_timer)
+            self.search_timer = None
+        
+        # Ejecutar búsqueda INMEDIATAMENTE (sin delay)
+        print(f"   🔍 Ejecutando búsqueda síncrona...")
+        self.perform_search(search_text)
+        
+        # Ahora agregar el producto (la búsqueda ya terminó)
+        print(f"   ➕ Agregando primer producto encontrado...")
+        self.quick_add_product()
+        
+        # Limpiar campo de búsqueda para siguiente escaneo
+        self.search_entry.delete(0, tk.END)
+        print(f"   ✅ Campo de búsqueda limpiado")
     
     def add_selected_product(self):
         """Agrega el producto seleccionado al carrito"""

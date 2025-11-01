@@ -1231,7 +1231,7 @@ class UserDialog:
             lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
         
-        canvas.create_window((0, 0), window=content_frame, anchor='nw', width=560)
+        canvas.create_window((0, 0), window=content_frame, anchor='nw', width=400)
         canvas.configure(yscrollcommand=scrollbar.set)
         
         # Empaquetar canvas y scrollbar

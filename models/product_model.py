@@ -20,78 +20,131 @@ class ProductModel(BaseModel):
     def generate_next_code(self) -> str:
         """
         Generar el siguiente código de producto disponible
-        Formato: PROD-XXXXXX (soporta hasta 999,999 productos)
+        Formato: PROD-XXXXXX (ej: PROD-000001, PROD-000002, etc.)
+        Soporta hasta 999,999 productos
         
         Returns:
-            Siguiente código disponible
+            Siguiente código disponible (ej: "PROD-000045")
         """
         try:
             connection = self.get_connection()
             if not connection:
-                return "P001"
+                return "PROD-000001"
             
             cursor = connection.cursor()
             
-            # Obtener el último código que sigue el patrón P###
+            # Obtener el último código que sigue el patrón PROD-XXXXXX
+            # Buscar códigos que empiecen con PROD- y tengan números después
+            # PROD- tiene 5 caracteres, entonces SUBSTRING desde posición 6 toma todo después del guión
             query = """
-                SELECT code 
+                SELECT sku 
                 FROM products 
-                WHERE code REGEXP '^P[0-9]+$'
-                ORDER BY CAST(SUBSTRING(code, 2) AS UNSIGNED) DESC 
+                WHERE sku LIKE 'PROD-%'
+                  AND LENGTH(sku) = 11
+                  AND SUBSTRING(sku, 6) REGEXP '^[0-9]+$'
+                ORDER BY CAST(SUBSTRING(sku, 6) AS UNSIGNED) DESC 
                 LIMIT 1
             """
             
+            self.logger.info(f"🔍 Buscando último código PROD-XXXXXX en base de datos...")
             cursor.execute(query)
             result = cursor.fetchone()
             cursor.close()
             
             if result and result[0]:
-                # Extraer el número del último código
-                last_number = int(result[0][1:])  # Quitar 'P'
-                next_number = last_number + 1
+                # Extraer el número después de "PROD-"
+                last_code = result[0]
+                # Separar por guión y tomar la parte numérica
+                parts = last_code.split('-')
+                if len(parts) == 2 and parts[1].isdigit():
+                    last_number = int(parts[1])
+                    next_number = last_number + 1
+                    self.logger.info(f"   Último código encontrado: {last_code}")
+                    self.logger.info(f"   Último número: {last_number}")
+                    self.logger.info(f"   ✅ Siguiente número: {next_number}")
+                else:
+                    next_number = 1
+                    self.logger.warning(f"   ⚠️ Código encontrado con formato incorrecto: {last_code}")
             else:
+                # No hay códigos previos, empezar desde 1
                 next_number = 1
+                self.logger.info(f"   No se encontraron códigos previos, iniciando desde 1")
             
-            # Formatear con 3 dígitos (padding con ceros)
-            return f"P{next_number:03d}"
+            # Formatear con 6 dígitos (padding con ceros)
+            next_code = f"PROD-{next_number:06d}"
+            self.logger.info(f"   📦 Código generado: {next_code}")
+            return next_code
             
         except Exception as e:
             self.logger.error(f"Error al generar código: {e}")
-            return "P001"
+            return "PROD-000001"
     
     def generate_barcode_from_code(self, code: str) -> str:
         """
-        Generar código de barras basado en el código del producto
-        Formato: convierte P### a un código numérico de 13 dígitos (EAN-13)
+        Generar código de barras EAN-13 basado en el código del producto
+        
+        Para códigos PROD-XXXXXX:
+        - Solo usa la parte numérica después del guión
+        - Ej: "PROD-000123" → usa "123" para generar el código de barras
+        - Formato final: 775 (país Perú) + número + padding + dígito verificador
         
         Args:
-            code: Código del producto
+            code: Código del producto (ej: "PROD-000045")
             
         Returns:
-            Código de barras generado
+            Código de barras EAN-13 de 13 dígitos (ej: "7750000000451")
         """
         try:
-            # Extraer el número del código
-            if code.startswith('P'):
-                number = code[1:]  # Quitar 'P'
-            else:
-                # Si no tiene el formato esperado, usar hash del código
-                number = str(abs(hash(code)))[:12]
+            self.logger.info(f"📊 Generando código de barras EAN-13 para SKU: {code}")
             
-            # Completar con prefix para EAN-13 (código de país, ej: 775 para Perú)
-            # Formato: 775 + número del código + padding
-            barcode_base = f"775{number:0>9}"  # 775 + 9 dígitos = 12 dígitos
+            # Extraer solo el número del código
+            if code.startswith('PROD-'):
+                # Separar por guión y tomar la parte numérica
+                parts = code.split('-')
+                if len(parts) == 2 and parts[1].isdigit():
+                    # Mantener el número como string para preservar los ceros
+                    # Ej: "PROD-000002" → "000002"
+                    number_str = parts[1]
+                    # Convertir a entero para usar en el código de barras
+                    number = int(number_str)
+                    self.logger.info(f"   ✓ Formato PROD-XXXXXX detectado")
+                    self.logger.info(f"   ✓ Número extraído: {number_str} (valor numérico: {number})")
+                else:
+                    # Si no tiene el formato esperado, usar hash
+                    number = abs(hash(code)) % 1000000000
+                    self.logger.warning(f"   ⚠️ Formato incorrecto, usando hash: {number}")
+            elif code.startswith('P') and code[1:].isdigit():
+                # Compatibilidad con formato antiguo P###
+                number = int(code[1:])
+                self.logger.info(f"   ✓ Formato antiguo P### detectado, número: {number}")
+            else:
+                # Si no tiene formato reconocido, usar hash del código
+                number = abs(hash(code)) % 1000000000
+                self.logger.warning(f"   ⚠️ Formato no reconocido, usando hash: {number}")
+            
+            # Completar con prefix para EAN-13 (775 = código de país Perú)
+            # Formato: 775 + número del código + padding hasta 12 dígitos
+            barcode_base = f"775{number:09d}"  # 775 + 9 dígitos = 12 dígitos total
+            
+            self.logger.info(f"   Base del código (12 dígitos): {barcode_base}")
             
             # Calcular dígito verificador EAN-13
             check_digit = self._calculate_ean13_check_digit(barcode_base)
             
-            return f"{barcode_base}{check_digit}"
+            final_barcode = f"{barcode_base}{check_digit}"
+            
+            self.logger.info(f"   Dígito verificador calculado: {check_digit}")
+            self.logger.info(f"   ✅ Código de barras EAN-13 final: {final_barcode}")
+            
+            return final_barcode
             
         except Exception as e:
-            self.logger.error(f"Error al generar código de barras: {e}")
+            self.logger.error(f"❌ Error al generar código de barras: {e}", exc_info=True)
             # Fallback: generar código basado en timestamp
             import time
-            return f"775{int(time.time()) % 1000000000:09d}0"
+            fallback = f"775{int(time.time()) % 1000000000:09d}0"
+            self.logger.warning(f"   Usando código de barras fallback: {fallback}")
+            return fallback
     
     def _calculate_ean13_check_digit(self, barcode_12: str) -> int:
         """

@@ -1198,8 +1198,14 @@ class ProductFormDialog:
                     # Crear instancia de impresora térmica
                     thermal = ThermalPrinter(printer_name)
                     
+                    # Debug: Verificar valores antes de imprimir
+                    print(f"🔍 DEBUG - Valores para impresión:")
+                    print(f"   Nombre: {name}")
+                    print(f"   SKU: {sku}")
+                    print(f"   Código de Barras: {barcode_code}")
+                    
                     # Imprimir código de barras en térmica
-                    success = thermal.print_barcode_image(new_img, name, sku)
+                    success = thermal.print_barcode_image(new_img, name, sku, barcode_code)
                     
                     if success:
                         print(f"   ✅ Código de barras enviado a impresora térmica")

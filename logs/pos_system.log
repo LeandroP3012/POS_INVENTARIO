@@ -24894,3 +24894,1173 @@
 2025-10-31 14:48:32,163 - AuthController - INFO - Logout exitoso para: admin
 2025-10-31 14:48:32,189 - AuthController - INFO - Controlador de autenticación limpiado
 2025-10-31 14:48:32,189 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-31 14:50:34,916 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-31 14:50:34,953 - MainController - INFO - Sistema POS iniciado
+2025-10-31 14:50:34,953 - MainController - INFO - Iniciando aplicación POS
+2025-10-31 14:50:34,954 - MainController - INFO - Mostrando pantalla de login
+2025-10-31 14:50:35,079 - utils.AutoScaler - INFO - 🖥️  Resolución: 1920x1080
+2025-10-31 14:50:35,079 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.00
+2025-10-31 14:50:39,077 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-31 14:50:39,294 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 14:50:39,295 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM users WHERE username = %s
+2025-10-31 14:50:39,295 - database - INFO - 📦 PARÁMETROS: ('admin',)
+2025-10-31 14:50:39,296 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 14:50:39,317 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 14:50:39,318 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 14:50:39,318 - database - INFO - 📦 PARÁMETROS: ('users', 'updated_at')
+2025-10-31 14:50:39,320 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 14:50:39,321 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-10-31 14:50:39,321 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 10, 31, 14, 50, 39, 317912), 'updated_at': datetime.datetime(2025, 10, 31, 14, 50, 39, 321026)}
+2025-10-31 14:50:39,322 - database - INFO - 📝 EJECUTANDO SQL: UPDATE users SET failed_attempts = %s, locked_until = %s, last_login = %s, updated_at = %s WHERE id = %s
+2025-10-31 14:50:39,322 - database - INFO - 📦 PARÁMETROS: (0, None, datetime.datetime(2025, 10, 31, 14, 50, 39, 317912), datetime.datetime(2025, 10, 31, 14, 50, 39, 321026), 1)
+2025-10-31 14:50:39,325 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 14:50:39,325 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 14:50:39,346 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 14:50:39,347 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE id = %s
+2025-10-31 14:50:39,348 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 14:50:39,349 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 14:50:39,349 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-31 14:50:41,381 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 14:50:41,382 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 14:50:41,382 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'created_at')
+2025-10-31 14:50:41,384 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 14:50:41,386 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 14:50:41,386 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 14:50:41,388 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 14:50:41,389 - database - INFO - 📝 EJECUTANDO SQL: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-10-31 14:50:41,389 - database - INFO - 📦 PARÁMETROS: (1, 'admin', 'admin', datetime.datetime(2025, 10, 31, 14, 50, 41, 350033), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 10, 31, 22, 50, 41, 350068))
+2025-10-31 14:50:41,394 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 14:50:41,395 - database - INFO - 📝 EJECUTANDO SQL: SELECT LAST_INSERT_ID() as last_id
+2025-10-31 14:50:41,395 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 14:50:41,395 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 14:50:41,396 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 14:50:41,396 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 14:50:41,398 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 14:50:41,398 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 14:50:41,399 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-31 14:50:44,434 - MainController - INFO - Login exitoso para admin: admin
+2025-10-31 14:50:46,412 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 14:50:49,490 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 14:50:57,557 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 14:51:37,960 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 14:51:37,961 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 14:51:44,249 - model.ProductModel - ERROR - Error al calcular dígito verificador: invalid literal for int() with base 10: 'O'
+2025-10-31 14:51:55,307 - model.ProductModel - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 14:52:54,193 - model.ProductModel - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 14:53:36,267 - model.ProductModel - ERROR - Error al calcular dígito verificador: invalid literal for int() with base 10: 'O'
+2025-10-31 15:50:57,607 - model.ProductModel - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 15:51:02,185 - model.ProductModel - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 17:57:09,729 - MainController - INFO - Cerrando aplicación POS
+2025-10-31 17:57:09,737 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 17:57:09,737 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 17:57:09,738 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 17:57:09,740 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 17:57:09,740 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 369
+2025-10-31 17:57:09,740 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 10, 31, 17, 57, 9, 737576), 'logout_reason': 'cleanup'}
+2025-10-31 17:57:09,741 - database - INFO - 📝 EJECUTANDO SQL: UPDATE user_sessions SET is_active = %s, logout_time = %s, logout_reason = %s WHERE id = %s
+2025-10-31 17:57:09,741 - database - INFO - 📦 PARÁMETROS: (False, datetime.datetime(2025, 10, 31, 17, 57, 9, 737576), 'cleanup', 369)
+2025-10-31 17:57:09,746 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 17:57:09,746 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 17:57:09,747 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 17:57:09,747 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 17:57:09,748 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 17:57:09,749 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 17:57:09,749 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-31 17:57:09,749 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-31 17:57:09,811 - AuthController - INFO - Logout exitoso para: admin
+2025-10-31 17:57:09,838 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-31 17:57:09,838 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-31 17:58:03,649 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-31 17:58:03,839 - MainController - INFO - Sistema POS iniciado
+2025-10-31 17:58:03,839 - MainController - INFO - Iniciando aplicación POS
+2025-10-31 17:58:03,839 - MainController - INFO - Mostrando pantalla de login
+2025-10-31 17:58:04,067 - utils.AutoScaler - INFO - 🖥️  Resolución: 1920x1080
+2025-10-31 17:58:04,068 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.00
+2025-10-31 17:58:08,186 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-31 17:58:08,440 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 17:58:08,441 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM users WHERE username = %s
+2025-10-31 17:58:08,441 - database - INFO - 📦 PARÁMETROS: ('admin',)
+2025-10-31 17:58:08,443 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 17:58:08,477 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 17:58:08,478 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 17:58:08,479 - database - INFO - 📦 PARÁMETROS: ('users', 'updated_at')
+2025-10-31 17:58:08,480 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 17:58:08,481 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-10-31 17:58:08,481 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 10, 31, 17, 58, 8, 478109), 'updated_at': datetime.datetime(2025, 10, 31, 17, 58, 8, 481056)}
+2025-10-31 17:58:08,482 - database - INFO - 📝 EJECUTANDO SQL: UPDATE users SET failed_attempts = %s, locked_until = %s, last_login = %s, updated_at = %s WHERE id = %s
+2025-10-31 17:58:08,482 - database - INFO - 📦 PARÁMETROS: (0, None, datetime.datetime(2025, 10, 31, 17, 58, 8, 478109), datetime.datetime(2025, 10, 31, 17, 58, 8, 481056), 1)
+2025-10-31 17:58:08,486 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 17:58:08,486 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 17:58:08,495 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 17:58:08,495 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE id = %s
+2025-10-31 17:58:08,496 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 17:58:08,497 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 17:58:08,497 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-31 17:58:10,532 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 17:58:10,533 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 17:58:10,534 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'created_at')
+2025-10-31 17:58:10,536 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 17:58:10,537 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 17:58:10,537 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 17:58:10,539 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 17:58:10,540 - database - INFO - 📝 EJECUTANDO SQL: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-10-31 17:58:10,540 - database - INFO - 📦 PARÁMETROS: (1, 'admin', 'admin', datetime.datetime(2025, 10, 31, 17, 58, 10, 499527), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 11, 1, 1, 58, 10, 499636))
+2025-10-31 17:58:10,545 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 17:58:10,546 - database - INFO - 📝 EJECUTANDO SQL: SELECT LAST_INSERT_ID() as last_id
+2025-10-31 17:58:10,546 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 17:58:10,547 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 17:58:10,547 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 17:58:10,548 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 17:58:10,549 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 17:58:10,550 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 17:58:10,550 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-31 17:58:13,583 - MainController - INFO - Login exitoso para admin: admin
+2025-10-31 17:59:14,195 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 17:59:14,198 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 17:59:19,303 - model.ProductModel - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 17:59:20,816 - model.ProductModel - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 18:01:47,965 - model.ProductModel - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 18:02:09,030 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-10-31 18:02:09,031 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-31 18:02:15,545 - ConfigController - INFO - Configuración guardada exitosamente
+2025-10-31 18:02:15,545 - ConfigController - INFO - Configuración aplicada al sistema
+2025-10-31 18:02:16,479 - MainController - ERROR - Error actualizando login después de guardar configuración: 'LoginView' object has no attribute 'refresh_company_info'
+2025-10-31 18:02:25,008 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 18:02:25,010 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 18:02:27,803 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 18:02:34,838 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 18:02:39,728 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 18:02:56,059 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 18:02:56,061 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 18:03:02,551 - model.ProductModel - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 19:52:17,797 - MainController - INFO - Cerrando aplicación POS
+2025-10-31 19:52:17,832 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 19:52:17,833 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 19:52:17,833 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 19:52:17,835 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 19:52:17,835 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 370
+2025-10-31 19:52:17,836 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 10, 31, 19, 52, 17, 832540), 'logout_reason': 'cleanup'}
+2025-10-31 19:52:17,837 - database - INFO - 📝 EJECUTANDO SQL: UPDATE user_sessions SET is_active = %s, logout_time = %s, logout_reason = %s WHERE id = %s
+2025-10-31 19:52:17,837 - database - INFO - 📦 PARÁMETROS: (False, datetime.datetime(2025, 10, 31, 19, 52, 17, 832540), 'cleanup', 370)
+2025-10-31 19:52:17,842 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 19:52:17,842 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 19:52:17,843 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 19:52:17,843 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 19:52:17,844 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 19:52:17,845 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 19:52:17,845 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-31 19:52:17,845 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-31 19:52:17,899 - AuthController - INFO - Logout exitoso para: admin
+2025-10-31 19:52:17,918 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-31 19:52:17,919 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-31 21:40:13,782 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-31 21:40:13,919 - MainController - INFO - Sistema POS iniciado
+2025-10-31 21:40:13,920 - MainController - INFO - Iniciando aplicación POS
+2025-10-31 21:40:13,920 - MainController - INFO - Mostrando pantalla de login
+2025-10-31 21:40:14,153 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-10-31 21:40:14,153 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-10-31 21:40:20,911 - AuthController - INFO - Intento de login para usuario: ADMIN
+2025-10-31 21:40:21,111 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:40:21,111 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM users WHERE username = %s
+2025-10-31 21:40:21,112 - database - INFO - 📦 PARÁMETROS: ('ADMIN',)
+2025-10-31 21:40:21,114 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 21:40:21,140 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:40:21,141 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 21:40:21,141 - database - INFO - 📦 PARÁMETROS: ('users', 'updated_at')
+2025-10-31 21:40:21,144 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 21:40:21,144 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-10-31 21:40:21,144 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 10, 31, 21, 40, 21, 141257), 'updated_at': datetime.datetime(2025, 10, 31, 21, 40, 21, 144623)}
+2025-10-31 21:40:21,145 - database - INFO - 📝 EJECUTANDO SQL: UPDATE users SET failed_attempts = %s, locked_until = %s, last_login = %s, updated_at = %s WHERE id = %s
+2025-10-31 21:40:21,145 - database - INFO - 📦 PARÁMETROS: (0, None, datetime.datetime(2025, 10, 31, 21, 40, 21, 141257), datetime.datetime(2025, 10, 31, 21, 40, 21, 144623), 1)
+2025-10-31 21:40:21,150 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 21:40:21,150 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 21:40:21,156 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:40:21,157 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE id = %s
+2025-10-31 21:40:21,157 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 21:40:21,158 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 21:40:21,159 - model.UserModel - INFO - Usuario autenticado exitosamente: ADMIN
+2025-10-31 21:40:23,165 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:40:23,165 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 21:40:23,166 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'created_at')
+2025-10-31 21:40:23,167 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 21:40:23,168 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 21:40:23,168 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 21:40:23,169 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 21:40:23,169 - database - INFO - 📝 EJECUTANDO SQL: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-10-31 21:40:23,170 - database - INFO - 📦 PARÁMETROS: (1, 'admin', 'admin', datetime.datetime(2025, 10, 31, 21, 40, 23, 159552), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 11, 1, 5, 40, 23, 159587))
+2025-10-31 21:40:23,174 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 21:40:23,175 - database - INFO - 📝 EJECUTANDO SQL: SELECT LAST_INSERT_ID() as last_id
+2025-10-31 21:40:23,175 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 21:40:23,176 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 21:40:23,176 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 21:40:23,176 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 21:40:23,178 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 21:40:23,178 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 21:40:23,178 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-31 21:40:26,222 - MainController - INFO - Login exitoso para admin: admin
+2025-10-31 21:40:36,973 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:42:41,885 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:42:45,530 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:43:18,266 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:43:18,282 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:43:18,956 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:43:18,959 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:43:18,962 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:43:32,255 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-10-31 21:43:32,256 - ConfigController - INFO - Configuración de base de datos cargada
+2025-10-31 21:43:37,838 - ConfigController - INFO - Configuración guardada exitosamente
+2025-10-31 21:43:39,722 - MainController - ERROR - Error actualizando login después de guardar configuración: 'LoginView' object has no attribute 'refresh_company_info'
+2025-10-31 21:43:42,971 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:43:45,006 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:43:50,967 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:43:50,997 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:43:51,184 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:43:51,185 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:43:51,188 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:44:13,097 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:44:27,014 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:44:27,045 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:44:27,104 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:44:27,106 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:44:27,108 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:48:45,536 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 21:48:45,537 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 21:49:01,222 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 21:49:01,223 - model.ProductModel - INFO -    Último código encontrado: PROD-000003
+2025-10-31 21:49:01,223 - model.ProductModel - INFO -    Último número: 3
+2025-10-31 21:49:01,224 - model.ProductModel - INFO -    ✅ Siguiente número: 4
+2025-10-31 21:49:01,224 - model.ProductModel - INFO -    📦 Código generado: PROD-000004
+2025-10-31 21:49:01,224 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000004
+2025-10-31 21:49:01,225 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-10-31 21:49:01,225 - model.ProductModel - INFO -    ✓ Número extraído: 000004 (valor numérico: 4)
+2025-10-31 21:49:01,225 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000004
+2025-10-31 21:49:01,225 - model.ProductModel - INFO -    Dígito verificador calculado: 5
+2025-10-31 21:49:01,225 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000045
+2025-10-31 21:49:16,556 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000004
+2025-10-31 21:49:16,556 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-10-31 21:49:16,557 - model.ProductModel - INFO -    ✓ Número extraído: 000004 (valor numérico: 4)
+2025-10-31 21:49:16,557 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000004
+2025-10-31 21:49:16,557 - model.ProductModel - INFO -    Dígito verificador calculado: 5
+2025-10-31 21:49:16,557 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000045
+2025-10-31 22:07:14,322 - MainController - INFO - Cerrando aplicación POS
+2025-10-31 22:07:14,342 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 22:07:14,343 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 22:07:14,343 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 22:07:14,345 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:07:14,346 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 371
+2025-10-31 22:07:14,346 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 10, 31, 22, 7, 14, 342941), 'logout_reason': 'cleanup'}
+2025-10-31 22:07:14,347 - database - INFO - 📝 EJECUTANDO SQL: UPDATE user_sessions SET is_active = %s, logout_time = %s, logout_reason = %s WHERE id = %s
+2025-10-31 22:07:14,347 - database - INFO - 📦 PARÁMETROS: (False, datetime.datetime(2025, 10, 31, 22, 7, 14, 342941), 'cleanup', 371)
+2025-10-31 22:07:14,351 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 22:07:14,351 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 22:07:14,352 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 22:07:14,352 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 22:07:14,354 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:07:14,354 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 22:07:14,354 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-31 22:07:14,355 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-31 22:07:14,451 - AuthController - INFO - Logout exitoso para: admin
+2025-10-31 22:07:14,492 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-31 22:07:14,495 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-31 22:07:17,520 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-31 22:07:17,560 - MainController - INFO - Sistema POS iniciado
+2025-10-31 22:07:17,560 - MainController - INFO - Iniciando aplicación POS
+2025-10-31 22:07:17,561 - MainController - INFO - Mostrando pantalla de login
+2025-10-31 22:07:17,699 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-10-31 22:07:17,699 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-10-31 22:07:21,715 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-31 22:07:21,918 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 22:07:21,918 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM users WHERE username = %s
+2025-10-31 22:07:21,919 - database - INFO - 📦 PARÁMETROS: ('admin',)
+2025-10-31 22:07:21,920 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:07:21,944 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 22:07:21,945 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 22:07:21,945 - database - INFO - 📦 PARÁMETROS: ('users', 'updated_at')
+2025-10-31 22:07:21,947 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:07:21,948 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-10-31 22:07:21,948 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 10, 31, 22, 7, 21, 945246), 'updated_at': datetime.datetime(2025, 10, 31, 22, 7, 21, 948253)}
+2025-10-31 22:07:21,949 - database - INFO - 📝 EJECUTANDO SQL: UPDATE users SET failed_attempts = %s, locked_until = %s, last_login = %s, updated_at = %s WHERE id = %s
+2025-10-31 22:07:21,949 - database - INFO - 📦 PARÁMETROS: (0, None, datetime.datetime(2025, 10, 31, 22, 7, 21, 945246), datetime.datetime(2025, 10, 31, 22, 7, 21, 948253), 1)
+2025-10-31 22:07:21,952 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 22:07:21,952 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 22:07:21,976 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 22:07:21,977 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE id = %s
+2025-10-31 22:07:21,977 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 22:07:21,978 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:07:21,978 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-31 22:07:24,014 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 22:07:24,015 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 22:07:24,015 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'created_at')
+2025-10-31 22:07:24,017 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:07:24,018 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 22:07:24,018 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 22:07:24,020 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:07:24,020 - database - INFO - 📝 EJECUTANDO SQL: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-10-31 22:07:24,020 - database - INFO - 📦 PARÁMETROS: (1, 'admin', 'admin', datetime.datetime(2025, 10, 31, 22, 7, 23, 990448), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 11, 1, 6, 7, 23, 990522))
+2025-10-31 22:07:24,025 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 22:07:24,025 - database - INFO - 📝 EJECUTANDO SQL: SELECT LAST_INSERT_ID() as last_id
+2025-10-31 22:07:24,025 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 22:07:24,026 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:07:24,026 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 22:07:24,027 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 22:07:24,028 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:07:24,029 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 22:07:24,029 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-31 22:07:27,060 - MainController - INFO - Login exitoso para admin: admin
+2025-10-31 22:07:39,686 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 22:07:42,083 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 22:07:51,442 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 22:07:51,443 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 22:07:57,735 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 22:07:57,736 - model.ProductModel - INFO -    Último código encontrado: PROD-000003
+2025-10-31 22:07:57,736 - model.ProductModel - INFO -    Último número: 3
+2025-10-31 22:07:57,736 - model.ProductModel - INFO -    ✅ Siguiente número: 4
+2025-10-31 22:07:57,736 - model.ProductModel - INFO -    📦 Código generado: PROD-000004
+2025-10-31 22:07:57,737 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000004
+2025-10-31 22:07:57,737 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-10-31 22:07:57,737 - model.ProductModel - INFO -    ✓ Número extraído: 000004 (valor numérico: 4)
+2025-10-31 22:07:57,737 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000004
+2025-10-31 22:07:57,737 - model.ProductModel - INFO -    Dígito verificador calculado: 5
+2025-10-31 22:07:57,737 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000045
+2025-10-31 22:08:01,735 - model.ProductModel - ERROR - Error al obtener producto 9: 'code'
+2025-10-31 22:08:01,738 - model.ProductModel - INFO - Producto 9 actualizado exitosamente
+2025-10-31 22:08:01,738 - controller.ProductController - INFO - Producto 9 actualizado por admin
+2025-10-31 22:08:04,333 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 22:08:04,334 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 22:08:21,233 - MainController - INFO - Cerrando aplicación POS
+2025-10-31 22:08:21,239 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 22:08:21,240 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 22:08:21,240 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 22:08:21,243 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:08:21,244 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 372
+2025-10-31 22:08:21,244 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 10, 31, 22, 8, 21, 240046), 'logout_reason': 'cleanup'}
+2025-10-31 22:08:21,245 - database - INFO - 📝 EJECUTANDO SQL: UPDATE user_sessions SET is_active = %s, logout_time = %s, logout_reason = %s WHERE id = %s
+2025-10-31 22:08:21,245 - database - INFO - 📦 PARÁMETROS: (False, datetime.datetime(2025, 10, 31, 22, 8, 21, 240046), 'cleanup', 372)
+2025-10-31 22:08:21,248 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 22:08:21,248 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 22:08:21,249 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 22:08:21,249 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 22:08:21,250 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:08:21,251 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 22:08:21,251 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-31 22:08:21,251 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-31 22:08:21,354 - AuthController - INFO - Logout exitoso para: admin
+2025-10-31 22:08:21,381 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-31 22:08:21,382 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-31 22:34:59,137 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-31 22:34:59,174 - MainController - INFO - Sistema POS iniciado
+2025-10-31 22:34:59,174 - MainController - INFO - Iniciando aplicación POS
+2025-10-31 22:34:59,174 - MainController - INFO - Mostrando pantalla de login
+2025-10-31 22:34:59,302 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-10-31 22:34:59,303 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-10-31 22:35:02,533 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-31 22:35:02,732 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 22:35:02,733 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM users WHERE username = %s
+2025-10-31 22:35:02,733 - database - INFO - 📦 PARÁMETROS: ('admin',)
+2025-10-31 22:35:02,736 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:35:02,758 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 22:35:02,759 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 22:35:02,759 - database - INFO - 📦 PARÁMETROS: ('users', 'updated_at')
+2025-10-31 22:35:02,762 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:35:02,763 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-10-31 22:35:02,763 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 10, 31, 22, 35, 2, 758882), 'updated_at': datetime.datetime(2025, 10, 31, 22, 35, 2, 763125)}
+2025-10-31 22:35:02,764 - database - INFO - 📝 EJECUTANDO SQL: UPDATE users SET failed_attempts = %s, locked_until = %s, last_login = %s, updated_at = %s WHERE id = %s
+2025-10-31 22:35:02,764 - database - INFO - 📦 PARÁMETROS: (0, None, datetime.datetime(2025, 10, 31, 22, 35, 2, 758882), datetime.datetime(2025, 10, 31, 22, 35, 2, 763125), 1)
+2025-10-31 22:35:02,770 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 22:35:02,770 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 22:35:02,790 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 22:35:02,791 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE id = %s
+2025-10-31 22:35:02,791 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 22:35:02,793 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:35:02,793 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-31 22:35:04,830 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 22:35:04,831 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 22:35:04,831 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'created_at')
+2025-10-31 22:35:04,835 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:35:04,836 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 22:35:04,836 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 22:35:04,838 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:35:04,839 - database - INFO - 📝 EJECUTANDO SQL: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-10-31 22:35:04,839 - database - INFO - 📦 PARÁMETROS: (1, 'admin', 'admin', datetime.datetime(2025, 10, 31, 22, 35, 4, 803796), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 11, 1, 6, 35, 4, 803842))
+2025-10-31 22:35:04,844 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 22:35:04,845 - database - INFO - 📝 EJECUTANDO SQL: SELECT LAST_INSERT_ID() as last_id
+2025-10-31 22:35:04,845 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 22:35:04,845 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:35:04,846 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 22:35:04,846 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 22:35:04,848 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 22:35:04,848 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 22:35:04,849 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-31 22:35:07,886 - MainController - INFO - Login exitoso para admin: admin
+2025-10-31 22:35:21,194 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 22:35:24,115 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 22:35:29,686 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 22:35:29,687 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 22:35:35,701 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 22:35:35,702 - model.ProductModel - INFO -    Último código encontrado: PROD-000004
+2025-10-31 22:35:35,703 - model.ProductModel - INFO -    Último número: 4
+2025-10-31 22:35:35,703 - model.ProductModel - INFO -    ✅ Siguiente número: 5
+2025-10-31 22:35:35,703 - model.ProductModel - INFO -    📦 Código generado: PROD-000005
+2025-10-31 22:35:35,703 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000005
+2025-10-31 22:35:35,704 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-10-31 22:35:35,704 - model.ProductModel - INFO -    ✓ Número extraído: 000005 (valor numérico: 5)
+2025-10-31 22:35:35,704 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000005
+2025-10-31 22:35:35,704 - model.ProductModel - INFO -    Dígito verificador calculado: 2
+2025-10-31 22:35:35,705 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000052
+2025-10-31 22:35:40,551 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000005
+2025-10-31 22:35:40,552 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-10-31 22:35:40,552 - model.ProductModel - INFO -    ✓ Número extraído: 000005 (valor numérico: 5)
+2025-10-31 22:35:40,552 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000005
+2025-10-31 22:35:40,552 - model.ProductModel - INFO -    Dígito verificador calculado: 2
+2025-10-31 22:35:40,552 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000052
+2025-10-31 22:35:46,287 - model.ProductModel - ERROR - Error al obtener producto 6: 'code'
+2025-10-31 22:35:46,291 - model.ProductModel - INFO - Producto 6 actualizado exitosamente
+2025-10-31 22:35:46,291 - controller.ProductController - INFO - Producto 6 actualizado por admin
+2025-10-31 22:35:47,653 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 22:35:47,654 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 23:29:33,958 - MainController - INFO - Cerrando aplicación POS
+2025-10-31 23:29:33,976 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:29:33,978 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:29:33,979 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 23:29:33,985 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:29:33,985 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 373
+2025-10-31 23:29:33,985 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 10, 31, 23, 29, 33, 977362), 'logout_reason': 'cleanup'}
+2025-10-31 23:29:33,986 - database - INFO - 📝 EJECUTANDO SQL: UPDATE user_sessions SET is_active = %s, logout_time = %s, logout_reason = %s WHERE id = %s
+2025-10-31 23:29:33,987 - database - INFO - 📦 PARÁMETROS: (False, datetime.datetime(2025, 10, 31, 23, 29, 33, 977362), 'cleanup', 373)
+2025-10-31 23:29:33,992 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:29:33,992 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 23:29:33,993 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 23:29:33,994 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 23:29:33,997 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:29:33,997 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 23:29:33,998 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-31 23:29:33,998 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-31 23:29:34,114 - AuthController - INFO - Logout exitoso para: admin
+2025-10-31 23:29:34,149 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-31 23:29:34,150 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-31 23:29:40,071 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-31 23:29:40,116 - MainController - INFO - Sistema POS iniciado
+2025-10-31 23:29:40,116 - MainController - INFO - Iniciando aplicación POS
+2025-10-31 23:29:40,117 - MainController - INFO - Mostrando pantalla de login
+2025-10-31 23:29:40,256 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-10-31 23:29:40,256 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-10-31 23:29:45,501 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-31 23:29:45,687 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:29:45,688 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM users WHERE username = %s
+2025-10-31 23:29:45,688 - database - INFO - 📦 PARÁMETROS: ('admin',)
+2025-10-31 23:29:45,690 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:29:45,713 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:29:45,713 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:29:45,714 - database - INFO - 📦 PARÁMETROS: ('users', 'updated_at')
+2025-10-31 23:29:45,716 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:29:45,717 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-10-31 23:29:45,717 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 10, 31, 23, 29, 45, 713491), 'updated_at': datetime.datetime(2025, 10, 31, 23, 29, 45, 716977)}
+2025-10-31 23:29:45,717 - database - INFO - 📝 EJECUTANDO SQL: UPDATE users SET failed_attempts = %s, locked_until = %s, last_login = %s, updated_at = %s WHERE id = %s
+2025-10-31 23:29:45,718 - database - INFO - 📦 PARÁMETROS: (0, None, datetime.datetime(2025, 10, 31, 23, 29, 45, 713491), datetime.datetime(2025, 10, 31, 23, 29, 45, 716977), 1)
+2025-10-31 23:29:45,722 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:29:45,722 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 23:29:45,742 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:29:45,743 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE id = %s
+2025-10-31 23:29:45,743 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 23:29:45,745 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:29:45,745 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-31 23:29:47,770 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:29:47,771 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:29:47,771 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'created_at')
+2025-10-31 23:29:47,774 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:29:47,774 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:29:47,775 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 23:29:47,776 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:29:47,777 - database - INFO - 📝 EJECUTANDO SQL: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-10-31 23:29:47,777 - database - INFO - 📦 PARÁMETROS: (1, 'admin', 'admin', datetime.datetime(2025, 10, 31, 23, 29, 47, 761157), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 11, 1, 7, 29, 47, 761211))
+2025-10-31 23:29:47,782 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:29:47,784 - database - INFO - 📝 EJECUTANDO SQL: SELECT LAST_INSERT_ID() as last_id
+2025-10-31 23:29:47,784 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 23:29:47,785 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:29:47,785 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 23:29:47,785 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 23:29:47,787 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:29:47,787 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 23:29:47,787 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-31 23:29:50,816 - MainController - INFO - Login exitoso para admin: admin
+2025-10-31 23:30:02,218 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 23:30:02,221 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 23:39:15,829 - MainController - INFO - Cerrando aplicación POS
+2025-10-31 23:39:15,837 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:39:15,838 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:39:15,838 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 23:39:15,841 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:39:15,841 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 374
+2025-10-31 23:39:15,842 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 10, 31, 23, 39, 15, 838058), 'logout_reason': 'cleanup'}
+2025-10-31 23:39:15,842 - database - INFO - 📝 EJECUTANDO SQL: UPDATE user_sessions SET is_active = %s, logout_time = %s, logout_reason = %s WHERE id = %s
+2025-10-31 23:39:15,842 - database - INFO - 📦 PARÁMETROS: (False, datetime.datetime(2025, 10, 31, 23, 39, 15, 838058), 'cleanup', 374)
+2025-10-31 23:39:15,848 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:39:15,848 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 23:39:15,849 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 23:39:15,849 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 23:39:15,850 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:39:15,851 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 23:39:15,851 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-31 23:39:15,851 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-31 23:39:15,954 - AuthController - INFO - Logout exitoso para: admin
+2025-10-31 23:39:16,002 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-31 23:39:16,002 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-31 23:39:24,550 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-31 23:39:24,588 - MainController - INFO - Sistema POS iniciado
+2025-10-31 23:39:24,588 - MainController - INFO - Iniciando aplicación POS
+2025-10-31 23:39:24,588 - MainController - INFO - Mostrando pantalla de login
+2025-10-31 23:39:24,716 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-10-31 23:39:24,716 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-10-31 23:39:28,512 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-31 23:39:28,718 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:39:28,719 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM users WHERE username = %s
+2025-10-31 23:39:28,719 - database - INFO - 📦 PARÁMETROS: ('admin',)
+2025-10-31 23:39:28,721 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:39:28,741 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:39:28,742 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:39:28,743 - database - INFO - 📦 PARÁMETROS: ('users', 'updated_at')
+2025-10-31 23:39:28,746 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:39:28,746 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-10-31 23:39:28,746 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 10, 31, 23, 39, 28, 742263), 'updated_at': datetime.datetime(2025, 10, 31, 23, 39, 28, 746569)}
+2025-10-31 23:39:28,747 - database - INFO - 📝 EJECUTANDO SQL: UPDATE users SET failed_attempts = %s, locked_until = %s, last_login = %s, updated_at = %s WHERE id = %s
+2025-10-31 23:39:28,747 - database - INFO - 📦 PARÁMETROS: (0, None, datetime.datetime(2025, 10, 31, 23, 39, 28, 742263), datetime.datetime(2025, 10, 31, 23, 39, 28, 746569), 1)
+2025-10-31 23:39:28,751 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:39:28,751 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 23:39:28,772 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:39:28,773 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE id = %s
+2025-10-31 23:39:28,773 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 23:39:28,775 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:39:28,775 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-31 23:39:30,787 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:39:30,788 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:39:30,789 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'created_at')
+2025-10-31 23:39:30,793 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:39:30,794 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:39:30,794 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 23:39:30,796 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:39:30,796 - database - INFO - 📝 EJECUTANDO SQL: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-10-31 23:39:30,796 - database - INFO - 📦 PARÁMETROS: (1, 'admin', 'admin', datetime.datetime(2025, 10, 31, 23, 39, 30, 776348), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 11, 1, 7, 39, 30, 776489))
+2025-10-31 23:39:30,802 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:39:30,803 - database - INFO - 📝 EJECUTANDO SQL: SELECT LAST_INSERT_ID() as last_id
+2025-10-31 23:39:30,803 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 23:39:30,804 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:39:30,805 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 23:39:30,805 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 23:39:30,807 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:39:30,808 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 23:39:30,808 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-31 23:39:33,840 - MainController - INFO - Login exitoso para admin: admin
+2025-10-31 23:39:37,166 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 23:39:37,168 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 23:41:54,686 - model.ProductModel - ERROR - Error al obtener producto 6: 'code'
+2025-10-31 23:41:54,689 - model.ProductModel - INFO - Producto 6 actualizado exitosamente
+2025-10-31 23:41:54,689 - controller.ProductController - INFO - Producto 6 actualizado por admin
+2025-10-31 23:41:56,281 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 23:41:56,282 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 23:42:01,052 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 23:42:01,053 - model.ProductModel - INFO -    Último código encontrado: PROD-000005
+2025-10-31 23:42:01,054 - model.ProductModel - INFO -    Último número: 5
+2025-10-31 23:42:01,054 - model.ProductModel - INFO -    ✅ Siguiente número: 6
+2025-10-31 23:42:01,054 - model.ProductModel - INFO -    📦 Código generado: PROD-000006
+2025-10-31 23:42:01,054 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000006
+2025-10-31 23:42:01,054 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-10-31 23:42:01,055 - model.ProductModel - INFO -    ✓ Número extraído: 000006 (valor numérico: 6)
+2025-10-31 23:42:01,055 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000006
+2025-10-31 23:42:01,055 - model.ProductModel - INFO -    Dígito verificador calculado: 9
+2025-10-31 23:42:01,055 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000069
+2025-10-31 23:43:27,272 - model.ProductModel - ERROR - Error al obtener producto 3: 'code'
+2025-10-31 23:43:27,276 - model.ProductModel - INFO - Producto 3 actualizado exitosamente
+2025-10-31 23:43:27,276 - controller.ProductController - INFO - Producto 3 actualizado por admin
+2025-10-31 23:43:29,515 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 23:43:29,516 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 23:43:40,262 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 23:43:40,263 - model.ProductModel - INFO -    Último código encontrado: PROD-000006
+2025-10-31 23:43:40,263 - model.ProductModel - INFO -    Último número: 6
+2025-10-31 23:43:40,263 - model.ProductModel - INFO -    ✅ Siguiente número: 7
+2025-10-31 23:43:40,263 - model.ProductModel - INFO -    📦 Código generado: PROD-000007
+2025-10-31 23:43:40,264 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000007
+2025-10-31 23:43:40,264 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-10-31 23:43:40,264 - model.ProductModel - INFO -    ✓ Número extraído: 000007 (valor numérico: 7)
+2025-10-31 23:43:40,264 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000007
+2025-10-31 23:43:40,265 - model.ProductModel - INFO -    Dígito verificador calculado: 6
+2025-10-31 23:43:40,265 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000076
+2025-10-31 23:44:00,275 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 23:44:00,276 - model.ProductModel - INFO -    Último código encontrado: PROD-000006
+2025-10-31 23:44:00,277 - model.ProductModel - INFO -    Último número: 6
+2025-10-31 23:44:00,277 - model.ProductModel - INFO -    ✅ Siguiente número: 7
+2025-10-31 23:44:00,277 - model.ProductModel - INFO -    📦 Código generado: PROD-000007
+2025-10-31 23:44:00,277 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000007
+2025-10-31 23:44:00,278 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-10-31 23:44:00,278 - model.ProductModel - INFO -    ✓ Número extraído: 000007 (valor numérico: 7)
+2025-10-31 23:44:00,278 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000007
+2025-10-31 23:44:00,278 - model.ProductModel - INFO -    Dígito verificador calculado: 6
+2025-10-31 23:44:00,278 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000076
+2025-10-31 23:44:44,511 - MainController - INFO - Cerrando aplicación POS
+2025-10-31 23:44:44,519 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:44:44,520 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:44:44,520 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 23:44:44,522 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:44:44,523 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 375
+2025-10-31 23:44:44,523 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 10, 31, 23, 44, 44, 519958), 'logout_reason': 'cleanup'}
+2025-10-31 23:44:44,523 - database - INFO - 📝 EJECUTANDO SQL: UPDATE user_sessions SET is_active = %s, logout_time = %s, logout_reason = %s WHERE id = %s
+2025-10-31 23:44:44,524 - database - INFO - 📦 PARÁMETROS: (False, datetime.datetime(2025, 10, 31, 23, 44, 44, 519958), 'cleanup', 375)
+2025-10-31 23:44:44,527 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:44:44,527 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 23:44:44,527 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 23:44:44,528 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 23:44:44,529 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:44:44,530 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 23:44:44,530 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-31 23:44:44,530 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-31 23:44:44,609 - AuthController - INFO - Logout exitoso para: admin
+2025-10-31 23:44:44,641 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-31 23:44:44,641 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-31 23:45:28,407 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-31 23:45:28,444 - MainController - INFO - Sistema POS iniciado
+2025-10-31 23:45:28,444 - MainController - INFO - Iniciando aplicación POS
+2025-10-31 23:45:28,444 - MainController - INFO - Mostrando pantalla de login
+2025-10-31 23:45:28,574 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-10-31 23:45:28,574 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-10-31 23:45:33,102 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-31 23:45:33,305 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:45:33,305 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM users WHERE username = %s
+2025-10-31 23:45:33,305 - database - INFO - 📦 PARÁMETROS: ('admin',)
+2025-10-31 23:45:33,307 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:33,327 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:45:33,328 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:45:33,328 - database - INFO - 📦 PARÁMETROS: ('users', 'updated_at')
+2025-10-31 23:45:33,331 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:33,331 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-10-31 23:45:33,331 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 10, 31, 23, 45, 33, 327945), 'updated_at': datetime.datetime(2025, 10, 31, 23, 45, 33, 331477)}
+2025-10-31 23:45:33,332 - database - INFO - 📝 EJECUTANDO SQL: UPDATE users SET failed_attempts = %s, locked_until = %s, last_login = %s, updated_at = %s WHERE id = %s
+2025-10-31 23:45:33,333 - database - INFO - 📦 PARÁMETROS: (0, None, datetime.datetime(2025, 10, 31, 23, 45, 33, 327945), datetime.datetime(2025, 10, 31, 23, 45, 33, 331477), 1)
+2025-10-31 23:45:33,336 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:45:33,336 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 23:45:33,343 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:45:33,344 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE id = %s
+2025-10-31 23:45:33,344 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 23:45:33,345 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:33,345 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-31 23:45:35,351 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:45:35,352 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:45:35,352 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'created_at')
+2025-10-31 23:45:35,354 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:35,355 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:45:35,355 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 23:45:35,356 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:35,357 - database - INFO - 📝 EJECUTANDO SQL: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-10-31 23:45:35,357 - database - INFO - 📦 PARÁMETROS: (1, 'admin', 'admin', datetime.datetime(2025, 10, 31, 23, 45, 35, 345632), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 11, 1, 7, 45, 35, 345670))
+2025-10-31 23:45:35,360 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:45:35,360 - database - INFO - 📝 EJECUTANDO SQL: SELECT LAST_INSERT_ID() as last_id
+2025-10-31 23:45:35,360 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 23:45:35,361 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:35,361 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 23:45:35,361 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 23:45:35,363 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:35,363 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 23:45:35,363 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-31 23:45:38,393 - MainController - INFO - Login exitoso para admin: admin
+2025-10-31 23:45:41,196 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-31 23:45:41,204 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:45:41,205 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE active = %s
+2025-10-31 23:45:41,205 - database - INFO - 📦 PARÁMETROS: (True,)
+2025-10-31 23:45:41,207 - database - INFO - ✅ SELECT retornó 12 filas
+2025-10-31 23:45:41,208 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,208 - database - INFO - 📦 PARÁMETROS: (1,)
+2025-10-31 23:45:41,209 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,210 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,210 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 23:45:41,211 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,211 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,211 - database - INFO - 📦 PARÁMETROS: (3,)
+2025-10-31 23:45:41,212 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,213 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,213 - database - INFO - 📦 PARÁMETROS: (4,)
+2025-10-31 23:45:41,213 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,214 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,214 - database - INFO - 📦 PARÁMETROS: (5,)
+2025-10-31 23:45:41,214 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,215 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,215 - database - INFO - 📦 PARÁMETROS: (6,)
+2025-10-31 23:45:41,215 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,216 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,216 - database - INFO - 📦 PARÁMETROS: (7,)
+2025-10-31 23:45:41,216 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,217 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,217 - database - INFO - 📦 PARÁMETROS: (8,)
+2025-10-31 23:45:41,217 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,218 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,218 - database - INFO - 📦 PARÁMETROS: (9,)
+2025-10-31 23:45:41,218 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,218 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,219 - database - INFO - 📦 PARÁMETROS: (10,)
+2025-10-31 23:45:41,219 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,219 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,219 - database - INFO - 📦 PARÁMETROS: (11,)
+2025-10-31 23:45:41,220 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,221 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:45:41,221 - database - INFO - 📦 PARÁMETROS: (12,)
+2025-10-31 23:45:41,221 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:45:41,221 - controller.RoleController - INFO - Se obtuvieron 12 roles
+2025-10-31 23:45:41,228 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:45:41,228 - database - INFO - 📝 EJECUTANDO SQL: 
+            SELECT u.*, r.name as role_name, r.code as role_code, 
+                   r.permissions as role_permissions, r.system_role
+            FROM users u
+            LEFT JOIN roles r ON u.role_id = r.id
+            ORDER BY u.username
+            
+2025-10-31 23:45:41,228 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 23:45:41,230 - database - INFO - ✅ SELECT retornó 14 filas
+2025-10-31 23:54:08,664 - MainController - INFO - Cerrando aplicación POS
+2025-10-31 23:54:08,673 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:54:08,673 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:54:08,673 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 23:54:08,675 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:08,676 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 376
+2025-10-31 23:54:08,676 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 10, 31, 23, 54, 8, 673238), 'logout_reason': 'cleanup'}
+2025-10-31 23:54:08,676 - database - INFO - 📝 EJECUTANDO SQL: UPDATE user_sessions SET is_active = %s, logout_time = %s, logout_reason = %s WHERE id = %s
+2025-10-31 23:54:08,676 - database - INFO - 📦 PARÁMETROS: (False, datetime.datetime(2025, 10, 31, 23, 54, 8, 673238), 'cleanup', 376)
+2025-10-31 23:54:08,681 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:54:08,681 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 23:54:08,682 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 23:54:08,682 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 23:54:08,683 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:08,684 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 23:54:08,684 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-31 23:54:08,684 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-31 23:54:08,735 - AuthController - INFO - Logout exitoso para: admin
+2025-10-31 23:54:08,771 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-31 23:54:08,771 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-31 23:54:17,347 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-31 23:54:17,384 - MainController - INFO - Sistema POS iniciado
+2025-10-31 23:54:17,384 - MainController - INFO - Iniciando aplicación POS
+2025-10-31 23:54:17,385 - MainController - INFO - Mostrando pantalla de login
+2025-10-31 23:54:17,519 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-10-31 23:54:17,519 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-10-31 23:54:20,712 - AuthController - INFO - Intento de login para usuario: admin
+2025-10-31 23:54:20,906 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:54:20,907 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM users WHERE username = %s
+2025-10-31 23:54:20,907 - database - INFO - 📦 PARÁMETROS: ('admin',)
+2025-10-31 23:54:20,908 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:20,934 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:54:20,935 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:54:20,936 - database - INFO - 📦 PARÁMETROS: ('users', 'updated_at')
+2025-10-31 23:54:20,938 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:20,938 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-10-31 23:54:20,939 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 10, 31, 23, 54, 20, 935249), 'updated_at': datetime.datetime(2025, 10, 31, 23, 54, 20, 938829)}
+2025-10-31 23:54:20,939 - database - INFO - 📝 EJECUTANDO SQL: UPDATE users SET failed_attempts = %s, locked_until = %s, last_login = %s, updated_at = %s WHERE id = %s
+2025-10-31 23:54:20,939 - database - INFO - 📦 PARÁMETROS: (0, None, datetime.datetime(2025, 10, 31, 23, 54, 20, 935249), datetime.datetime(2025, 10, 31, 23, 54, 20, 938829), 1)
+2025-10-31 23:54:20,943 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:54:20,943 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 23:54:20,949 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:54:20,950 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE id = %s
+2025-10-31 23:54:20,950 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 23:54:20,951 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:20,952 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-10-31 23:54:22,986 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:54:22,987 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:54:22,987 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'created_at')
+2025-10-31 23:54:22,990 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:22,991 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:54:22,991 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 23:54:22,993 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:22,995 - database - INFO - 📝 EJECUTANDO SQL: INSERT INTO user_sessions (user_id, username, user_type, login_time, login_method, is_active, permissions, expires_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+2025-10-31 23:54:22,995 - database - INFO - 📦 PARÁMETROS: (1, 'admin', 'admin', datetime.datetime(2025, 10, 31, 23, 54, 22, 961703), 'manual', True, '{"all_modules": true, "super_admin": true}', datetime.datetime(2025, 11, 1, 7, 54, 22, 961773))
+2025-10-31 23:54:23,003 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:54:23,004 - database - INFO - 📝 EJECUTANDO SQL: SELECT LAST_INSERT_ID() as last_id
+2025-10-31 23:54:23,005 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 23:54:23,005 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:23,006 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 23:54:23,006 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 23:54:23,007 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:23,008 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 23:54:23,008 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-10-31 23:54:26,042 - MainController - INFO - Login exitoso para admin: admin
+2025-10-31 23:54:29,119 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-10-31 23:54:29,122 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-10-31 23:54:32,930 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: False)
+2025-10-31 23:54:32,953 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:54:32,954 - database - INFO - 📝 EJECUTANDO SQL: SELECT * FROM roles WHERE active = %s
+2025-10-31 23:54:32,954 - database - INFO - 📦 PARÁMETROS: (True,)
+2025-10-31 23:54:32,956 - database - INFO - ✅ SELECT retornó 12 filas
+2025-10-31 23:54:32,956 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,957 - database - INFO - 📦 PARÁMETROS: (1,)
+2025-10-31 23:54:32,958 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,958 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,958 - database - INFO - 📦 PARÁMETROS: (2,)
+2025-10-31 23:54:32,959 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,960 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,960 - database - INFO - 📦 PARÁMETROS: (3,)
+2025-10-31 23:54:32,961 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,961 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,961 - database - INFO - 📦 PARÁMETROS: (4,)
+2025-10-31 23:54:32,962 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,962 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,962 - database - INFO - 📦 PARÁMETROS: (5,)
+2025-10-31 23:54:32,963 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,963 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,963 - database - INFO - 📦 PARÁMETROS: (6,)
+2025-10-31 23:54:32,964 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,964 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,964 - database - INFO - 📦 PARÁMETROS: (7,)
+2025-10-31 23:54:32,965 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,966 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,966 - database - INFO - 📦 PARÁMETROS: (8,)
+2025-10-31 23:54:32,966 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,967 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,967 - database - INFO - 📦 PARÁMETROS: (9,)
+2025-10-31 23:54:32,968 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,968 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,968 - database - INFO - 📦 PARÁMETROS: (10,)
+2025-10-31 23:54:32,969 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,969 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,969 - database - INFO - 📦 PARÁMETROS: (11,)
+2025-10-31 23:54:32,970 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,970 - database - INFO - 📝 EJECUTANDO SQL: SELECT COUNT(*) as total FROM users WHERE role_id = %s
+2025-10-31 23:54:32,970 - database - INFO - 📦 PARÁMETROS: (12,)
+2025-10-31 23:54:32,971 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:54:32,971 - controller.RoleController - INFO - Se obtuvieron 12 roles
+2025-10-31 23:54:33,000 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:54:33,001 - database - INFO - 📝 EJECUTANDO SQL: 
+            SELECT u.*, r.name as role_name, r.code as role_code, 
+                   r.permissions as role_permissions, r.system_role
+            FROM users u
+            LEFT JOIN roles r ON u.role_id = r.id
+            ORDER BY u.username
+            
+2025-10-31 23:54:33,001 - database - INFO - 📦 PARÁMETROS: None
+2025-10-31 23:54:33,002 - database - INFO - ✅ SELECT retornó 14 filas
+2025-10-31 23:55:27,057 - MainController - INFO - Cerrando aplicación POS
+2025-10-31 23:55:27,081 - database - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 23:55:27,082 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s 
+        AND COLUMN_NAME = %s
+        
+2025-10-31 23:55:27,082 - database - INFO - 📦 PARÁMETROS: ('user_sessions', 'updated_at')
+2025-10-31 23:55:27,084 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:55:27,085 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 377
+2025-10-31 23:55:27,085 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 10, 31, 23, 55, 27, 81759), 'logout_reason': 'cleanup'}
+2025-10-31 23:55:27,086 - database - INFO - 📝 EJECUTANDO SQL: UPDATE user_sessions SET is_active = %s, logout_time = %s, logout_reason = %s WHERE id = %s
+2025-10-31 23:55:27,086 - database - INFO - 📦 PARÁMETROS: (False, datetime.datetime(2025, 10, 31, 23, 55, 27, 81759), 'cleanup', 377)
+2025-10-31 23:55:27,089 - database - INFO - ✅ UPDATE/INSERT afectó 1 filas
+2025-10-31 23:55:27,089 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-10-31 23:55:27,090 - database - INFO - 📝 EJECUTANDO SQL: 
+        SELECT COUNT(*) as count 
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = %s
+        
+2025-10-31 23:55:27,090 - database - INFO - 📦 PARÁMETROS: ('activity_logs',)
+2025-10-31 23:55:27,091 - database - INFO - ✅ SELECT retornó 1 filas
+2025-10-31 23:55:27,092 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-10-31 23:55:27,092 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-10-31 23:55:27,092 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-10-31 23:55:27,137 - AuthController - INFO - Logout exitoso para: admin
+2025-10-31 23:55:27,175 - AuthController - INFO - Controlador de autenticación limpiado
+2025-10-31 23:55:27,176 - MainController - INFO - Aplicación cerrada correctamente
+2025-10-31 23:55:29,848 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-10-31 23:55:29,885 - MainController - INFO - Sistema POS iniciado
+2025-10-31 23:55:29,885 - MainController - INFO - Iniciando aplicación POS
+2025-10-31 23:55:29,886 - MainController - INFO - Mostrando pantalla de login
+2025-10-31 23:55:30,007 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-10-31 23:55:30,007 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-11-01 00:08:36,095 - AuthController - ERROR - Error limpiando controlador: can't invoke "destroy" command: application has been destroyed

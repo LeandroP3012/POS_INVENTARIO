@@ -43,6 +43,13 @@ class ThermalPrinter:
     # Comandos de alimentación
     CMD_FEED = ESC + 'd' + chr(1)  # Avanzar 1 línea
     
+    # Comandos de código de barras
+    CMD_BARCODE_HEIGHT = GS + 'h' + chr(80)  # Altura del código de barras (80 dots)
+    CMD_BARCODE_WIDTH = GS + 'w' + chr(3)    # Ancho de barras (3 = medio)
+    CMD_BARCODE_TXT_BELOW = GS + 'H' + chr(2)  # Texto debajo del código de barras
+    CMD_BARCODE_FONT = GS + 'f' + chr(0)     # Fuente del texto (0 = fuente A)
+    CMD_BARCODE_PRINT = GS + 'k'             # Comando para imprimir código de barras
+    
     def __init__(self, printer_name: str = None):
         """
         Inicializar impresora térmica
@@ -300,7 +307,7 @@ class ThermalPrinter:
             print(f"Error obteniendo impresoras: {e}")
             return []
     
-    def print_barcode_image(self, barcode_image, product_name: str, sku: str) -> bool:
+    def print_barcode_image(self, barcode_image, product_name: str, sku: str, barcode: str) -> bool:
         """
         Imprimir imagen de código de barras en impresora térmica
         
@@ -308,6 +315,7 @@ class ThermalPrinter:
             barcode_image: Objeto PIL.Image con el código de barras
             product_name: Nombre del producto
             sku: SKU del producto
+            barcode: Código de barras EAN-13
             
         Returns:
             bool: True si la impresión fue exitosa
@@ -319,6 +327,7 @@ class ThermalPrinter:
             print(f"🖨️ Imprimiendo código de barras en impresora térmica...")
             print(f"   Producto: {product_name}")
             print(f"   SKU: {sku}")
+            print(f"   Código de Barras: {barcode}")
             
             # Verificar que la impresora exista
             if not self._printer_exists(self.printer_name):
@@ -352,18 +361,43 @@ class ThermalPrinter:
             # Espacio
             content.extend(b'\n')
             
-            # Nota: La mayoría de impresoras térmicas ESC/POS no soportan
-            # impresión directa de imágenes PNG/JPG de forma nativa
-            # Se usa comando de texto del código de barras
+            # ============================================
+            # IMPRIMIR CÓDIGO DE BARRAS GRÁFICO EAN-13
+            # ============================================
+            print(f"   📊 Imprimiendo código de barras gráfico EAN-13: {barcode}")
             
-            # Imprimir código como texto
-            content.extend(self.CMD_DOUBLE_ON.encode('cp437', errors='ignore'))
-            barcode_line = f"{sku}\n"
-            content.extend(barcode_line.encode('cp437', errors='ignore'))
-            content.extend(self.CMD_DOUBLE_OFF.encode('cp437', errors='ignore'))
+            # Configurar altura del código de barras (80 dots = ~10mm)
+            content.extend(self.CMD_BARCODE_HEIGHT.encode('cp437', errors='ignore'))
             
-            # Espacios finales
-            content.extend(b'\n\n\n')
+            # Configurar ancho de barras (2 = delgado, 3 = medio, 4 = grueso)
+            content.extend(self.CMD_BARCODE_WIDTH.encode('cp437', errors='ignore'))
+            
+            # Configurar posición del texto (2 = debajo del código)
+            content.extend(self.CMD_BARCODE_TXT_BELOW.encode('cp437', errors='ignore'))
+            
+            # Configurar fuente del texto
+            content.extend(self.CMD_BARCODE_FONT.encode('cp437', errors='ignore'))
+            
+            # Imprimir código de barras EAN-13
+            # Formato: GS k 67 n [datos]
+            # 67 = tipo EAN-13 (formato 2)
+            # n = cantidad de dígitos (debe ser 12, el último dígito es check)
+            barcode_data = barcode[:12]  # Tomar solo los primeros 12 dígitos (el 13° es check digit)
+            
+            # Comando de impresión de código de barras
+            content.extend(self.CMD_BARCODE_PRINT.encode('cp437', errors='ignore'))
+            content.extend(chr(67).encode('cp437', errors='ignore'))  # Tipo: EAN-13
+            content.extend(chr(12).encode('cp437', errors='ignore'))  # Longitud: 12 dígitos
+            content.extend(barcode_data.encode('cp437', errors='ignore'))  # Datos
+            
+            print(f"   ✓ Comando de código de barras gráfico enviado")
+            print(f"   ✓ Tipo: EAN-13, Datos: {barcode_data}")
+            
+            # Espacio después del código de barras
+            content.extend(b'\n\n')
+            
+            # Espacios finales antes de cortar
+            content.extend(b'\n')
             
             # Cortar papel
             content.extend(self.CMD_CUT.encode('cp437', errors='ignore'))
