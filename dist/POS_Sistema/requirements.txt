@@ -1,0 +1,99 @@
+# =============================================================================
+# DEPENDENCIAS DEL SISTEMA POS
+# =============================================================================
+# Versión: 2.0
+# Fecha: 19 de Octubre 2025
+# Python: 3.8+
+# =============================================================================
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEPENDENCIAS REQUERIDAS (OBLIGATORIAS)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Base de datos MySQL
+mysql-connector-python>=8.0.33
+
+# Manejo de imágenes (para logos y avatares en la interfaz)
+Pillow>=10.0.0
+
+# Widget calendario para selección de fechas
+tkcalendar>=1.6.1
+
+# Gráficos y reportes visuales
+matplotlib>=3.7.0
+
+# Excel export/import (requerido para exportación de usuarios)
+openpyxl>=3.1.0
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEPENDENCIAS OPCIONALES
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Impresión de códigos de barras (solo si necesitas esta funcionalidad)
+# python-barcode[images]>=0.15.1
+
+# Reportes en PDF (descomentar si necesitas generar reportes PDF)
+# reportlab>=4.0.0
+
+# Análisis de datos (descomentar si necesitas análisis avanzado)
+# pandas>=2.0.0
+
+# Windows-specific - REQUERIDO para impresoras térmicas
+pywin32>=306
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LIBRERÍAS ESTÁNDAR DE PYTHON (YA INCLUIDAS - NO INSTALAR)
+# ─────────────────────────────────────────────────────────────────────────────
+# Las siguientes librerías vienen con Python y NO necesitan instalación:
+#
+# - tkinter          → Interfaz gráfica (GUI)
+# - hashlib          → Hashing de contraseñas (SHA256)
+# - json             → Manejo de archivos JSON
+# - datetime         → Manejo de fechas y tiempo
+# - logging          → Sistema de logs
+# - os               → Operaciones del sistema operativo
+# - sys              → Interacción con el intérprete Python
+# - typing           → Type hints y anotaciones
+# - decimal          → Aritmética decimal precisa (para dinero)
+# - pathlib          → Rutas de archivos modernas
+# - platform         → Información del sistema
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# INSTALACIÓN
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Instalar todas las dependencias requeridas:
+#   pip install -r requirements.txt
+#
+# Actualizar todas las dependencias:
+#   pip install --upgrade -r requirements.txt
+#
+# Verificar instalación:
+#   pip list
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# NOTAS IMPORTANTES
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# 1. TKINTER: En algunas distribuciones de Linux, tkinter debe instalarse
+#    separadamente con el gestor de paquetes del sistema:
+#    - Ubuntu/Debian: sudo apt-get install python3-tk
+#    - Fedora: sudo dnf install python3-tkinter
+#    - Arch: sudo pacman -S tk
+#
+# 2. MYSQL: Requiere tener MySQL Server 8.0+ instalado y ejecutándose
+#
+# 3. PILLOW: Requiere librerías de sistema para procesar imágenes:
+#    - Windows: Se instala automáticamente
+#    - Linux: sudo apt-get install libjpeg-dev zlib1g-dev
+#    - macOS: brew install jpeg
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# COMPATIBILIDAD
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Python:  3.8, 3.9, 3.10, 3.11, 3.12, 3.13
+# MySQL:   8.0+, MariaDB 10.5+
+# SO:      Windows 10/11, Linux (Ubuntu 20.04+), macOS 10.15+
+#
+# ─────────────────────────────────────────────────────────────────────────────

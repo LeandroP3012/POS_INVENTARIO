@@ -429,8 +429,8 @@ class UserController:
                 self.logger.error(f"Usuario no encontrado: {user_id}")
                 return False
             
-            # Convertir status a formato de base de datos
-            status_value = 1 if status == 'active' else 0
+            # Convertir status a booleano para la columna 'active'
+            active_value = True if status == 'active' else False
             
             # No permitir desactivar el último administrador
             if status == 'inactive' and existing_user.get('user_type') == 'admin':
@@ -439,11 +439,11 @@ class UserController:
                     self.logger.error("No se puede desactivar el último administrador activo")
                     return False
             
-            # Actualizar estado
-            success = self.user_model.update_user(user_id, {'status': status_value})
+            # Actualizar estado usando la columna 'active' (no 'status')
+            success = self.user_model.update_user(user_id, {'active': active_value})
             
             if success:
-                self.logger.info(f"Estado de usuario actualizado: ID {user_id} -> {status}")
+                self.logger.info(f"Estado de usuario actualizado: ID {user_id} -> active={active_value}")
                 return True
             
             return False
