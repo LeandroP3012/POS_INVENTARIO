@@ -12,6 +12,16 @@ import logging
 # Agregar el directorio raíz al path para imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# Inicializar PathManager PRIMERO (antes que nada)
+try:
+    from utils.path_manager import ensure_config_files, _path_manager
+    # Asegurar que existan los archivos de configuración
+    ensure_config_files()
+    # Mostrar información de rutas
+    _path_manager.print_paths_info()
+except Exception as e:
+    print(f"⚠️  Error inicializando PathManager: {e}")
+
 def setup_logging():
     """Configurar sistema de logging"""
     try:

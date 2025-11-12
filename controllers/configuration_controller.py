@@ -10,18 +10,26 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 import shutil
 
+from utils.path_manager import (
+    _path_manager,
+    get_data_path,
+    load_config as pm_load_config,
+    save_config as pm_save_config,
+)
+
 
 class ConfigurationController:
     """Controlador para la gestión de configuración del sistema"""
     
     def __init__(self):
         self.logger = logging.getLogger('ConfigController')
-        self.config_file = os.path.join('config', 'system_config.json')
-        self.db_config_file = os.path.join('config', 'database.json')
-        self.backup_dir = os.path.join('.', 'backups')
-        
-        # Asegurar que existan los directorios
-        os.makedirs('config', exist_ok=True)
+
+        # Usar PathManager para rutas de configuración
+        self.path_manager = _path_manager
+        # Ubicar respaldos dentro de la ruta de datos del usuario
+        self.backup_dir = get_data_path('backups')
+
+        # Asegurar que exista el directorio de backups
         os.makedirs(self.backup_dir, exist_ok=True)
     
     def load_configuration(self) -> Dict[str, Any]:
@@ -29,31 +37,29 @@ class ConfigurationController:
         try:
             config = {}
             
-            # Cargar configuración del sistema
-            if os.path.exists(self.config_file):
-                with open(self.config_file, 'r', encoding='utf-8') as f:
-                    system_config = json.load(f)
-                    config.update(system_config)
+            # Cargar configuración del sistema usando PathManager
+            system_config = pm_load_config('system_config.json')
+            if system_config:
+                config.update(system_config)
                 self.logger.info(f"Configuración del sistema cargada: {len(system_config)} elementos")
             else:
                 self.logger.warning("Archivo de configuración no encontrado, usando defaults")
                 config = self.get_default_configuration()
                 self.save_configuration(config)
             
-            # Cargar configuración de base de datos
-            if os.path.exists(self.db_config_file):
-                with open(self.db_config_file, 'r', encoding='utf-8') as f:
-                    db_config = json.load(f)
-                    # Mapear campos de BD con el prefijo correcto
-                    config.update({
-                        'db_host': db_config.get('host', 'localhost'),
-                        'db_port': db_config.get('port', '3306'),
-                        'db_name': db_config.get('name', 'pos_system'),
-                        'db_user': db_config.get('user', 'root'),
-                        'db_password': db_config.get('password', ''),
-                        'db_max_connections': db_config.get('max_connections', '10'),
-                        'db_timeout': db_config.get('timeout', '30')
-                    })
+            # Cargar configuración de base de datos usando PathManager
+            db_config = pm_load_config('database.json')
+            if db_config:
+                # Mapear campos de BD con el prefijo correcto
+                config.update({
+                    'db_host': db_config.get('host', 'localhost'),
+                    'db_port': db_config.get('port', '3306'),
+                    'db_name': db_config.get('name', 'pos_system'),
+                    'db_user': db_config.get('user', 'root'),
+                    'db_password': db_config.get('password', ''),
+                    'db_max_connections': db_config.get('max_connections', '10'),
+                    'db_timeout': db_config.get('timeout', '30')
+                })
                 self.logger.info("Configuración de base de datos cargada")
             
             return config
@@ -75,14 +81,12 @@ class ConfigurationController:
                 else:
                     system_config[key] = value
             
-            # Guardar configuración del sistema
-            with open(self.config_file, 'w', encoding='utf-8') as f:
-                json.dump(system_config, f, indent=2, ensure_ascii=False)
+            # Guardar configuración del sistema usando PathManager
+            pm_save_config('system_config.json', system_config)
             
             # Guardar configuración de base de datos si hay datos
             if db_config:
-                with open(self.db_config_file, 'w', encoding='utf-8') as f:
-                    json.dump(db_config, f, indent=2, ensure_ascii=False)
+                pm_save_config('database.json', db_config)
             
             self.logger.info("Configuración guardada exitosamente")
             return True

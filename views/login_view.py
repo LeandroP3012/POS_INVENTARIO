@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
-import json
 import os
 from PIL import Image, ImageTk
 from views.base_view import BaseView
 from utils.responsive_utils import ResponsiveManager
+from utils.path_manager import get_config_path, load_config
 
 class LoginView(BaseView):
     def __init__(self, parent, controller, auth_controller):
@@ -364,11 +364,10 @@ class LoginView(BaseView):
     def load_company_info(self):
         """Carga la información dinámica de la empresa desde la configuración"""
         try:
-            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'system_config.json')
-            if os.path.exists(config_path):
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                    
+            # Usar PathManager para obtener la ruta correcta
+            config = load_config('system_config.json')
+            
+            if config:
                 # Actualizar nombre de empresa
                 company_name = config.get('company_name', 'Importadora Punto de Venta')
                 if company_name and company_name.strip():
@@ -468,40 +467,19 @@ class LoginView(BaseView):
     def update_company_info(self):
         """Método público para actualizar info de empresa (callback desde configuración)"""
         try:
-            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'system_config.json')
-            if os.path.exists(config_path):
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                    
+            config_path = get_config_path('system_config.json')
+            config = load_config('system_config.json') or {}
+
+            if config_path.exists() and config:
                 # Actualizar nombre de empresa
                 company_name = config.get('company_name', 'Importadora Punto de Venta')
                 if company_name and company_name.strip():
                     self.company_label.config(text=company_name)
-                    # Ya no actualizamos iniciales porque eliminamos el título
-                
+
                 # Actualizar logo (solo imagen, sin diamante)
-                logo_path = config.get('logo_path', '')
-                if logo_path and os.path.exists(logo_path) and 'no encontrado' not in logo_path:
-                    try:
-                        # Cargar y redimensionar imagen - TAMAÑO REDUCIDO
-                        pil_image = Image.open(logo_path)
-                        pil_image = pil_image.resize((80, 80), Image.Resampling.LANCZOS)
-                        
-                        # Convertir a PhotoImage
-                        photo = ImageTk.PhotoImage(pil_image)
-                        
-                        # Actualizar directamente el label con la imagen
-                        self.logo_label.config(image=photo, text="")
-                        self.logo_label.image = photo  # Mantener referencia
-                        
-                        print(f"Logo actualizado dinámicamente: {logo_path}")
-                    except Exception as e:
-                        print(f"Error actualizando logo dinámicamente: {e}")
-                        # Volver al emoji por defecto
-                        self.logo_label.config(image="", text="🏪")
-                else:
-                    # Volver al emoji por defecto si no hay logo válido
-                    self.logo_label.config(image="", text="🏪")
+                self.try_update_logo(config)
+            else:
+                print(f"system_config.json no encontrado en: {config_path}")
                     
         except Exception as e:
             print(f"Error en update_company_info: {e}")

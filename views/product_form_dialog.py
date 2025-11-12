@@ -1091,6 +1091,14 @@ class ProductFormDialog:
                 return
             
             # Si llegamos aquí, todos los módulos están instalados
+            system_config = {}
+            try:
+                from utils.path_manager import load_config
+                system_config = load_config('system_config.json') or {}
+            except Exception as cfg_err:
+                print(f"⚠️ Error leyendo configuración del sistema: {cfg_err}")
+                system_config = {}
+
             import barcode
             from barcode.writer import ImageWriter
             from PIL import Image, ImageDraw, ImageFont, ImageWin
@@ -1099,15 +1107,49 @@ class ProductFormDialog:
             import win32print
             import win32ui
             
+            def resolve_font_path() -> Optional[str]:
+                """Intentar localizar una fuente TrueType válida para códigos de barras."""
+                candidates: List[str] = []
+
+                explicit_font = system_config.get('barcode_font_path') if isinstance(system_config, dict) else None
+                if explicit_font:
+                    candidates.append(os.path.expanduser(str(explicit_font)))
+
+                if os.name == 'nt':
+                    windows_dir = os.environ.get('WINDIR', r'C:\\Windows')
+                    font_dir = os.path.join(windows_dir, 'Fonts') if windows_dir else None
+                    if font_dir:
+                        candidates.extend([
+                            os.path.join(font_dir, 'arial.ttf'),
+                            os.path.join(font_dir, 'Arial.ttf'),
+                            os.path.join(font_dir, 'ARIAL.TTF'),
+                            os.path.join(font_dir, 'arialbd.ttf'),
+                        ])
+
+                # Fuente opcional empaquetada en assets/fonts
+                candidates.append(os.path.join(os.getcwd(), 'assets', 'fonts', 'arial.ttf'))
+
+                for candidate in candidates:
+                    if candidate and os.path.exists(candidate):
+                        return candidate
+                return None
+
+            font_path = resolve_font_path()
+            if font_path:
+                print(f"🔠 Fuente detectada para códigos de barras: {font_path}")
+            else:
+                print("⚠️ No se encontró fuente TrueType; se utilizará texto manual en la etiqueta.")
+
             # Generar imagen del código de barras
             EAN = barcode.get_barcode_class('ean13')
             ean = EAN(barcode_code, writer=ImageWriter())
-            
+
             # Crear archivo temporal
             temp_dir = tempfile.gettempdir()
             barcode_filename = os.path.join(temp_dir, f'barcode_{sku}')
-            
+
             # Guardar imagen
+            draw_digits_manually = False
             options = {
                 'module_width': 0.3,
                 'module_height': 15.0,
@@ -1117,62 +1159,97 @@ class ProductFormDialog:
                 'background': 'white',
                 'foreground': 'black',
             }
+            if font_path:
+                options['font_path'] = font_path
+            else:
+                options['write_text'] = False
+                draw_digits_manually = True
+
             ean.save(barcode_filename, options=options)
-            
+
             # Abrir imagen generada
             img_path = f"{barcode_filename}.png"
             img = Image.open(img_path)
-            
-            # Agregar nombre del producto arriba del código de barras
-            draw = ImageDraw.Draw(img)
-            try:
-                font = ImageFont.truetype("arial.ttf", 12)
-            except:
-                font = ImageFont.load_default()
-            
-            # Crear nueva imagen con espacio para el nombre
-            new_img = Image.new('RGB', (img.width, img.height + 30), 'white')
+
+            # Crear nueva imagen con espacio adicional para título y dígitos
+            extra_bottom = 25 if draw_digits_manually else 0
+            new_height = img.height + 30 + extra_bottom
+            new_img = Image.new('RGB', (img.width, new_height), 'white')
             draw = ImageDraw.Draw(new_img)
-            
+
+            # Preparar fuente para el nombre del producto
+            try:
+                if font_path:
+                    name_font = ImageFont.truetype(font_path, 12)
+                else:
+                    name_font = ImageFont.truetype("arial.ttf", 12)
+            except Exception:
+                name_font = ImageFont.load_default()
+
             # Dibujar nombre centrado
             text = name[:40] if len(name) > 40 else name
-            bbox = draw.textbbox((0, 0), text, font=font)
-            text_width = bbox[2] - bbox[0]
+            try:
+                bbox = draw.textbbox((0, 0), text, font=name_font)
+                text_width = bbox[2] - bbox[0]
+            except AttributeError:
+                text_width, _ = draw.textsize(text, font=name_font)
             text_x = (new_img.width - text_width) // 2
-            draw.text((text_x, 5), text, fill='black', font=font)
-            
+            draw.text((text_x, 5), text, fill='black', font=name_font)
+
             # Pegar código de barras
             new_img.paste(img, (0, 30))
+
+            # Dibujar manualmente los dígitos si python-barcode no los añadió
+            if draw_digits_manually:
+                digits_font = ImageFont.load_default()
+                try:
+                    digits_bbox = draw.textbbox((0, 0), barcode_code, font=digits_font)
+                    digits_width = digits_bbox[2] - digits_bbox[0]
+                    digits_height = digits_bbox[3] - digits_bbox[1]
+                except AttributeError:
+                    digits_width, digits_height = draw.textsize(barcode_code, font=digits_font)
+
+                digits_x = (new_img.width - digits_width) // 2
+                digits_y = 30 + img.height + max(2, (extra_bottom - digits_height) // 2)
+                draw.text((digits_x, digits_y), barcode_code, fill='black', font=digits_font)
             
             # ============================================
             # DETECCIÓN DE TIPO DE IMPRESORA
             # ============================================
             printer_name = None
             is_thermal = False
-            
-            try:
-                # Leer configuración del sistema
-                import json
-                config_path = os.path.join('config', 'system_config.json')
-                if os.path.exists(config_path):
-                    with open(config_path, 'r', encoding='utf-8') as f:
-                        system_config = json.load(f)
-                        printer_name = system_config.get('printer')
-                        print(f"🖨️ Impresora configurada: {printer_name}")
-                        
-                        # Detectar si es impresora térmica por nombre
-                        if printer_name:
-                            thermal_keywords = ['thermal', 'térmica', 'termica', 'tp-', 'tm-', 'pos', 'esc/pos', 'epson tm']
-                            printer_lower = printer_name.lower()
-                            is_thermal = any(keyword in printer_lower for keyword in thermal_keywords)
-                            
-                            if is_thermal:
-                                print(f"   ✓ Detectada como impresora TÉRMICA")
-                            else:
-                                print(f"   ✓ Detectada como impresora ESTÁNDAR")
-                                
-            except Exception as e:
-                print(f"⚠️ Error leyendo configuración: {e}")
+
+            if system_config:
+                printer_name = system_config.get('printer')
+                printer_mode = str(system_config.get('printer_mode', 'auto')).strip().lower()
+                force_thermal = bool(system_config.get('force_thermal_print', False))
+                extra_keywords = system_config.get('thermal_printer_keywords', [])
+
+                print(f"🖨️ Impresora configurada: {printer_name}")
+
+                thermal_keywords = ['TP-', 'TM-', 'THERMAL', 'TERMICA', 'TÉRMICA', 'POS', 'ESC/POS', '80MM', 'TICKET']
+                if isinstance(extra_keywords, str):
+                    extra_keywords = [k.strip() for k in extra_keywords.split(',') if k.strip()]
+                if isinstance(extra_keywords, list):
+                    thermal_keywords.extend([str(k).upper() for k in extra_keywords if isinstance(k, (str, bytes))])
+
+                thermal_keywords = [token.upper() for token in thermal_keywords]
+                normalized_name = (printer_name or '').upper()
+
+                if force_thermal or printer_mode == 'thermal':
+                    is_thermal = True
+                    print("   ✓ Modo térmico forzado desde la configuración")
+                elif printer_mode == 'standard':
+                    is_thermal = False
+                    print("   → Modo estándar forzado desde la configuración")
+                else:
+                    is_thermal = any(keyword in normalized_name for keyword in thermal_keywords)
+                    if is_thermal:
+                        print("   ✓ Detectada como impresora térmica (auto)")
+                    else:
+                        print("   ✓ Detectada como impresora estándar (auto)")
+            else:
+                print("⚠️ No se pudo cargar system_config.json; se utilizará la impresora predeterminada.")
             
             if not printer_name or printer_name == "":
                 # Usar impresora predeterminada

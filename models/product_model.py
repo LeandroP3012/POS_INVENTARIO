@@ -177,16 +177,10 @@ class ProductModel(BaseModel):
     
     def get_connection(self):
         """Obtener conexión a la base de datos"""
-        if not self.db:
-            self.logger.error("DB no disponible")
-            return None
-        
-        if not self.db.connection or not self.db.connection.is_connected():
-            if not self.db.connect():
-                self.logger.error("No se pudo conectar a la base de datos")
-                return None
-        
-        return self.db.connection
+        connection = super().get_connection()
+        if not connection:
+            self.logger.error("No se pudo obtener conexión a la base de datos")
+        return connection
     
     def create_product(self, product_data: Dict[str, Any]) -> Optional[int]:
         """
@@ -505,15 +499,36 @@ class ProductModel(BaseModel):
                 return False
             
             cursor = connection.cursor()
-            
-            # Soft delete - cambiar active a 0
-            query = """
-                UPDATE products
-                SET active = 0, updated_at = NOW()
-                WHERE id = %s
-            """
-            
-            cursor.execute(query, (product_id,))
+
+            set_clauses: List[str] = []
+            params: List[Any] = []
+
+            # Compatibilidad con diferentes esquemas de productos
+            if self.has_column('active'):
+                set_clauses.append("active = 0")
+
+            if self.has_column('status'):
+                set_clauses.append("status = %s")
+                params.append('inactive')
+
+            if self.has_column('updated_at'):
+                set_clauses.append("updated_at = NOW()")
+
+            if self.has_column('deleted_at'):
+                set_clauses.append("deleted_at = NOW()")
+
+            if not set_clauses:
+                # Sin columnas para soft delete, eliminar registro directamente
+                cursor.execute("DELETE FROM products WHERE id = %s", (product_id,))
+            else:
+                query = f"""
+                    UPDATE products
+                    SET {', '.join(set_clauses)}
+                    WHERE id = %s
+                """
+
+                params.append(product_id)
+                cursor.execute(query, tuple(params))
             connection.commit()
             
             affected_rows = cursor.rowcount

@@ -1162,19 +1162,17 @@ class DashboardView(BaseView):
     def load_company_config(self):
         """Cargar configuración de la empresa desde system_config.json"""
         try:
-            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'system_config.json')
+            # Usar PathManager para obtener la ruta correcta
+            from utils.path_manager import load_config
+            config = load_config('system_config.json')
             
-            if os.path.exists(config_path):
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                    
+            if config:
                 company_name = config.get('company_name', 'MANAGEMENTPRO POS')
                 logo_path = config.get('logo_path', '')
-                
                 return company_name, logo_path
         except Exception as e:
             # Error silencioso, usar valores por defecto
-            pass
+            print(f"⚠️ Error cargando configuración: {e}")
         
         return 'MANAGEMENTPRO POS', ''
     

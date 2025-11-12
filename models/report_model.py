@@ -72,6 +72,25 @@ class ReportModel(BaseModel):
             cursor.execute(query, params)
             sales = cursor.fetchall()
             
+            # Calcular total de productos vendidos
+            total_products = 0
+            if sales:
+                product_query = """
+                    SELECT SUM(sd.quantity) as total_products
+                    FROM sale_details sd
+                    INNER JOIN sales s ON sd.sale_id = s.id
+                    WHERE s.sale_date BETWEEN %s AND %s
+                """
+                product_params = [start_date, end_date]
+                
+                if user_id:
+                    product_query += " AND s.user_id = %s"
+                    product_params.append(user_id)
+                
+                cursor.execute(product_query, product_params)
+                product_result = cursor.fetchone()
+                total_products = int(product_result['total_products'] or 0)
+            
             # Calcular totales
             total_sales = len(sales)
             total_amount = sum(Decimal(str(s['total_amount'])) for s in sales)
@@ -98,6 +117,7 @@ class ReportModel(BaseModel):
                         'total_amount': float(total_amount),
                         'total_discount': float(total_discount),
                         'total_tax': float(total_tax),
+                        'total_products': total_products,
                         'average_ticket': float(total_amount / total_sales) if total_sales > 0 else 0,
                         'payment_methods': {
                             k: {'count': v['count'], 'amount': float(v['amount'])}
@@ -296,7 +316,8 @@ class ReportModel(BaseModel):
                 'success': True,
                 'data': {
                     'date': date.strftime('%d/%m/%Y'),
-                    'sales_summary': sales_report['data']['summary']
+                    'sales_summary': sales_report['data']['summary'],
+                    'sales': sales_report['data']['sales']  # Incluir lista de ventas
                 }
             }
             

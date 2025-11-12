@@ -1744,11 +1744,20 @@ class MainController:
             categories = controller.get_all_categories(self.current_user, include_inactive=True)
             
             # Mostrar diálogo
-            dialog = CategoryFormDialog(self.main_window, category=category, categories=categories)
+            can_delete = self.permission_service.check_permission(self.current_user, 'inventory.delete')
+            dialog = CategoryFormDialog(
+                self.main_window,
+                category=category,
+                categories=categories,
+                allow_delete=can_delete
+            )
             category_data = dialog.show()
             
             if category_data:
-                success, message = controller.update_category(category_id, category_data, self.current_user)
+                if category_data.get('__action__') == 'delete':
+                    success, message = controller.delete_category(category_id, self.current_user)
+                else:
+                    success, message = controller.update_category(category_id, category_data, self.current_user)
                 
                 if success:
                     messagebox.showinfo("Éxito", message)
@@ -1936,8 +1945,42 @@ class MainController:
         messagebox.showinfo("Inventario", "Módulo de inventario en desarrollo")
     
     def _daily_sales_report(self):
-        """Reporte de ventas diarias"""
-        self._open_reports_module()
+        """Reporte de ventas diarias - Muestra el reporte del día actual"""
+        try:
+            print("📊 DEBUG: Abriendo reporte diario de ventas")
+            print(f"   - main_window tipo: {type(self.main_window)}")
+            print(f"   - current_user: {self.current_user.get('username')}")
+            
+            # Limpiar ventana principal
+            self._clear_main_content()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Importar vista de reporte diario
+            from views.daily_sales_report_view import DailySalesReportView
+            from controllers.report_controller import ReportController
+            print("   🔄 Creando DailySalesReportView...")
+            
+            # Crear controlador de reportes
+            report_controller = ReportController()
+            
+            # Crear vista de reporte diario
+            daily_report_view = DailySalesReportView(
+                self.main_window,
+                report_controller,
+                self.current_user,
+                on_back=self._show_dashboard
+            )
+            
+            print("   ✅ DailySalesReportView creada exitosamente")
+            
+        except Exception as e:
+            print(f"❌ ERROR en _daily_sales_report: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror(
+                "Error",
+                f"No se pudo abrir el reporte diario:\n{str(e)}"
+            )
     
     def _full_report(self):
         """Reporte completo"""
@@ -2139,7 +2182,7 @@ class MainController:
     
     def _show_support(self):
         """Mostrar soporte"""
-        messagebox.showinfo("Soporte Técnico", "Chat de soporte en desarrollo\n\nPara asistencia inmediata:\n📧 soporte@pos.com\n📞 +1-800-123-4567")
+        messagebox.showinfo("Soporte Técnico", "Chat de Soporte\n\nPara asistencia inmediata comunicate con:\n📧 lmqpando@gmail.com\n📞 +51 960724886")
     
     def _system_config(self):
         """Configuración del sistema"""

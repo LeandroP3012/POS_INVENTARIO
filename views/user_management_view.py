@@ -249,40 +249,21 @@ class UserManagementView(BaseView):
             fg='#2c3e50'
         ).pack(side='left', padx=(0, 10))
         
-        self.search_var = tk.StringVar()
-        self.search_var.trace_add('write', self.on_search_change)
-        search_entry = tk.Entry(
+        # Campo de búsqueda con autocompletado
+        self.search_entry = tk.Entry(
             search_frame,
-            textvariable=self.search_var,
             font=('Segoe UI', 13),
-            width=28,
+            width=35,
             relief='solid',
             bd=1
         )
-        search_entry.pack(side='left', padx=(0, 15), ipady=8)
+        self.search_entry.pack(side='left', padx=(0, 15), ipady=8)
         
-        # Filtro por rol
-        tk.Label(
-            search_frame,
-            text="Rol:",
-            font=('Segoe UI', 13, 'bold'),
-            bg='white',
-            fg='#2c3e50'
-        ).pack(side='left', padx=(25, 8))
+        # Bind para búsqueda incremental
+        self.search_entry.bind('<KeyRelease>', lambda e: self.on_search_change())
         
-        self.role_filter_var = tk.StringVar(value='Todos')
-        # Obtener valores de roles dinámicamente
-        role_values = ['Todos'] + [role.get('name', '') for role in self.roles_data if role.get('active', True)]
-        role_combo = ttk.Combobox(
-            search_frame,
-            textvariable=self.role_filter_var,
-            values=role_values,
-            state='readonly',
-            width=18,
-            font=('Segoe UI', 12)
-        )
-        role_combo.pack(side='left', padx=(0, 15))
-        role_combo.bind('<<ComboboxSelected>>', self.on_filter_change)
+        # Timer para búsqueda con delay
+        self.search_timer = None
         
         # Frame derecho - Botones de acción
         buttons_frame = tk.Frame(inner_frame, bg='white')
@@ -571,44 +552,49 @@ class UserManagementView(BaseView):
         stats_text = f"👥 Total: {total} | ✅ Activos: {active} | ❌ Inactivos: {inactive} | 👑 Admins: {admins}"
         self.stats_label.configure(text=stats_text)
     
-    def on_search_change(self, *args):
-        """Manejar cambio en búsqueda"""
-        self.apply_filters()
-    
-    def on_filter_change(self, event=None):
-        """Manejar cambio en filtros"""
-        self.apply_filters()
-    
-    def apply_filters(self):
-        """Aplicar filtros de búsqueda y rol"""
-        search_term = self.search_var.get().lower()
-        role_filter = self.role_filter_var.get()
+    def on_search_change(self):
+        """Manejar cambio en búsqueda con delay para evitar consultas excesivas"""
+        # Leer directamente del Entry widget
+        search_text = self.search_entry.get().strip().lower()
         
+        # Cancelar búsqueda anterior si existe
+        if self.search_timer:
+            self.root.after_cancel(self.search_timer)
+        
+        # Si está vacío, mostrar todos los usuarios inmediatamente
+        if not search_text:
+            self.filtered_users = self.users_data.copy()
+            self.update_users_table()
+            return
+        
+        # Buscar después de 300ms de inactividad (evita filtrado mientras escribe)
+        self.search_timer = self.root.after(300, lambda: self.perform_search(search_text))
+    
+    def perform_search(self, search_text):
+        """Realizar búsqueda de usuarios"""
         self.filtered_users = []
         
         for user in self.users_data:
-            # Filtro de búsqueda
+            # Búsqueda en username, nombre completo y email
             search_match = (
-                search_term in user.get('username', '').lower() or
-                search_term in user.get('full_name', '').lower() or
-                search_term in user.get('email', '').lower()
+                search_text in user.get('username', '').lower() or
+                search_text in user.get('full_name', '').lower() or
+                search_text in user.get('email', '').lower() or
+                search_text in user.get('user_type', '').lower()
             )
             
-            # Filtro de rol - buscar tanto en user_type como en el nombre del rol
-            user_role = user.get('user_type', '')
-            # Intentar encontrar el rol en el sistema de roles
-            role_name = user_role
-            for role in self.roles_data:
-                if role.get('name', '').lower() == user_role.lower():
-                    role_name = role.get('name', '')
-                    break
-            
-            role_match = role_filter == 'Todos' or user_role == role_filter or role_name == role_filter
-            
-            if search_match and role_match:
+            if search_match:
                 self.filtered_users.append(user)
         
         self.update_users_table()
+    
+    def on_filter_change(self, event=None):
+        """Manejar cambio en filtros (método legacy - ya no se usa)"""
+        pass
+    
+    def apply_filters(self):
+        """Aplicar filtros (método legacy - redirige a búsqueda)"""
+        self.on_search_change()
     
     def on_user_select(self, event):
         """Manejar selección de usuario en la tabla"""

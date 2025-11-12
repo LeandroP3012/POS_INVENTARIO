@@ -7,19 +7,20 @@ Fecha: 2025
 
 import tkinter as tk
 from tkinter import ttk, messagebox
-import json
 import os
+from pathlib import Path
 from utils.ticket_generator import TicketGenerator
 from utils.responsive_utils import ResponsiveManager
+from utils.path_manager import get_config_path, load_config, save_config
 
 class TicketConfigView:
     """Vista para configurar las boletas"""
-    
+
     def __init__(self, parent, on_back=None):
         self.parent = parent
         self.on_back = on_back
-        self.config_path = os.path.join('config', 'system_config.json')
-        
+        self.config_path: Path = get_config_path('system_config.json')
+
         # Inicializar gestor responsivo
         self.responsive = ResponsiveManager(parent)
         
@@ -273,18 +274,17 @@ class TicketConfigView:
         try:
             print(f"\n📂 DEBUG: Pre-cargando configuración de ticket")
             print(f"   Ruta: {self.config_path}")
-            
-            if os.path.exists(self.config_path):
-                with open(self.config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                    print(f"   ✅ Configuración leída correctamente")
-                    print(f"   📊 Claves encontradas: {list(config.keys())}")
-                    print(f"   🏢 company_name = '{config.get('company_name', 'NO ENCONTRADO')}'")
-                    print(f"   📧 company_email = '{config.get('company_email', 'NO ENCONTRADO')}'")
-                    return config
+
+            if self.config_path.exists():
+                config = load_config('system_config.json') or {}
+                print(f"   ✅ Configuración leída correctamente")
+                print(f"   📊 Claves encontradas: {list(config.keys())}")
+                print(f"   🏢 company_name = '{config.get('company_name', 'NO ENCONTRADO')}'")
+                print(f"   📧 company_email = '{config.get('company_email', 'NO ENCONTRADO')}'")
+                return config
             else:
                 print(f"   ⚠️ Archivo no existe, usando valores por defecto")
-                return {}
+                return load_config('system_config.json') or {}
         except Exception as e:
             print(f"❌ Error cargando configuración: {e}")
             import traceback
@@ -296,30 +296,26 @@ class TicketConfigView:
         try:
             print(f"\n📂 DEBUG: Cargando configuración de ticket")
             print(f"   Ruta: {self.config_path}")
-            print(f"   ¿Existe? {os.path.exists(self.config_path)}")
-            
-            if os.path.exists(self.config_path):
-                with open(self.config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                    
-                    print(f"   Variables del formulario disponibles:")
-                    for var_key in self.vars.keys():
-                        print(f"      - {var_key}")
-                    
-                    print(f"\n   Cargando valores desde JSON:")
-                    # Cargar valores en los campos
-                    for key, value in config.items():
-                        if key in self.vars:
-                            print(f"      ✅ {key}: {value}")
-                            if isinstance(self.vars[key], tk.BooleanVar):
-                                self.vars[key].set(bool(value))
-                            else:
-                                self.vars[key].set(str(value))
+            print(f"   ¿Existe? {self.config_path.exists()}")
+
+            if self.config_path.exists():
+                config = load_config('system_config.json') or {}
+
+                print(f"   Variables del formulario disponibles:")
+                for var_key in self.vars.keys():
+                    print(f"      - {var_key}")
+
+                print(f"\n   Cargando valores desde JSON:")
+                # Cargar valores en los campos
+                for key, value in config.items():
+                    if key in self.vars:
+                        print(f"      ✅ {key}: {value}")
+                        if isinstance(self.vars[key], tk.BooleanVar):
+                            self.vars[key].set(bool(value))
                         else:
-                            # Este campo no existe en el formulario
-                            pass
-                    
-                    print(f"   ✅ Configuración cargada correctamente")
+                            self.vars[key].set(str(value))
+
+                print(f"   ✅ Configuración cargada correctamente")
             else:
                 print(f"   ⚠️ Archivo no existe")
         except Exception as e:
@@ -332,27 +328,20 @@ class TicketConfigView:
         try:
             print(f"\n💾 DEBUG: Guardando configuración de ticket en system_config.json")
             print(f"   Ruta: {self.config_path}")
-            
-            # Leer configuración existente
-            existing_config = {}
-            if os.path.exists(self.config_path):
-                with open(self.config_path, 'r', encoding='utf-8') as f:
-                    existing_config = json.load(f)
-            
+
+            # Leer configuración existente (mantener otros campos)
+            existing_config = load_config('system_config.json') or {}
+
             # Actualizar solo los campos de ticket
             for key, var in self.vars.items():
                 value = var.get()
                 existing_config[key] = value
                 print(f"      {key}: {value}")
-            
-            # Crear directorio si no existe
-            os.makedirs('config', exist_ok=True)
-            
-            # Guardar archivo JSON completo
-            with open(self.config_path, 'w', encoding='utf-8') as f:
-                json.dump(existing_config, f, indent=2, ensure_ascii=False)
-            
-            print(f"   ✅ Configuración guardada en: {os.path.abspath(self.config_path)}")
+
+            # Guardar archivo JSON completo usando PathManager
+            save_config('system_config.json', existing_config)
+
+            print(f"   ✅ Configuración guardada en: {self.config_path}")
             
             messagebox.showinfo(
                 'Éxito',

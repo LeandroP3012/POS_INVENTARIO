@@ -1,41 +1,11 @@
-2025-11-04 01:24:08,943 - POS_SYSTEM - INFO - Sistema POS iniciado
-2025-11-04 01:24:08,971 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\AppData\Roaming\SistemaPOS\config\database.json
-2025-11-04 01:24:08,971 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
-2025-11-04 01:24:08,973 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\AppData\Roaming\SistemaPOS\config\database.json
-2025-11-04 01:24:08,973 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
-2025-11-04 01:24:08,975 - MainController - INFO - Sistema POS iniciado
-2025-11-04 01:24:08,975 - MainController - INFO - Iniciando aplicación POS
-2025-11-04 01:24:08,975 - MainController - INFO - Mostrando pantalla de login
-2025-11-04 01:24:09,171 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
-2025-11-04 01:24:09,171 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
-2025-11-04 01:24:13,016 - AuthController - INFO - Intento de login para usuario: admin
-2025-11-04 01:24:13,127 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
-2025-11-04 01:24:13,127 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
-2025-11-04 01:24:13,128 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
-2025-11-04 01:24:13,278 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
-2025-11-04 01:24:13,279 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
-2025-11-04 01:24:13,281 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
-2025-11-04 01:24:13,281 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 11, 4, 1, 24, 13, 279980), 'updated_at': datetime.datetime(2025, 11, 4, 1, 24, 13, 281751)}
-2025-11-04 01:24:13,285 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
-2025-11-04 01:24:13,286 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
-2025-11-04 01:24:13,287 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
-2025-11-04 01:24:15,294 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
-2025-11-04 01:24:15,304 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
-2025-11-04 01:24:15,304 - model.AuthModel - INFO - Sesión creada para usuario: admin
-2025-11-04 01:24:18,344 - MainController - INFO - Login exitoso para admin: admin
-2025-11-04 01:24:20,691 - model.ProductModel - INFO - Se obtuvieron 9 productos
-2025-11-04 01:24:32,244 - controller.RoleController - INFO - Obteniendo todos los roles (incluir inactivos: True)
-2025-11-04 01:24:32,244 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
-2025-11-04 01:24:32,253 - controller.RoleController - INFO - Se obtuvieron 12 roles
-2025-11-04 01:24:32,254 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
-2025-11-04 01:24:35,718 - MainController - INFO - Cerrando aplicación POS
-2025-11-04 01:24:35,719 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
-2025-11-04 01:24:35,720 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 414
-2025-11-04 01:24:35,720 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 11, 4, 1, 24, 35, 719312), 'logout_reason': 'cleanup'}
-2025-11-04 01:24:35,726 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
-2025-11-04 01:24:35,727 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
-2025-11-04 01:24:35,727 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
-2025-11-04 01:24:35,727 - MainController - INFO - Logout de usuario admin, razón: cleanup
-2025-11-04 01:24:35,802 - AuthController - INFO - Logout exitoso para: admin
-2025-11-04 01:24:35,827 - AuthController - INFO - Controlador de autenticación limpiado
-2025-11-04 01:24:35,827 - MainController - INFO - Aplicación cerrada correctamente
+2025-11-12 00:57:07,167 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-11-12 00:57:07,194 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\AppData\Roaming\SistemaPOS\config\database.json
+2025-11-12 00:57:07,194 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-11-12 00:57:07,195 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\AppData\Roaming\SistemaPOS\config\database.json
+2025-11-12 00:57:07,195 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-12 00:57:07,198 - MainController - INFO - Sistema POS iniciado
+2025-11-12 00:57:07,198 - MainController - INFO - Iniciando aplicación POS
+2025-11-12 00:57:07,198 - MainController - INFO - Mostrando pantalla de login
+2025-11-12 00:57:07,319 - utils.AutoScaler - INFO - 🖥️  Resolución: 1920x1080
+2025-11-12 00:57:07,319 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.00
+2025-11-12 00:57:12,489 - AuthController - ERROR - Error limpiando controlador: can't invoke "destroy" command: application has been destroyed

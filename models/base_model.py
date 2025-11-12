@@ -42,13 +42,44 @@ class BaseModel:
         if not self.db:
             self.logger.error("DB no disponible")
             return None
-        
-        if not self.db.connection or not self.db.connection.is_connected():
-            if not self.db.connect():
-                self.logger.error("No se pudo conectar a la base de datos")
+
+        try:
+            # Preferir método seguro si está disponible
+            if hasattr(self.db, 'ensure_connection') and callable(self.db.ensure_connection):
+                connection = self.db.ensure_connection()
+            else:
+                connection = getattr(self.db, 'connection', None)
+
+                if not connection:
+                    if not self.db.connect():
+                        self.logger.error("No se pudo establecer conexión a la base de datos")
+                        return None
+                    connection = getattr(self.db, 'connection', None)
+
+                if connection and hasattr(connection, 'is_connected'):
+                    try:
+                        if not connection.is_connected():
+                            self.logger.warning("Conexión no activa, intentando reconectar...")
+                            if not self.db.connect():
+                                self.logger.error("No se pudo reconectar a la base de datos")
+                                return None
+                            connection = getattr(self.db, 'connection', None)
+                    except AttributeError:
+                        self.logger.warning("Conexión inválida (AttributeError), intentando reconectar...")
+                        if not self.db.connect():
+                            self.logger.error("No se pudo reconectar a la base de datos")
+                            return None
+                        connection = getattr(self.db, 'connection', None)
+
+            if not connection:
+                self.logger.error("Conexión a la base de datos no disponible tras reintentos")
                 return None
-        
-        return self.db.connection
+
+            return connection
+
+        except Exception as exc:
+            self.logger.error(f"Error obteniendo conexión a la base de datos: {exc}")
+            return None
     
     def connect(self) -> bool:
         """Establecer conexión con la base de datos"""

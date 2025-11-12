@@ -8,10 +8,13 @@ Fecha: 2025
 
 import os
 import json
+import logging
 import win32print
 import win32ui
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 
 class ThermalPrinter:
@@ -59,10 +62,11 @@ class ThermalPrinter:
         """
         self.printer_name = printer_name or self._get_default_printer()
         self.char_width = 48  # Ancho en caracteres para impresora de 80mm
-        
-        print(f"🖨️ ThermalPrinter inicializado")
-        print(f"   Impresora configurada: {self.printer_name}")
-        print(f"   Ancho de caracteres: {self.char_width}")
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+        self.logger.info("ThermalPrinter inicializado")
+        self.logger.info("Impresora configurada: %s", self.printer_name)
+        self.logger.debug("Ancho de caracteres: %s", self.char_width)
     
     def _get_default_printer(self) -> str:
         """Obtener impresora predeterminada del sistema"""
@@ -248,21 +252,25 @@ class ThermalPrinter:
             bool: True si la impresión fue exitosa
         """
         try:
-            print(f"\n🖨️ Iniciando impresión térmica...")
-            print(f"   Impresora: {self.printer_name}")
-            print(f"   N° Venta: {ticket_data['sale_number']}")
+            self.logger.info("Iniciando impresión térmica")
+            self.logger.info("Impresora configurada: %s", self.printer_name)
+            self.logger.debug("Venta asociada: %s", ticket_data.get('sale_number'))
             
-            # Verificar si la impresora existe
-            if not self._printer_exists(self.printer_name):
-                print(f"   ⚠️ Impresora '{self.printer_name}' no encontrada")
-                print(f"   📋 Impresoras disponibles:")
-                for printer in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS):
-                    print(f"      - {printer[2]}")
-                
-                # Intentar con impresora predeterminada
+            # Verificar si la impresora existe y ajustar el nombre si Windows agrega sufijos
+            resolved_printer = self._resolve_printer_name(self.printer_name)
+            if not resolved_printer:
+                self.logger.warning("Impresora '%s' no encontrada", self.printer_name)
+                available = [p[2] for p in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)]
+                self.logger.info("Impresoras disponibles: %s", available)
+
                 default_printer = self._get_default_printer()
-                print(f"   🔄 Usando impresora predeterminada: {default_printer}")
-                self.printer_name = default_printer
+                self.logger.warning("Intentando con impresora predeterminada: %s", default_printer)
+                resolved_printer = self._resolve_printer_name(default_printer) or default_printer
+            elif resolved_printer != self.printer_name:
+                self.logger.info("Ajustando nombre de impresora a coincidencia real: %s", resolved_printer)
+            
+            # Actualizar nombre final a utilizar
+            self.printer_name = resolved_printer
             
             # Construir contenido del ticket
             ticket_content = self._build_ticket_content(ticket_data, config)
@@ -280,31 +288,55 @@ class ThermalPrinter:
             finally:
                 win32print.ClosePrinter(hPrinter)
             
-            print(f"   ✅ Ticket enviado a impresora exitosamente")
+            self.logger.info("Ticket enviado a impresora exitosamente")
             return True
-        
-        except Exception as e:
-            print(f"   ❌ Error imprimiendo ticket: {e}")
-            import traceback
-            traceback.print_exc()
+
+        except Exception:
+            self.logger.exception("Error imprimiendo ticket")
             return False
     
+    def _resolve_printer_name(self, printer_name: str) -> Optional[str]:
+        """Encontrar la coincidencia real de impresora en el sistema."""
+        try:
+            desired = (printer_name or '').strip()
+            if not desired:
+                return None
+
+            printers = win32print.EnumPrinters(
+                win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS
+            )
+            if not printers:
+                return None
+
+            # Coincidencia exacta (ignorando mayúsculas/minúsculas y espacios)
+            desired_lower = desired.lower()
+            for printer in printers:
+                name = printer[2].strip()
+                if name.lower() == desired_lower:
+                    return name
+
+            # Coincidencia parcial (útil cuando Windows agrega sufijos como "(Copiar 1)")
+            for printer in printers:
+                name = printer[2].strip()
+                if desired_lower in name.lower():
+                    return name
+
+            return None
+        except Exception as exc:
+            self.logger.warning("Error resolviendo impresora '%s': %s", printer_name, exc)
+            return None
+
     def _printer_exists(self, printer_name: str) -> bool:
         """Verificar si una impresora existe en el sistema"""
-        try:
-            printers = win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)
-            printer_names = [p[2] for p in printers]
-            return printer_name in printer_names
-        except:
-            return False
+        return self._resolve_printer_name(printer_name) is not None
     
     def get_available_printers(self) -> List[str]:
         """Obtener lista de impresoras disponibles"""
         try:
             printers = win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)
-            return [p[2] for p in printers]
+            return sorted({p[2] for p in printers})
         except Exception as e:
-            print(f"Error obteniendo impresoras: {e}")
+            self.logger.error("Error obteniendo impresoras", exc_info=True)
             return []
     
     def print_barcode_image(self, barcode_image, product_name: str, sku: str, barcode: str) -> bool:
@@ -324,17 +356,20 @@ class ThermalPrinter:
             from PIL import Image
             import io
             
-            print(f"🖨️ Imprimiendo código de barras en impresora térmica...")
-            print(f"   Producto: {product_name}")
-            print(f"   SKU: {sku}")
-            print(f"   Código de Barras: {barcode}")
+            self.logger.info("Imprimiendo código de barras en impresora térmica")
+            self.logger.debug("Producto: %s | SKU: %s | Código: %s", product_name, sku, barcode)
             
             # Verificar que la impresora exista
-            if not self._printer_exists(self.printer_name):
-                print(f"   ⚠️ Impresora '{self.printer_name}' no encontrada")
+            resolved_printer = self._resolve_printer_name(self.printer_name)
+            if not resolved_printer:
+                self.logger.warning("Impresora '%s' no encontrada", self.printer_name)
                 default_printer = self._get_default_printer()
-                print(f"   🔄 Usando impresora predeterminada: {default_printer}")
-                self.printer_name = default_printer
+                self.logger.warning("Intentando con impresora predeterminada: %s", default_printer)
+                resolved_printer = self._resolve_printer_name(default_printer) or default_printer
+            elif resolved_printer != self.printer_name:
+                self.logger.info("Ajustando nombre de impresora a coincidencia real: %s", resolved_printer)
+
+            self.printer_name = resolved_printer
             
             # Construir contenido del código de barras para impresora térmica
             content = bytearray()
@@ -364,7 +399,7 @@ class ThermalPrinter:
             # ============================================
             # IMPRIMIR CÓDIGO DE BARRAS GRÁFICO EAN-13
             # ============================================
-            print(f"   📊 Imprimiendo código de barras gráfico EAN-13: {barcode}")
+            self.logger.info("Imprimiendo código de barras gráfico EAN-13: %s", barcode)
             
             # Configurar altura del código de barras (80 dots = ~10mm)
             content.extend(self.CMD_BARCODE_HEIGHT.encode('cp437', errors='ignore'))
@@ -390,8 +425,7 @@ class ThermalPrinter:
             content.extend(chr(12).encode('cp437', errors='ignore'))  # Longitud: 12 dígitos
             content.extend(barcode_data.encode('cp437', errors='ignore'))  # Datos
             
-            print(f"   ✓ Comando de código de barras gráfico enviado")
-            print(f"   ✓ Tipo: EAN-13, Datos: {barcode_data}")
+            self.logger.debug("Comando de código de barras enviado (EAN-13, datos=%s)", barcode_data)
             
             # Espacio después del código de barras
             content.extend(b'\n\n')
@@ -415,13 +449,11 @@ class ThermalPrinter:
             finally:
                 win32print.ClosePrinter(hPrinter)
             
-            print(f"   ✅ Código de barras enviado exitosamente")
+            self.logger.info("Código de barras enviado exitosamente")
             return True
             
-        except Exception as e:
-            print(f"   ❌ Error imprimiendo código de barras: {e}")
-            import traceback
-            traceback.print_exc()
+        except Exception:
+            self.logger.exception("Error imprimiendo código de barras")
             return False
     
     def test_printer(self) -> bool:
@@ -468,7 +500,7 @@ class ThermalPrinter:
             return self.print_ticket(test_data, test_config)
         
         except Exception as e:
-            print(f"Error en test de impresora: {e}")
+            self.logger.error("Error en test de impresora: %s", e, exc_info=True)
             return False
 
 
@@ -479,20 +511,21 @@ def load_printer_from_config() -> ThermalPrinter:
     Returns:
         ThermalPrinter: Instancia configurada de la impresora
     """
-    config_path = os.path.join('config', 'system_config.json')
     printer_name = None
     
     try:
-        if os.path.exists(config_path):
-            with open(config_path, 'r', encoding='utf-8') as f:
-                system_config = json.load(f)
-                printer_name = system_config.get('printer')
-                
-                print(f"📄 Configuración de impresora cargada:")
-                print(f"   Impresora: {printer_name}")
-                print(f"   Auto-impresión: {system_config.get('auto_print', False)}")
+        # Usar PathManager para obtener la configuración
+        from utils.path_manager import load_config
+        system_config = load_config('system_config.json')
+        
+        if system_config:
+            printer_name = system_config.get('printer')
+
+            logger.info("Configuración de impresora cargada")
+            logger.info("Impresora configurada: %s", printer_name)
+            logger.info("Auto-impresión habilitada: %s", system_config.get('auto_print', False))
     except Exception as e:
-        print(f"⚠️ Error cargando configuración de impresora: {e}")
+        logger.error("Error cargando configuración de impresora: %s", e, exc_info=True)
     
     return ThermalPrinter(printer_name)
 

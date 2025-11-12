@@ -15,19 +15,30 @@ class CategoryModel(BaseModel):
         super().__init__()
         self.logger = logging.getLogger('model.CategoryModel')
         self.table_name = 'categories'
+
+    def _table_has_column(self, table: str, column: str) -> bool:
+        """Verificar columnas sin alterar estado base"""
+        original = self.table_name
+        self.table_name = table
+        try:
+            return self.has_column(column)
+        finally:
+            self.table_name = original
+
+    def _product_status_clause(self) -> str:
+        """Construir filtro seguro para productos activos"""
+        if self._table_has_column('products', 'status'):
+            return "p.status = 'active'"
+        if self._table_has_column('products', 'active'):
+            return 'p.active = 1'
+        return '1=1'
     
     def get_connection(self):
         """Obtener conexión a la base de datos"""
-        if not self.db:
-            self.logger.error("DB no disponible")
-            return None
-        
-        if not self.db.connection or not self.db.connection.is_connected():
-            if not self.db.connect():
-                self.logger.error("No se pudo conectar a la base de datos")
-                return None
-        
-        return self.db.connection
+        connection = super().get_connection()
+        if not connection:
+            self.logger.error("No se pudo obtener conexión a la base de datos")
+        return connection
     
     def create_category(self, category_data: Dict[str, Any]) -> Optional[int]:
         """
@@ -46,27 +57,37 @@ class CategoryModel(BaseModel):
                 return None
             
             cursor = connection.cursor()
-            
-            query = """
-                INSERT INTO categories (
-                    name, description, parent_id, active
-                ) VALUES (
-                    %s, %s, %s, %s
-                )
-            """
-            
-            # Convertir status a active (1 o 0)
-            status = category_data.get('status', 'active')
-            active = 1 if status == 'active' else 0
-            
-            values = (
+
+            status_value = category_data.get('status', 'active') or 'active'
+            has_status = self.has_column('status')
+            has_active = self.has_column('active')
+
+            columns: List[str] = ['name', 'description', 'parent_id']
+            placeholders: List[str] = ['%s', '%s', '%s']
+            values: List[Any] = [
                 category_data['name'],
                 category_data.get('description', ''),
-                category_data.get('parent_id', None),
-                active
-            )
-            
-            cursor.execute(query, values)
+                category_data.get('parent_id', None)
+            ]
+
+            if has_status:
+                columns.append('status')
+                placeholders.append('%s')
+                values.append(status_value)
+            elif has_active:
+                columns.append('active')
+                placeholders.append('%s')
+                values.append(1 if status_value == 'active' else 0)
+
+            query = f"""
+                INSERT INTO categories (
+                    {', '.join(columns)}
+                ) VALUES (
+                    {', '.join(placeholders)}
+                )
+            """
+
+            cursor.execute(query, tuple(values))
             connection.commit()
             category_id = cursor.lastrowid
             
@@ -98,30 +119,47 @@ class CategoryModel(BaseModel):
             
             cursor = connection.cursor(dictionary=True)
             
-            query = """
+            has_status = self.has_column('status')
+            has_active = self.has_column('active')
+
+            product_status_clause = self._product_status_clause()
+
+            status_select = "c.status" if has_status else (
+                "CASE WHEN c.active = 1 THEN 'active' ELSE 'inactive' END"
+                if has_active else "'active'"
+            )
+
+            query = f"""
                 SELECT 
                     c.id,
                     c.name,
                     c.description,
                     c.parent_id,
-                    c.status,
+                    {status_select} AS status,
                     c.created_at,
                     c.updated_at,
                     COUNT(p.id) as product_count,
                     pc.name as parent_name
                 FROM categories c
-                LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
+                LEFT JOIN products p ON c.id = p.category_id AND {product_status_clause}
                 LEFT JOIN categories pc ON c.parent_id = pc.id
             """
-            
+
+            conditions: List[str] = []
             if not include_inactive:
-                query += " WHERE c.status = 'active'"
-            
+                if has_status:
+                    conditions.append("c.status = 'active'")
+                elif has_active:
+                    conditions.append("c.active = 1")
+
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+
             query += """
-                GROUP BY c.id, c.name, c.description, c.parent_id, c.status, c.created_at, c.updated_at, pc.name
+                GROUP BY c.id, c.name, c.description, c.parent_id, status, c.created_at, c.updated_at, pc.name
                 ORDER BY c.name ASC
             """
-            
+
             cursor.execute(query)
             categories = cursor.fetchall()
             cursor.close()
@@ -149,24 +187,34 @@ class CategoryModel(BaseModel):
             
             cursor = connection.cursor(dictionary=True)
             
-            query = """
+            has_status = self.has_column('status')
+            has_active = self.has_column('active')
+
+            status_select = "c.status" if has_status else (
+                "CASE WHEN c.active = 1 THEN 'active' ELSE 'inactive' END"
+                if has_active else "'active'"
+            )
+
+            product_status_clause = self._product_status_clause()
+
+            query = f"""
                 SELECT 
                     c.id,
                     c.name,
                     c.description,
                     c.parent_id,
-                    c.status,
+                    {status_select} AS status,
                     c.created_at,
                     c.updated_at,
                     COUNT(p.id) as product_count,
                     pc.name as parent_name
                 FROM categories c
-                LEFT JOIN products p ON c.id = p.category_id
+                LEFT JOIN products p ON c.id = p.category_id AND {product_status_clause}
                 LEFT JOIN categories pc ON c.parent_id = pc.id
                 WHERE c.id = %s
-                GROUP BY c.id, c.name, c.description, c.parent_id, c.status, c.created_at, c.updated_at, pc.name
+                GROUP BY c.id, c.name, c.description, c.parent_id, status, c.created_at, c.updated_at, pc.name
             """
-            
+
             cursor.execute(query, (category_id,))
             category = cursor.fetchone()
             cursor.close()
@@ -211,11 +259,20 @@ class CategoryModel(BaseModel):
                 update_fields.append("parent_id = %s")
                 values.append(category_data['parent_id'])
             
+            has_status = self.has_column('status')
+            has_active = self.has_column('active')
+
             if 'status' in category_data:
+                status_value = category_data['status']
+                if has_status:
+                    update_fields.append("status = %s")
+                    values.append(status_value)
+                elif has_active:
+                    update_fields.append("active = %s")
+                    values.append(1 if status_value == 'active' else 0)
+            elif 'active' in category_data and has_active:
                 update_fields.append("active = %s")
-                # Convertir status a active (1 o 0)
-                active = 1 if category_data['status'] == 'active' else 0
-                values.append(active)
+                values.append(category_data['active'])
             
             if not update_fields:
                 return False
@@ -262,9 +319,20 @@ class CategoryModel(BaseModel):
             if category and category.get('product_count', 0) > 0:
                 self.logger.warning(f"No se puede eliminar categoría {category_id}: tiene {category['product_count']} productos")
                 return False
-            
-            # Soft delete
-            return self.update_category(category_id, {'status': 'inactive'})
+
+            if self.has_column('status'):
+                return self.update_category(category_id, {'status': 'inactive'})
+            elif self.has_column('active'):
+                return self.update_category(category_id, {'active': 0})
+            else:
+                # Sin campos de estado, eliminar registro
+                connection = self.get_connection()
+                if not connection:
+                    return False
+                cursor = connection.cursor()
+                cursor.execute("DELETE FROM categories WHERE id = %s", (category_id,))
+                connection.commit()
+                return cursor.rowcount > 0
             
         except Exception as e:
             self.logger.error(f"Error al eliminar categoría {category_id}: {e}")
@@ -287,29 +355,43 @@ class CategoryModel(BaseModel):
             
             cursor = connection.cursor(dictionary=True)
             
-            query = """
+            has_status = self.has_column('status')
+            has_active = self.has_column('active')
+
+            product_status_clause = self._product_status_clause()
+
+            status_filter = "c.status = 'active'" if has_status else (
+                "c.active = 1" if has_active else '1=1'
+            )
+
+            status_select = "c.status" if has_status else (
+                "CASE WHEN c.active = 1 THEN 'active' ELSE 'inactive' END"
+                if has_active else "'active'"
+            )
+
+            query = f"""
                 SELECT 
                     c.id,
                     c.name,
                     c.description,
                     c.parent_id,
-                    c.status,
+                    {status_select} AS status,
                     c.created_at,
                     c.updated_at,
                     COUNT(p.id) as product_count,
                     pc.name as parent_name
                 FROM categories c
-                LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
+                LEFT JOIN products p ON c.id = p.category_id AND {product_status_clause}
                 LEFT JOIN categories pc ON c.parent_id = pc.id
-                WHERE c.status = 'active'
+                WHERE {status_filter}
                 AND (
                     c.name LIKE %s 
                     OR c.description LIKE %s
                 )
-                GROUP BY c.id, c.name, c.description, c.parent_id, c.status, c.created_at, c.updated_at, pc.name
+                GROUP BY c.id, c.name, c.description, c.parent_id, status, c.created_at, c.updated_at, pc.name
                 ORDER BY c.name ASC
             """
-            
+
             search_pattern = f"%{search_term}%"
             cursor.execute(query, (search_pattern, search_pattern))
             categories = cursor.fetchall()

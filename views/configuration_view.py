@@ -2235,11 +2235,11 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
     def load_database_config(self):
         """Cargar configuración de base de datos"""
         try:
-            db_config_path = os.path.join('config', 'database.json')
-            if os.path.exists(db_config_path):
-                with open(db_config_path, 'r', encoding='utf-8') as f:
-                    db_config = json.load(f)
-                    self.config_data.update(db_config)
+            # Usar PathManager para cargar configuración
+            from utils.path_manager import load_config
+            db_config = load_config('database.json')
+            if db_config:
+                self.config_data.update(db_config)
         except Exception as e:
             print(f"Error cargando configuración de BD: {e}")
     
