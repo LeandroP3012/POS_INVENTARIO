@@ -29285,3 +29285,424 @@
 2025-11-12 00:53:24,052 - AuthController - INFO - Logout exitoso para: admin
 2025-11-12 00:53:24,072 - AuthController - INFO - Controlador de autenticación limpiado
 2025-11-12 00:53:24,073 - MainController - INFO - Aplicación cerrada correctamente
+2025-11-17 12:52:08,475 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-11-17 12:52:08,609 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 12:52:08,610 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-11-17 12:52:08,612 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 12:52:08,612 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:52:08,613 - MainController - INFO - Sistema POS iniciado
+2025-11-17 12:52:08,613 - MainController - INFO - Iniciando aplicación POS
+2025-11-17 12:52:08,614 - MainController - INFO - Mostrando pantalla de login
+2025-11-17 12:52:08,831 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-11-17 12:52:08,831 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-11-17 12:52:14,192 - AuthController - INFO - Intento de login para usuario: admin
+2025-11-17 12:52:14,298 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:52:14,298 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 12:52:14,298 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 12:52:18,458 - DatabaseConnection - ERROR - ❌ Error al conectar a MySQL: 2003 (HY000): Can't connect to MySQL server on 'localhost:3306' (10061)
+2025-11-17 12:52:18,458 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:52:18,458 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 12:52:18,459 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 12:52:22,544 - DatabaseConnection - ERROR - ❌ Error al conectar a MySQL: 2003 (HY000): Can't connect to MySQL server on 'localhost:3306' (10061)
+2025-11-17 12:52:22,545 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:52:22,546 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 12:52:22,546 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 12:52:26,640 - DatabaseConnection - ERROR - ❌ Error al conectar a MySQL: 2003 (HY000): Can't connect to MySQL server on 'localhost:3306' (10061)
+2025-11-17 12:52:26,641 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-11-17 12:52:28,655 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:52:28,655 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 12:52:28,655 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 12:52:32,756 - DatabaseConnection - ERROR - ❌ Error al conectar a MySQL: 2003 (HY000): Can't connect to MySQL server on 'localhost:3306' (10061)
+2025-11-17 12:52:32,757 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:52:32,757 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 12:52:32,757 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 12:52:36,850 - DatabaseConnection - ERROR - ❌ Error al conectar a MySQL: 2003 (HY000): Can't connect to MySQL server on 'localhost:3306' (10061)
+2025-11-17 12:52:36,850 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-11-17 12:52:39,892 - MainController - INFO - Login exitoso para admin: admin
+2025-11-17 12:52:44,406 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:52:44,407 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 12:52:44,407 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 12:52:48,511 - DatabaseConnection - ERROR - ❌ Error al conectar a MySQL: 2003 (HY000): Can't connect to MySQL server on 'localhost:3306' (10061)
+2025-11-17 12:52:48,512 - model.ProductModel - ERROR - Conexión a la base de datos no disponible tras reintentos
+2025-11-17 12:52:48,512 - model.ProductModel - ERROR - No se pudo obtener conexión a la base de datos
+2025-11-17 12:52:53,471 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:52:53,471 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 12:52:53,472 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 12:52:57,562 - DatabaseConnection - ERROR - ❌ Error al conectar a MySQL: 2003 (HY000): Can't connect to MySQL server on 'localhost:3306' (10061)
+2025-11-17 12:52:57,563 - model.ProductModel - ERROR - Conexión a la base de datos no disponible tras reintentos
+2025-11-17 12:52:57,563 - model.ProductModel - ERROR - No se pudo obtener conexión a la base de datos
+2025-11-17 12:53:02,718 - MainController - INFO - Cerrando aplicación POS
+2025-11-17 12:53:02,718 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:53:02,718 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 12:53:02,718 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 12:53:06,821 - DatabaseConnection - ERROR - ❌ Error al conectar a MySQL: 2003 (HY000): Can't connect to MySQL server on 'localhost:3306' (10061)
+2025-11-17 12:53:06,821 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:53:06,821 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 12:53:06,822 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 12:53:10,934 - DatabaseConnection - ERROR - ❌ Error al conectar a MySQL: 2003 (HY000): Can't connect to MySQL server on 'localhost:3306' (10061)
+2025-11-17 12:53:10,935 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-11-17 12:53:10,935 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-11-17 12:53:11,021 - AuthController - INFO - Logout exitoso para: admin
+2025-11-17 12:53:11,034 - AuthController - INFO - Controlador de autenticación limpiado
+2025-11-17 12:53:11,034 - MainController - INFO - Aplicación cerrada correctamente
+2025-11-17 12:53:11,040 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-11-17 12:53:45,898 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-11-17 12:53:45,937 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 12:53:45,938 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-11-17 12:53:45,939 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 12:53:45,939 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:53:45,940 - MainController - INFO - Sistema POS iniciado
+2025-11-17 12:53:45,940 - MainController - INFO - Iniciando aplicación POS
+2025-11-17 12:53:45,941 - MainController - INFO - Mostrando pantalla de login
+2025-11-17 12:53:46,059 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-11-17 12:53:46,059 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-11-17 12:53:49,919 - AuthController - INFO - Intento de login para usuario: admin
+2025-11-17 12:53:50,031 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 12:53:50,031 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 12:53:50,032 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 12:53:50,217 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-11-17 12:53:50,262 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 12:53:50,278 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-11-17 12:53:50,278 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 11, 17, 12, 53, 50, 263088), 'updated_at': datetime.datetime(2025, 11, 17, 12, 53, 50, 277969)}
+2025-11-17 12:53:50,286 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-11-17 12:53:50,287 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 12:53:50,291 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-11-17 12:53:52,300 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 12:53:52,323 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-11-17 12:53:52,324 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-11-17 12:53:55,366 - MainController - INFO - Login exitoso para admin: admin
+2025-11-17 12:54:01,182 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-11-17 12:54:11,298 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 12:54:11,300 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-11-17 12:54:15,971 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-11-17 12:54:15,984 - model.ProductModel - INFO -    Último código encontrado: PROD-000006
+2025-11-17 12:54:15,984 - model.ProductModel - INFO -    Último número: 6
+2025-11-17 12:54:15,984 - model.ProductModel - INFO -    ✅ Siguiente número: 7
+2025-11-17 12:54:15,985 - model.ProductModel - INFO -    📦 Código generado: PROD-000007
+2025-11-17 12:54:15,985 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000007
+2025-11-17 12:54:15,985 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 12:54:15,986 - model.ProductModel - INFO -    ✓ Número extraído: 000007 (valor numérico: 7)
+2025-11-17 12:54:15,986 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000007
+2025-11-17 12:54:15,986 - model.ProductModel - INFO -    Dígito verificador calculado: 6
+2025-11-17 12:54:15,986 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000076
+2025-11-17 12:54:21,739 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-11-17 12:54:21,740 - model.ProductModel - INFO -    Último código encontrado: PROD-000006
+2025-11-17 12:54:21,741 - model.ProductModel - INFO -    Último número: 6
+2025-11-17 12:54:21,741 - model.ProductModel - INFO -    ✅ Siguiente número: 7
+2025-11-17 12:54:21,742 - model.ProductModel - INFO -    📦 Código generado: PROD-000007
+2025-11-17 12:54:21,742 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000007
+2025-11-17 12:54:21,743 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 12:54:21,743 - model.ProductModel - INFO -    ✓ Número extraído: 000007 (valor numérico: 7)
+2025-11-17 12:54:21,743 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000007
+2025-11-17 12:54:21,744 - model.ProductModel - INFO -    Dígito verificador calculado: 6
+2025-11-17 12:54:21,744 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000076
+2025-11-17 12:54:28,873 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000007
+2025-11-17 12:54:28,874 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 12:54:28,874 - model.ProductModel - INFO -    ✓ Número extraído: 000007 (valor numérico: 7)
+2025-11-17 12:54:28,874 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000007
+2025-11-17 12:54:28,874 - model.ProductModel - INFO -    Dígito verificador calculado: 6
+2025-11-17 12:54:28,875 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000076
+2025-11-17 12:54:31,740 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000007
+2025-11-17 12:54:31,740 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 12:54:31,741 - model.ProductModel - INFO -    ✓ Número extraído: 000007 (valor numérico: 7)
+2025-11-17 12:54:31,741 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000007
+2025-11-17 12:54:31,741 - model.ProductModel - INFO -    Dígito verificador calculado: 6
+2025-11-17 12:54:31,741 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000076
+2025-11-17 13:01:57,288 - MainController - INFO - Cerrando aplicación POS
+2025-11-17 13:01:57,289 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:01:57,290 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 422
+2025-11-17 13:01:57,291 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 11, 17, 13, 1, 57, 289328), 'logout_reason': 'cleanup'}
+2025-11-17 13:01:57,296 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-11-17 13:01:57,298 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-11-17 13:01:57,298 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-11-17 13:01:57,298 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-11-17 13:01:57,368 - AuthController - INFO - Logout exitoso para: admin
+2025-11-17 13:01:57,407 - AuthController - INFO - Controlador de autenticación limpiado
+2025-11-17 13:01:57,408 - MainController - INFO - Aplicación cerrada correctamente
+2025-11-17 13:15:09,827 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-11-17 13:15:09,865 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 13:15:09,865 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-11-17 13:15:09,867 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 13:15:09,867 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 13:15:09,868 - MainController - INFO - Sistema POS iniciado
+2025-11-17 13:15:09,868 - MainController - INFO - Iniciando aplicación POS
+2025-11-17 13:15:09,868 - MainController - INFO - Mostrando pantalla de login
+2025-11-17 13:15:09,983 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-11-17 13:15:09,983 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-11-17 13:15:15,924 - AuthController - INFO - Intento de login para usuario: ADMIN
+2025-11-17 13:15:16,036 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 13:15:16,036 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 13:15:16,037 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 13:15:16,177 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-11-17 13:15:16,179 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:15:16,181 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-11-17 13:15:16,182 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 11, 17, 13, 15, 16, 179297), 'updated_at': datetime.datetime(2025, 11, 17, 13, 15, 16, 181719)}
+2025-11-17 13:15:16,186 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-11-17 13:15:16,187 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:15:16,189 - model.UserModel - INFO - Usuario autenticado exitosamente: ADMIN
+2025-11-17 13:15:18,199 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:15:18,209 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-11-17 13:15:18,209 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-11-17 13:15:21,252 - MainController - INFO - Login exitoso para admin: admin
+2025-11-17 13:15:57,812 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:15:57,814 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-11-17 13:16:00,170 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-11-17 13:16:00,170 - model.ProductModel - INFO -    Último código encontrado: PROD-000006
+2025-11-17 13:16:00,171 - model.ProductModel - INFO -    Último número: 6
+2025-11-17 13:16:00,171 - model.ProductModel - INFO -    ✅ Siguiente número: 7
+2025-11-17 13:16:00,171 - model.ProductModel - INFO -    📦 Código generado: PROD-000007
+2025-11-17 13:16:00,171 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000007
+2025-11-17 13:16:00,171 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 13:16:00,171 - model.ProductModel - INFO -    ✓ Número extraído: 000007 (valor numérico: 7)
+2025-11-17 13:16:00,172 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000007
+2025-11-17 13:16:00,172 - model.ProductModel - INFO -    Dígito verificador calculado: 6
+2025-11-17 13:16:00,172 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000076
+2025-11-17 13:16:12,371 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000007
+2025-11-17 13:16:12,371 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 13:16:12,371 - model.ProductModel - INFO -    ✓ Número extraído: 000007 (valor numérico: 7)
+2025-11-17 13:16:12,371 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000007
+2025-11-17 13:16:12,371 - model.ProductModel - INFO -    Dígito verificador calculado: 6
+2025-11-17 13:16:12,372 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000076
+2025-11-17 13:16:37,634 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-11-17 13:16:37,634 - model.ProductModel - INFO -    Último código encontrado: PROD-000006
+2025-11-17 13:16:37,635 - model.ProductModel - INFO -    Último número: 6
+2025-11-17 13:16:37,635 - model.ProductModel - INFO -    ✅ Siguiente número: 7
+2025-11-17 13:16:37,635 - model.ProductModel - INFO -    📦 Código generado: PROD-000007
+2025-11-17 13:16:37,635 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000007
+2025-11-17 13:16:37,635 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 13:16:37,636 - model.ProductModel - INFO -    ✓ Número extraído: 000007 (valor numérico: 7)
+2025-11-17 13:16:37,636 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000007
+2025-11-17 13:16:37,636 - model.ProductModel - INFO -    Dígito verificador calculado: 6
+2025-11-17 13:16:37,636 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000076
+2025-11-17 13:16:57,215 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000007
+2025-11-17 13:16:57,215 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 13:16:57,216 - model.ProductModel - INFO -    ✓ Número extraído: 000007 (valor numérico: 7)
+2025-11-17 13:16:57,216 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000007
+2025-11-17 13:16:57,216 - model.ProductModel - INFO -    Dígito verificador calculado: 6
+2025-11-17 13:16:57,216 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000076
+2025-11-17 13:17:10,792 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-11-17 13:17:10,798 - model.ProductModel - INFO - Producto creado exitosamente: PC (ID: 10)
+2025-11-17 13:17:10,799 - controller.ProductController - INFO - Producto creado por admin: PC
+2025-11-17 13:17:11,811 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:17:11,813 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:17:18,162 - model.ProductModel - INFO - Producto 10 eliminado exitosamente
+2025-11-17 13:17:18,162 - controller.ProductController - INFO - Producto 10 eliminado por admin
+2025-11-17 13:17:19,995 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:17:19,997 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-11-17 13:17:23,386 - MainController - INFO - Cerrando aplicación POS
+2025-11-17 13:17:23,386 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:17:23,388 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 423
+2025-11-17 13:17:23,388 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 11, 17, 13, 17, 23, 387011), 'logout_reason': 'cleanup'}
+2025-11-17 13:17:23,393 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-11-17 13:17:23,395 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-11-17 13:17:23,395 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-11-17 13:17:23,396 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-11-17 13:17:23,463 - AuthController - INFO - Logout exitoso para: admin
+2025-11-17 13:17:23,490 - AuthController - INFO - Controlador de autenticación limpiado
+2025-11-17 13:17:23,490 - MainController - INFO - Aplicación cerrada correctamente
+2025-11-17 13:32:49,459 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-11-17 13:32:49,497 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 13:32:49,498 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-11-17 13:32:49,498 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 13:32:49,499 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 13:32:49,499 - MainController - INFO - Sistema POS iniciado
+2025-11-17 13:32:49,499 - MainController - INFO - Iniciando aplicación POS
+2025-11-17 13:32:49,499 - MainController - INFO - Mostrando pantalla de login
+2025-11-17 13:32:49,618 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-11-17 13:32:49,618 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-11-17 13:32:53,244 - AuthController - INFO - Intento de login para usuario: admin
+2025-11-17 13:32:53,360 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 13:32:53,361 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 13:32:53,361 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 13:32:53,501 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-11-17 13:32:53,503 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:32:53,505 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-11-17 13:32:53,505 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 11, 17, 13, 32, 53, 503446), 'updated_at': datetime.datetime(2025, 11, 17, 13, 32, 53, 505100)}
+2025-11-17 13:32:53,510 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-11-17 13:32:53,511 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:32:53,513 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-11-17 13:32:55,525 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:32:55,536 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-11-17 13:32:55,536 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-11-17 13:32:58,593 - MainController - INFO - Login exitoso para admin: admin
+2025-11-17 13:33:04,439 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:33:04,442 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-11-17 13:33:08,224 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-11-17 13:33:08,225 - model.ProductModel - INFO -    Último código encontrado: PROD-000007
+2025-11-17 13:33:08,225 - model.ProductModel - INFO -    Último número: 7
+2025-11-17 13:33:08,225 - model.ProductModel - INFO -    ✅ Siguiente número: 8
+2025-11-17 13:33:08,226 - model.ProductModel - INFO -    📦 Código generado: PROD-000008
+2025-11-17 13:33:08,226 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000008
+2025-11-17 13:33:08,226 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 13:33:08,226 - model.ProductModel - INFO -    ✓ Número extraído: 000008 (valor numérico: 8)
+2025-11-17 13:33:08,226 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000008
+2025-11-17 13:33:08,227 - model.ProductModel - INFO -    Dígito verificador calculado: 3
+2025-11-17 13:33:08,227 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000083
+2025-11-17 13:37:27,243 - MainController - INFO - Cerrando aplicación POS
+2025-11-17 13:37:27,244 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:37:27,246 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 424
+2025-11-17 13:37:27,246 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 11, 17, 13, 37, 27, 244690), 'logout_reason': 'cleanup'}
+2025-11-17 13:37:27,249 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-11-17 13:37:27,251 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-11-17 13:37:27,251 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-11-17 13:37:27,251 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-11-17 13:37:27,316 - AuthController - INFO - Logout exitoso para: admin
+2025-11-17 13:37:27,341 - AuthController - INFO - Controlador de autenticación limpiado
+2025-11-17 13:37:27,342 - MainController - INFO - Aplicación cerrada correctamente
+2025-11-17 13:38:34,971 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-11-17 13:38:35,009 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 13:38:35,010 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-11-17 13:38:35,011 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 13:38:35,011 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 13:38:35,012 - MainController - INFO - Sistema POS iniciado
+2025-11-17 13:38:35,012 - MainController - INFO - Iniciando aplicación POS
+2025-11-17 13:38:35,012 - MainController - INFO - Mostrando pantalla de login
+2025-11-17 13:38:35,135 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-11-17 13:38:35,135 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-11-17 13:38:39,191 - AuthController - INFO - Intento de login para usuario: admin
+2025-11-17 13:38:39,295 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 13:38:39,296 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 13:38:39,296 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 13:38:39,432 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-11-17 13:38:39,434 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:38:39,436 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-11-17 13:38:39,436 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 11, 17, 13, 38, 39, 434274), 'updated_at': datetime.datetime(2025, 11, 17, 13, 38, 39, 436517)}
+2025-11-17 13:38:39,443 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-11-17 13:38:39,444 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:38:39,446 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-11-17 13:38:41,461 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:38:41,471 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-11-17 13:38:41,472 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-11-17 13:38:44,511 - MainController - INFO - Login exitoso para admin: admin
+2025-11-17 13:38:47,724 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:38:47,727 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-11-17 13:38:49,087 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-11-17 13:38:49,089 - model.ProductModel - INFO -    Último código encontrado: PROD-000007
+2025-11-17 13:38:49,089 - model.ProductModel - INFO -    Último número: 7
+2025-11-17 13:38:49,089 - model.ProductModel - INFO -    ✅ Siguiente número: 8
+2025-11-17 13:38:49,090 - model.ProductModel - INFO -    📦 Código generado: PROD-000008
+2025-11-17 13:39:07,027 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-11-17 13:39:07,028 - model.ProductModel - INFO -    Último código encontrado: PROD-000007
+2025-11-17 13:39:07,029 - model.ProductModel - INFO -    Último número: 7
+2025-11-17 13:39:07,029 - model.ProductModel - INFO -    ✅ Siguiente número: 8
+2025-11-17 13:39:07,029 - model.ProductModel - INFO -    📦 Código generado: PROD-000008
+2025-11-17 13:39:31,459 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:39:31,463 - model.ProductModel - INFO - Producto creado exitosamente: sdsd (ID: 11)
+2025-11-17 13:39:31,463 - controller.ProductController - INFO - Producto creado por admin: sdsd
+2025-11-17 13:39:32,905 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:39:32,907 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:39:36,872 - model.ProductModel - INFO - Producto 11 eliminado exitosamente
+2025-11-17 13:39:36,872 - controller.ProductController - INFO - Producto 11 eliminado por admin
+2025-11-17 13:39:37,507 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:39:37,508 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-11-17 13:39:45,251 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-11-17 13:39:45,252 - model.ProductModel - INFO -    Último código encontrado: PROD-000008
+2025-11-17 13:39:45,252 - model.ProductModel - INFO -    Último número: 8
+2025-11-17 13:39:45,252 - model.ProductModel - INFO -    ✅ Siguiente número: 9
+2025-11-17 13:39:45,252 - model.ProductModel - INFO -    📦 Código generado: PROD-000009
+2025-11-17 13:43:40,702 - MainController - INFO - Cerrando aplicación POS
+2025-11-17 13:43:40,703 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:43:40,705 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 425
+2025-11-17 13:43:40,705 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 11, 17, 13, 43, 40, 703634), 'logout_reason': 'cleanup'}
+2025-11-17 13:43:40,712 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-11-17 13:43:40,714 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-11-17 13:43:40,714 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-11-17 13:43:40,714 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-11-17 13:43:40,801 - AuthController - INFO - Logout exitoso para: admin
+2025-11-17 13:43:40,836 - AuthController - INFO - Controlador de autenticación limpiado
+2025-11-17 13:43:40,836 - MainController - INFO - Aplicación cerrada correctamente
+2025-11-17 13:57:07,922 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-11-17 13:57:07,960 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 13:57:07,961 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-11-17 13:57:07,962 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-11-17 13:57:07,962 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 13:57:07,963 - MainController - INFO - Sistema POS iniciado
+2025-11-17 13:57:07,963 - MainController - INFO - Iniciando aplicación POS
+2025-11-17 13:57:07,963 - MainController - INFO - Mostrando pantalla de login
+2025-11-17 13:57:08,084 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-11-17 13:57:08,085 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-11-17 13:57:12,372 - AuthController - INFO - Intento de login para usuario: admin
+2025-11-17 13:57:12,483 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '10', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-11-17 13:57:12,484 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-11-17 13:57:12,484 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-11-17 13:57:12,607 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-11-17 13:57:12,609 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:57:12,612 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-11-17 13:57:12,612 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 11, 17, 13, 57, 12, 610212), 'updated_at': datetime.datetime(2025, 11, 17, 13, 57, 12, 612355)}
+2025-11-17 13:57:12,618 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-11-17 13:57:12,619 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:57:12,620 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-11-17 13:57:14,628 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:57:14,637 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-11-17 13:57:14,637 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-11-17 13:57:17,675 - MainController - INFO - Login exitoso para admin: admin
+2025-11-17 13:57:19,658 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:57:19,660 - model.ProductModel - INFO - Se obtuvieron 9 productos
+2025-11-17 13:57:21,083 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-11-17 13:57:21,084 - model.ProductModel - INFO -    Último código encontrado: PROD-000008
+2025-11-17 13:57:21,084 - model.ProductModel - INFO -    Último número: 8
+2025-11-17 13:57:21,084 - model.ProductModel - INFO -    ✅ Siguiente número: 9
+2025-11-17 13:57:21,085 - model.ProductModel - INFO -    📦 Código generado: PROD-000009
+2025-11-17 13:57:22,824 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000009
+2025-11-17 13:57:22,824 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 13:57:22,825 - model.ProductModel - INFO -    ✓ Número extraído: 000009 (valor numérico: 9)
+2025-11-17 13:57:22,825 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000009
+2025-11-17 13:57:22,825 - model.ProductModel - INFO -    Dígito verificador calculado: 0
+2025-11-17 13:57:22,825 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000090
+2025-11-17 13:57:23,941 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000009
+2025-11-17 13:57:23,941 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 13:57:23,942 - model.ProductModel - INFO -    ✓ Número extraído: 000009 (valor numérico: 9)
+2025-11-17 13:57:23,942 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000009
+2025-11-17 13:57:23,942 - model.ProductModel - INFO -    Dígito verificador calculado: 0
+2025-11-17 13:57:23,942 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000090
+2025-11-17 13:57:25,427 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000009
+2025-11-17 13:57:25,428 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 13:57:25,428 - model.ProductModel - INFO -    ✓ Número extraído: 000009 (valor numérico: 9)
+2025-11-17 13:57:25,428 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000009
+2025-11-17 13:57:25,428 - model.ProductModel - INFO -    Dígito verificador calculado: 0
+2025-11-17 13:57:25,429 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000090
+2025-11-17 13:57:27,729 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000009
+2025-11-17 13:57:27,729 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-11-17 13:57:27,729 - model.ProductModel - INFO -    ✓ Número extraído: 000009 (valor numérico: 9)
+2025-11-17 13:57:27,729 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000009
+2025-11-17 13:57:27,730 - model.ProductModel - INFO -    Dígito verificador calculado: 0
+2025-11-17 13:57:27,730 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000090
+2025-11-17 13:57:37,856 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: 123456789123
+2025-11-17 13:57:37,856 - model.ProductModel - WARNING -    ⚠️ Formato no reconocido, usando hash: 799405697
+2025-11-17 13:57:37,856 - model.ProductModel - INFO -    Base del código (12 dígitos): 775799405697
+2025-11-17 13:57:37,857 - model.ProductModel - INFO -    Dígito verificador calculado: 3
+2025-11-17 13:57:37,857 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7757994056973
+2025-11-17 13:57:57,267 - model.ProductModel - INFO - Se obtuvieron 11 productos
+2025-11-17 13:57:57,270 - model.ProductModel - INFO - Producto creado exitosamente: COMPUTADORA (ID: 12)
+2025-11-17 13:57:57,270 - controller.ProductController - INFO - Producto creado por admin: COMPUTADORA
+2025-11-17 13:57:58,275 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:57:58,276 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:58:05,373 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:58:07,787 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:58:22,814 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:58:30,782 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:58:30,784 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:58:39,753 - model.ProductModel - INFO - Límites actualizados para producto 12: min=5.0, max=10.0
+2025-11-17 13:58:39,753 - controller.ProductController - INFO - Límites actualizados para 123456789123: min=5.0, max=10.0 por admin
+2025-11-17 13:58:40,340 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:58:40,342 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:58:46,462 - model.ProductModel - INFO - Stock actualizado directamente para producto 12: 0.0 → 10.0 (min: 5.0, max: 10.0)
+2025-11-17 13:58:46,462 - controller.ProductController - INFO - Stock actualizado para 123456789123: 0.0 → 10.0 (entrada) por admin
+2025-11-17 13:58:47,375 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-11-17 13:58:47,376 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:58:52,718 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:58:56,603 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:59:00,483 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:59:03,577 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:59:04,137 - model.ProductModel - INFO - Se obtuvieron 10 productos
+2025-11-17 13:59:07,781 - MainController - INFO - Cerrando aplicación POS
+2025-11-17 13:59:07,782 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-11-17 13:59:07,783 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 426
+2025-11-17 13:59:07,783 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 11, 17, 13, 59, 7, 782200), 'logout_reason': 'cleanup'}
+2025-11-17 13:59:07,788 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-11-17 13:59:07,790 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-11-17 13:59:07,790 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-11-17 13:59:07,790 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-11-17 13:59:07,869 - AuthController - INFO - Logout exitoso para: admin
+2025-11-17 13:59:07,890 - AuthController - INFO - Controlador de autenticación limpiado
+2025-11-17 13:59:07,890 - MainController - INFO - Aplicación cerrada correctamente
