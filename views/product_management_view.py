@@ -725,16 +725,32 @@ class ProductManagementView(BaseView):
     def on_product_select(self, event):
         """Manejar selección de producto"""
         selection = self.products_tree.selection()
-        if selection:
-            item = self.products_tree.item(selection[0])
-            product_id = item['values'][0] if item['values'] else None
-            
-            # Buscar producto completo
-            for product in self.products:
-                if str(product.get('id')) == str(product_id) or product.get('sku') == product_id:
-                    self.selected_product = product
-                    self.show_product_details(product)
-                    break
+        if not selection:
+            return
+
+        selected_iid = selection[0]
+        selected_product = None
+
+        # Buscar por ID usando el iid del Treeview
+        for product in self.products:
+            if str(product.get('id')) == str(selected_iid):
+                selected_product = product
+                break
+
+        # Fallback: usar el SKU de la fila seleccionada
+        if not selected_product:
+            item = self.products_tree.item(selected_iid)
+            values = item.get('values', [])
+            sku_value = values[0] if values else None
+            if sku_value:
+                for product in self.products:
+                    if str(product.get('sku')) == str(sku_value):
+                        selected_product = product
+                        break
+
+        if selected_product:
+            self.selected_product = selected_product
+            self.show_product_details(selected_product)
     
     # Métodos públicos
     def load_products(self, products: List[Dict[str, Any]]):
@@ -759,10 +775,12 @@ class ProductManagementView(BaseView):
             
             # Estado visual
             status_text = '✅ Activo' if product.get('status') == 'active' else '❌ Inactivo'
-            
+            row_id = str(product.get('id') or product.get('sku') or product.get('name'))
+
             self.products_tree.insert(
                 '',
                 'end',
+                iid=row_id,
                 values=(
                     product.get('sku', ''),
                     product.get('name', ''),

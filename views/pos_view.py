@@ -31,12 +31,62 @@ class POSView:
         # Variables de cálculo
         self.current_total = 0.0
         
-        # Frame principal
-        self.main_frame = tk.Frame(parent, bg='#ecf0f1')
-        self.main_frame.pack(fill='both', expand=True)
-        
+        # Configurar viewport responsivo
+        self._configure_viewport()
+
         self.setup_ui()
-    
+
+    def _configure_viewport(self):
+        """Adaptar la vista para resoluciones medias como 1366x768."""
+        master = self.parent.winfo_toplevel() if hasattr(self.parent, 'winfo_toplevel') else self.parent
+
+        try:
+            screen_w = master.winfo_screenwidth()
+            screen_h = master.winfo_screenheight()
+        except Exception:
+            screen_w, screen_h = 1366, 768
+
+        margin = 40
+        min_height = 640
+        target_height = max(min(screen_h - margin, 860), min_height)
+        target_width = min(screen_w - margin, 1400)
+
+        try:
+            master.geometry(f"{target_width}x{target_height}")
+        except Exception:
+            pass
+
+        self.viewport_container = tk.Frame(self.parent, bg='#ecf0f1')
+        self.viewport_container.pack(fill='both', expand=True)
+
+        self._viewport_canvas = tk.Canvas(
+            self.viewport_container,
+            bg='#ecf0f1',
+            highlightthickness=0
+        )
+        v_scroll = ttk.Scrollbar(
+            self.viewport_container,
+            orient='vertical',
+            command=self._viewport_canvas.yview
+        )
+        self._viewport_canvas.configure(yscrollcommand=v_scroll.set)
+
+        self._viewport_canvas.pack(side='left', fill='both', expand=True)
+        v_scroll.pack(side='right', fill='y')
+
+        self.main_frame = tk.Frame(self._viewport_canvas, bg='#ecf0f1')
+        self._viewport_canvas.create_window((0, 0), window=self.main_frame, anchor='nw')
+
+        def _update_scroll_region(_event=None):
+            self._viewport_canvas.configure(scrollregion=self._viewport_canvas.bbox('all'))
+
+        self.main_frame.bind('<Configure>', _update_scroll_region)
+
+        def _on_mousewheel(event):
+            self._viewport_canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+
+        self._viewport_canvas.bind_all('<MouseWheel>', _on_mousewheel)
+
     def setup_ui(self):
         """Configura la interfaz completa"""
         # Header
@@ -45,20 +95,25 @@ class POSView:
         # Contenedor principal (3 columnas)
         content_frame = tk.Frame(self.main_frame, bg='#ecf0f1')
         content_frame.pack(fill='both', expand=True, padx=10, pady=10)
-        
+
+        content_frame.columnconfigure(0, weight=3)
+        content_frame.columnconfigure(1, weight=2)
+        content_frame.columnconfigure(2, weight=0)
+
         # Columna izquierda: Búsqueda y productos
         left_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1)
-        left_frame.pack(side='left', fill='both', expand=True, padx=(0, 5))
+        left_frame.grid(row=0, column=0, sticky='nsew', padx=(0, 5))
         self.create_search_section(left_frame)
         
         # Columna central: Carrito
         center_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1)
-        center_frame.pack(side='left', fill='both', expand=True, padx=5)
+        center_frame.grid(row=0, column=1, sticky='nsew', padx=5)
         self.create_cart_section(center_frame)
         
         # Columna derecha: Totales y pago
-        right_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1)
-        right_frame.pack(side='left', fill='both', padx=(5, 0))
+        right_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1, width=360)
+        right_frame.grid(row=0, column=2, sticky='ns', padx=(5, 0))
+        right_frame.grid_propagate(False)
         self.create_totals_section(right_frame)
     
     def create_header(self):

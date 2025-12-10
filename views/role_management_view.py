@@ -219,9 +219,8 @@ class RoleManagementView(BaseView):
     
     def create_toolbar(self):
         """Crear toolbar con búsqueda y botones de acción"""
-        toolbar_frame = tk.Frame(self.root, bg='white', height=90)
-        toolbar_frame.pack(fill='x', padx=25, pady=(25, 0))
-        toolbar_frame.pack_propagate(False)
+        toolbar_frame = tk.Frame(self.root, bg='white')
+        toolbar_frame.pack(fill='x', padx=20, pady=(20, 0))
         
         # Frame interno con padding
         inner_frame = tk.Frame(toolbar_frame, bg='white')
@@ -229,7 +228,7 @@ class RoleManagementView(BaseView):
         
         # Frame izquierdo - Búsqueda
         search_frame = tk.Frame(inner_frame, bg='white')
-        search_frame.pack(side='left', fill='y')
+        search_frame.pack(fill='x')
         
         tk.Label(
             search_frame,
@@ -292,7 +291,7 @@ class RoleManagementView(BaseView):
         
         # Frame derecho - Botones de acción
         buttons_frame = tk.Frame(inner_frame, bg='white')
-        buttons_frame.pack(side='right', fill='y')
+        buttons_frame.pack(fill='x', pady=(15, 0))
         
         # Botón nuevo rol - Solo si tiene permiso roles.create
         if self.has_permission('roles.create'):
@@ -302,13 +301,13 @@ class RoleManagementView(BaseView):
                 command=self.create_role,
                 bg='#27ae60',
                 fg='white',
-                font=('Segoe UI', 13, 'bold'),
+                font=('Segoe UI', 12, 'bold'),
                 relief='flat',
                 cursor='hand2',
-                padx=20,
-                pady=12
+                padx=15,
+                pady=10
             )
-            new_role_btn.pack(side='left', padx=(0, 12))
+            new_role_btn.pack(side='left', padx=(0, 10), pady=5)
         
         # Botón editar - Solo si tiene permiso roles.edit
         if self.has_permission('roles.edit'):
@@ -318,14 +317,14 @@ class RoleManagementView(BaseView):
                 command=self.edit_role,
                 bg='#3498db',
                 fg='white',
-                font=('Segoe UI', 13, 'bold'),
+                font=('Segoe UI', 12, 'bold'),
                 relief='flat',
                 cursor='hand2',
-                padx=20,
-                pady=12,
+                padx=15,
+                pady=10,
                 state='disabled'
             )
-            self.edit_role_btn.pack(side='left', padx=(0, 12))
+            self.edit_role_btn.pack(side='left', padx=(0, 10), pady=5)
         else:
             self.edit_role_btn = None
         
@@ -337,14 +336,14 @@ class RoleManagementView(BaseView):
                 command=self.delete_role,
                 bg='#e74c3c',
                 fg='white',
-                font=('Segoe UI', 13, 'bold'),
+                font=('Segoe UI', 12, 'bold'),
                 relief='flat',
                 cursor='hand2',
-                padx=20,
-                pady=12,
+                padx=15,
+                pady=10,
                 state='disabled'
             )
-            self.delete_role_btn.pack(side='left', padx=(0, 12))
+            self.delete_role_btn.pack(side='left', padx=(0, 10), pady=5)
         else:
             self.delete_role_btn = None
         
@@ -356,14 +355,14 @@ class RoleManagementView(BaseView):
                 command=self.manage_permissions,
                 bg='#9b59b6',
                 fg='white',
-                font=('Segoe UI', 13, 'bold'),
+                font=('Segoe UI', 12, 'bold'),
                 relief='flat',
                 cursor='hand2',
-                padx=20,
-                pady=12,
+                padx=15,
+                pady=10,
                 state='disabled'
             )
-            self.permissions_btn.pack(side='left')
+            self.permissions_btn.pack(side='left', pady=5)
         else:
             self.permissions_btn = None
     

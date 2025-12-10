@@ -28,7 +28,16 @@ class ProductFormDialog:
         # Crear ventana
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("Editar Producto" if product else "Nuevo Producto")
-        self.dialog.geometry("700x800")
+
+        # Ajustar tamaño inicial según la resolución disponible
+        screen_w = self.dialog.winfo_screenwidth()
+        screen_h = self.dialog.winfo_screenheight()
+        preferred_w, preferred_h = 720, 800
+        margin = 80
+        min_w, min_h = 640, 600
+        dialog_w = max(min(preferred_w, screen_w - margin), min_w)
+        dialog_h = max(min(preferred_h, screen_h - margin), min_h)
+        self.dialog.geometry(f"{dialog_w}x{dialog_h}")
         self.dialog.resizable(False, False)
         self.dialog.transient(parent)
         self.dialog.grab_set()
