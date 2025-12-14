@@ -7,6 +7,7 @@ Fecha: 2025
 from models.base_model import BaseModel
 from datetime import datetime
 from decimal import Decimal
+from typing import Dict, Any
 
 class SaleModel(BaseModel):
     """Modelo para operaciones de ventas"""
@@ -241,6 +242,17 @@ class SaleModel(BaseModel):
                     query += " AND (u.username LIKE %s OR u.full_name LIKE %s)"
                     params.extend([like_cashier, like_cashier])
 
+                if filters.get('search_text'):
+                    keyword = f"%{filters['search_text']}%"
+                    query += " AND ("
+                    query += " s.sale_number LIKE %s OR"
+                    query += " COALESCE(c.name, '') LIKE %s OR"
+                    query += " COALESCE(c.document_number, '') LIKE %s OR"
+                    query += " u.username LIKE %s OR"
+                    query += " u.full_name LIKE %s"
+                    query += " )"
+                    params.extend([keyword, keyword, keyword, keyword, keyword])
+
                 if filters.get('date_from'):
                     query += " AND DATE(s.sale_date) >= %s"
                     params.append(filters['date_from'])
@@ -252,8 +264,17 @@ class SaleModel(BaseModel):
                 if filters.get('cashier_id'):
                     query += " AND s.user_id = %s"
                     params.append(filters['cashier_id'])
+
+                if filters.get('exclude_credit_notes'):
+                    query += " AND s.credit_note_id IS NULL"
+            
+            limit = filters.get('limit') if filters else None
             
             query += " ORDER BY s.sale_date DESC"
+
+            if limit:
+                query += " LIMIT %s"
+                params.append(int(limit))
             
             cursor.execute(query, params)
             sales = cursor.fetchall()
@@ -423,6 +444,22 @@ class SaleModel(BaseModel):
                 cursor.close()
             if connection:
                 connection.close()
+
+    # ==========================================
+    # NOTAS DE CRÉDITO (delegado)
+    # ==========================================
+
+    def create_credit_note(self, sale_id: int, user_id: int, reason: str = "", items=None) -> Dict[str, Any]:
+        """Wrapper para generar una nota de crédito desde el modelo de ventas"""
+        try:
+            from models.credit_note_model import CreditNoteModel
+            model = CreditNoteModel()
+            return model.create_credit_note(sale_id, user_id, reason, items)
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f"No se pudo crear la nota de crédito: {e}"
+            }
     
     # ==========================================
     # REPORTES Y ESTADÍSTICAS

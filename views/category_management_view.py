@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Dict, Any, List, Callable, Optional
 from utils.responsive_utils import ResponsiveManager
+from services.permission_service import PermissionService
 
 
 class CategoryManagementView:
@@ -20,6 +21,8 @@ class CategoryManagementView:
         
         # Inicializar gestor responsivo
         self.responsive = ResponsiveManager(parent)
+
+        self.permission_service = PermissionService()
         
         # Callbacks
         self.on_refresh_callback = None
@@ -38,6 +41,14 @@ class CategoryManagementView:
         
         # Crear interfaz base (sin navbar todavía)
         self.create_widgets()
+
+    def has_permission(self, permission: str) -> bool:
+        """Verificar permisos del usuario actual"""
+        try:
+            return self.permission_service.check_permission(self.current_user, permission)
+        except Exception as exc:
+            print(f"Error verificando permiso {permission}: {exc}")
+            return False
     
     def create_widgets(self):
         """Crear widgets de la interfaz"""

@@ -200,6 +200,14 @@ class DashboardView(BaseView):
                 'permission': 'sales.view'
             },
             {
+                'id': 'credit_notes',
+                'title': 'Notas de Crédito',
+                'icon_path': 'assets/images/clipboard.png',
+                'color': '#0ea5e9',
+                'description': 'Consultar y generar notas de crédito',
+                'permission': 'sales.view'
+            },
+            {
                 'id': 'products',
                 'title': 'Gestión de Productos',
                 'icon_path': 'assets/images/box.png',

@@ -168,6 +168,16 @@ class SaleController:
                 'success': False,
                 'message': f'Error: {str(e)}'
             }
+
+    def create_credit_note(self, sale_id: int, user_id: int, reason: str = "", items=None):
+        """Generar una nota de crédito para una venta"""
+        try:
+            return self.sale_model.create_credit_note(sale_id, user_id, reason, items)
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f'Error: {str(e)}'
+            }
     
     # ==========================================
     # CONSULTAS
@@ -189,6 +199,22 @@ class SaleController:
                 return {'success': True, 'sale': sale}
             else:
                 return {'success': False, 'message': 'Venta no encontrada'}
+        except Exception as e:
+            return {'success': False, 'message': f'Error: {str(e)}'}
+
+    def get_recent_sales_for_credit_notes(self, search_text: str | None = None, limit: int = 100):
+        """Obtiene ventas elegibles para notas de crédito"""
+        try:
+            filters = {'status': 'completed', 'limit': limit, 'exclude_credit_notes': True}
+            if search_text:
+                filters['search_text'] = search_text
+
+            result = self.get_sales_list(filters)
+            if not result.get('success'):
+                return result
+
+            sales = result.get('sales', [])
+            return {'success': True, 'sales': sales}
         except Exception as e:
             return {'success': False, 'message': f'Error: {str(e)}'}
     

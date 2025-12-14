@@ -638,6 +638,30 @@ class ProductModel(BaseModel):
         except Exception as e:
             self.logger.error(f"Error al buscar producto por código de barras: {e}")
             return None
+
+    def sku_exists(self, sku: str, exclude_id: Optional[int] = None) -> bool:
+        """Verificar si un SKU ya existe usando consulta directa"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return False
+
+            cursor = connection.cursor()
+
+            if exclude_id is not None:
+                query = "SELECT 1 FROM products WHERE sku = %s AND id <> %s LIMIT 1"
+                cursor.execute(query, (sku, exclude_id))
+            else:
+                query = "SELECT 1 FROM products WHERE sku = %s LIMIT 1"
+                cursor.execute(query, (sku,))
+
+            exists = cursor.fetchone() is not None
+            cursor.close()
+            return exists
+
+        except Exception as exc:
+            self.logger.error(f"Error verificando existencia de SKU '{sku}': {exc}")
+            return False
     
     def get_low_stock_products(self) -> List[Dict[str, Any]]:
         """Obtener productos con stock bajo - COMPATIBLE"""

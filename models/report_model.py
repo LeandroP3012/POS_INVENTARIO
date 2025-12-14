@@ -59,6 +59,7 @@ class ReportModel(BaseModel):
                 LEFT JOIN customers c ON s.customer_id = c.id
                 LEFT JOIN sale_details sd ON s.id = sd.sale_id
                 WHERE s.sale_date BETWEEN %s AND %s
+                AND s.status = 'completed'
             """
             
             params = [start_date, end_date]
@@ -80,6 +81,7 @@ class ReportModel(BaseModel):
                     FROM sale_details sd
                     INNER JOIN sales s ON sd.sale_id = s.id
                     WHERE s.sale_date BETWEEN %s AND %s
+                    AND s.status = 'completed'
                 """
                 product_params = [start_date, end_date]
                 
@@ -323,4 +325,67 @@ class ReportModel(BaseModel):
             
         except Exception as e:
             self.logger.error(f"Error en resumen diario: {e}")
+            return {'success': False, 'message': str(e)}
+
+    # ==========================
+    # Reporte de notas de crédito
+    # ==========================
+    def get_credit_notes_report(self, start_date: datetime, end_date: datetime, user_id: Optional[int] = None) -> Dict[str, Any]:
+        """Reporte de notas de crédito emitidas en el rango"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return {'success': False, 'message': 'No hay conexión'}
+
+            cursor = connection.cursor(dictionary=True)
+            query = """
+                SELECT 
+                    cn.id,
+                    cn.credit_note_number,
+                    cn.sale_id,
+                    s.sale_number,
+                    cn.total_amount,
+                    cn.subtotal,
+                    cn.tax_amount,
+                    cn.status,
+                    cn.created_at,
+                    cn.issued_by,
+                    u.full_name AS issued_by_name,
+                    cn.reason
+                FROM credit_notes cn
+                LEFT JOIN sales s ON cn.sale_id = s.id
+                LEFT JOIN users u ON cn.issued_by = u.id
+                WHERE cn.created_at BETWEEN %s AND %s
+            """
+            params = [start_date, end_date]
+            if user_id:
+                query += " AND cn.issued_by = %s"
+                params.append(user_id)
+
+            query += " ORDER BY cn.created_at DESC"
+            cursor.execute(query, params)
+            notes = cursor.fetchall()
+
+            total_amount = sum(Decimal(str(n['total_amount'] or 0)) for n in notes)
+            total_count = len(notes)
+
+            cursor.close()
+            connection.close()
+
+            return {
+                'success': True,
+                'data': {
+                    'notes': notes,
+                    'summary': {
+                        'total_notes': total_count,
+                        'total_amount': float(total_amount)
+                    },
+                    'period': {
+                        'start': start_date.strftime('%d/%m/%Y'),
+                        'end': end_date.strftime('%d/%m/%Y')
+                    }
+                }
+            }
+        except Exception as e:
+            self.logger.error(f"Error en reporte de notas de crédito: {e}")
             return {'success': False, 'message': str(e)}

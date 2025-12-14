@@ -4,6 +4,7 @@ Lógica de negocio para gestión de productos
 """
 
 from typing import Dict, Any, List, Optional, Tuple
+import time
 from models.product_model import ProductModel
 from services.permission_service import PermissionService
 import logging
@@ -16,6 +17,9 @@ class ProductController:
         self.product_model = ProductModel()
         self.permission_service = PermissionService()
         self.logger = logging.getLogger('controller.ProductController')
+        self._cache_ttl = 60  # segundos
+        self._categories_cache: Optional[Tuple[float, List[Dict[str, Any]]]] = None
+        self._units_cache: Optional[Tuple[float, List[Dict[str, Any]]]] = None
     
     def create_product(self, product_data: Dict[str, Any], user_data: Dict[str, Any]) -> Tuple[bool, str, Optional[int]]:
         """
@@ -54,6 +58,14 @@ class ProductController:
         except Exception as e:
             self.logger.error(f"Error en create_product: {e}")
             return False, f"Error interno: {str(e)}", None
+
+    def generate_next_sku(self) -> Optional[str]:
+        """Obtener el siguiente SKU disponible"""
+        try:
+            return self.product_model.generate_next_code()
+        except Exception as exc:
+            self.logger.error(f"Error generando próximo SKU: {exc}")
+            return None
     
     def get_all_products(self, user_data: Dict[str, Any], include_inactive: bool = False) -> List[Dict[str, Any]]:
         """Obtener todos los productos"""
@@ -315,9 +327,14 @@ class ProductController:
         try:
             if not self.permission_service.check_permission(user_data, 'inventory.view'):
                 return []
-            
-            return self.product_model.get_categories()
-            
+            cached = self._categories_cache
+            if cached and time.time() - cached[0] < self._cache_ttl:
+                return cached[1]
+
+            categories = self.product_model.get_categories()
+            self._categories_cache = (time.time(), categories)
+            return categories
+
         except Exception as e:
             self.logger.error(f"Error en get_categories: {e}")
             return []
@@ -327,12 +344,23 @@ class ProductController:
         try:
             if not self.permission_service.check_permission(user_data, 'inventory.view'):
                 return []
-            
-            return self.product_model.get_units()
-            
+            cached = self._units_cache
+            if cached and time.time() - cached[0] < self._cache_ttl:
+                return cached[1]
+
+            units = self.product_model.get_units()
+            self._units_cache = (time.time(), units)
+            return units
+
         except Exception as e:
             self.logger.error(f"Error en get_units: {e}")
             return []
+
+    def invalidate_category_cache(self):
+        self._categories_cache = None
+
+    def invalidate_units_cache(self):
+        self._units_cache = None
     
     def _validate_product_data(self, data: Dict[str, Any], is_update: bool = False) -> Tuple[bool, List[str]]:
         """Validar datos del producto"""
@@ -386,10 +414,7 @@ class ProductController:
     def _sku_exists(self, sku: str, exclude_id: Optional[int] = None) -> bool:
         """Verificar si un SKU ya existe"""
         try:
-            products = self.product_model.get_all_products(include_inactive=True)
-            for product in products:
-                if product['sku'] == sku and product['id'] != exclude_id:
-                    return True
-            return False
-        except:
+            return self.product_model.sku_exists(sku, exclude_id)
+        except Exception as exc:
+            self.logger.error(f"Error verificando SKU '{sku}': {exc}")
             return False

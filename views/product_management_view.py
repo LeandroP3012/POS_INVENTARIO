@@ -402,6 +402,58 @@ class ProductManagementView(BaseView):
             fg='white'
         ).pack(side='left', padx=15, pady=10)
         
+        # Accesos rápidos a otros módulos relacionados
+        quick_actions = tk.Frame(parent, bg='white')
+        quick_actions.pack(fill='x', padx=15, pady=(10, 5))
+
+        tk.Label(
+            quick_actions,
+            text="Accesos rápidos",
+            font=('Segoe UI', 10, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(anchor='w')
+
+        shortcuts_frame = tk.Frame(quick_actions, bg='white')
+        shortcuts_frame.pack(fill='x', pady=(6, 0))
+
+        if self.has_permission('products.categories'):
+            tk.Button(
+                shortcuts_frame,
+                text="🏷️ Gestionar Categorías",
+                font=('Segoe UI', 9, 'bold'),
+                bg='#8e44ad',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                command=self.open_categories_window,
+                padx=12,
+                pady=8
+            ).pack(fill='x', pady=2)
+
+        if self.has_permission('inventory.stock'):
+            tk.Button(
+                shortcuts_frame,
+                text="📊 Control de Stock",
+                font=('Segoe UI', 9, 'bold'),
+                bg='#2980b9',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                command=self.open_stock_window,
+                padx=12,
+                pady=8
+            ).pack(fill='x', pady=2)
+
+        if not shortcuts_frame.winfo_children():
+            tk.Label(
+                shortcuts_frame,
+                text="No tienes accesos disponibles",
+                font=('Segoe UI', 9),
+                bg='white',
+                fg='#7f8c8d'
+            ).pack(anchor='w', pady=4)
+
         # Contenido
         self.details_content = tk.Frame(parent, bg='white')
         self.details_content.pack(fill='both', expand=True, padx=15, pady=15)
@@ -722,6 +774,16 @@ class ProductManagementView(BaseView):
         if self.callbacks.get('export'):
             self.callbacks['export']()
     
+    def open_categories_window(self):
+        """Abrir ventana flotante de categorías"""
+        if self.callbacks.get('open_categories_window'):
+            self.callbacks['open_categories_window']()
+
+    def open_stock_window(self):
+        """Abrir ventana flotante de control de stock"""
+        if self.callbacks.get('open_stock_window'):
+            self.callbacks['open_stock_window']()
+
     def on_product_select(self, event):
         """Manejar selección de producto"""
         selection = self.products_tree.selection()

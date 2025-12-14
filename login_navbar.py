@@ -4,6 +4,8 @@ import hashlib
 import platform
 import datetime
 
+from controllers.credit_note_controller import CreditNoteController
+
 class LoginApp:
     def __init__(self):
         self.root = tk.Tk()
@@ -18,12 +20,14 @@ class LoginApp:
             'admin': {
                 'password': self.hash_password('123'),
                 'tipo': 'administrador',
-                'nombre_completo': 'Administrador del Sistema'
+                'nombre_completo': 'Administrador del Sistema',
+                'id': 1
             },
             'usuario1': {
                 'password': self.hash_password('123'),
                 'tipo': 'usuario',
-                'nombre_completo': 'Usuario Normal'
+                'nombre_completo': 'Usuario Normal',
+                'id': 2
             }
         }
         
@@ -226,6 +230,8 @@ class PanelAdministrador:
     def __init__(self, usuario, datos_usuario):
         self.usuario = usuario
         self.datos_usuario = datos_usuario
+        self.usuario_id = datos_usuario.get('id', 2)
+        self.usuario_id = datos_usuario.get('id', 1)
         
         self.root = tk.Tk()
         self.root.title(f"🏪 Sistema POS - Panel Administrador ({datos_usuario['nombre_completo']})")
@@ -294,6 +300,7 @@ class PanelAdministrador:
         navbar_buttons = [
             ("🏠", "Inicio", self.mostrar_inicio),
             ("💰", "Ventas", self.mostrar_ventas),
+            ("🧾", "Notas de Crédito", self.mostrar_notas_credito),
             ("📦", "Inventario", self.mostrar_inventario),
             ("👥", "Clientes", self.mostrar_clientes),
             ("👤", "Usuarios", self.mostrar_usuarios),
@@ -461,6 +468,12 @@ class PanelAdministrador:
         
         # Crear el sistema de clientes integrado
         ClientesIntegrados(self.frame_contenido)
+
+    def mostrar_notas_credito(self):
+        """Mostrar módulo de notas de crédito"""
+        self.limpiar_contenido()
+        self.resaltar_boton_activo('Notas de Crédito')
+        CreditNotesIntegradas(self.frame_contenido, modo_basico=False, usuario_id=self.usuario_id)
     
     def mostrar_reportes(self):
         """Mostrar módulo de reportes"""
@@ -2593,6 +2606,110 @@ class ClientesIntegrados:
         """Ver historial de compras del cliente"""
         messagebox.showinfo("Historial", f"🚧 Historial de compras para {codigo} en desarrollo...")
 
+class CreditNotesIntegradas:
+    """Gestión integrada de notas de crédito"""
+
+    def __init__(self, parent_frame, modo_basico=False, usuario_id: int = 1):
+        self.parent_frame = parent_frame
+        self.modo_basico = modo_basico
+        self.controller = CreditNoteController()
+        self.usuario_id = usuario_id or 1
+        self._build_ui()
+        self._load_notes()
+
+    def _build_ui(self):
+        titulo = "🧾 NOTAS DE CRÉDITO" + (" (Básico)" if self.modo_basico else "")
+        tk.Label(
+            self.parent_frame,
+            text=titulo,
+            font=('Arial', 22, 'bold'),
+            fg='#2c3e50',
+            bg='#ecf0f1'
+        ).pack(pady=(20, 10))
+
+        btns = tk.Frame(self.parent_frame, bg='#ecf0f1')
+        btns.pack(fill='x', padx=20, pady=10)
+
+        tk.Button(
+            btns,
+            text="🔄 Refrescar",
+            font=('Arial', 11, 'bold'),
+            bg='#3498db', fg='white', relief='flat', padx=12, pady=8,
+            command=self._load_notes
+        ).pack(side='left', padx=5)
+
+        tk.Button(
+            btns,
+            text="➕ Generar desde venta",
+            font=('Arial', 11, 'bold'),
+            bg='#27ae60', fg='white', relief='flat', padx=12, pady=8,
+            command=self._prompt_generate
+        ).pack(side='left', padx=5)
+
+        tk.Button(
+            btns,
+            text="📄 Reporte 30 días",
+            font=('Arial', 11, 'bold'),
+            bg='#8e44ad', fg='white', relief='flat', padx=12, pady=8,
+            command=self._show_report
+        ).pack(side='left', padx=5)
+
+        cols = ("numero", "venta", "total", "estado", "fecha", "motivo")
+        self.tree = ttk.Treeview(self.parent_frame, columns=cols, show='headings')
+        headers = {
+            "numero": "Nota",
+            "venta": "Venta",
+            "total": "Total",
+            "estado": "Estado",
+            "fecha": "Fecha",
+            "motivo": "Motivo"
+        }
+        for col, text in headers.items():
+            self.tree.heading(col, text=text)
+            self.tree.column(col, width=140 if col != 'motivo' else 260, anchor='center')
+
+        self.tree.pack(fill='both', expand=True, padx=20, pady=10)
+
+    def _load_notes(self):
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+        notes = self.controller.list_credit_notes(limit=200)
+        for note in notes:
+            fecha = note.get('created_at')
+            fecha_txt = fecha.strftime('%Y-%m-%d %H:%M') if hasattr(fecha, 'strftime') else str(fecha)
+            self.tree.insert('', 'end', values=(
+                note.get('credit_note_number'),
+                note.get('sale_number'),
+                f"{note.get('total_amount', 0):.2f}",
+                note.get('status'),
+                fecha_txt,
+                (note.get('reason') or '')[:60]
+            ))
+
+    def _prompt_generate(self):
+        sale_id = simpledialog.askinteger("Generar nota", "ID de la venta a acreditar:")
+        if not sale_id:
+            return
+        reason = simpledialog.askstring("Motivo", "Motivo de la nota:", initialvalue="Devolución / cancelación") or ""
+        result = self.controller.create_credit_note(sale_id, self.usuario_id, reason)
+        if result.get('success'):
+            messagebox.showinfo("Nota creada", result.get('message', 'Nota de crédito generada.'))
+            self._load_notes()
+        else:
+            messagebox.showerror("Error", result.get('message', 'No se pudo generar la nota.'))
+
+    def _show_report(self):
+        data = self.controller.report(days_back=30)
+        if not data.get('success'):
+            messagebox.showerror("Reporte", data.get('message', 'Error al obtener reporte.'))
+            return
+        summary = data['data']['summary']
+        messagebox.showinfo(
+            "Reporte de notas (30 días)",
+            f"Total notas: {summary['total_notes']}\nMonto total: {summary['total_amount']:.2f}"
+        )
+
+
 class ReportesIntegrados:
     """Sistema de reportes integrado en el panel principal"""
     
@@ -3153,6 +3270,7 @@ class PanelUsuario:
         navbar_buttons = [
             ("🏠", "Inicio", self.mostrar_inicio),
             ("💰", "Ventas", self.mostrar_ventas),
+            ("🧾", "Notas de Crédito", self.mostrar_notas_credito),
             ("👥", "Clientes", self.mostrar_clientes),
             ("📊", "Reportes", self.mostrar_reportes)
         ]
@@ -3268,6 +3386,12 @@ class PanelUsuario:
         
         # Crear el sistema de clientes integrado (modo consulta)
         ClientesIntegrados(self.frame_contenido, modo_consulta=True)
+
+    def mostrar_notas_credito(self):
+        """Mostrar módulo de notas de crédito"""
+        self.limpiar_contenido()
+        self.resaltar_boton_activo('Notas de Crédito')
+        CreditNotesIntegradas(self.frame_contenido, modo_basico=True, usuario_id=self.usuario_id)
     
     def mostrar_reportes(self):
         """Mostrar módulo de reportes"""
