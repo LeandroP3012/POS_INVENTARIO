@@ -578,7 +578,7 @@ class ConfigurationView(BaseView):
         currency_symbol_entry.pack(fill='x', pady=5, ipady=8)
         
         # ESTABLECER VALOR INICIAL DIRECTAMENTE
-        initial_symbol = self.config_data.get('currency_symbol', '$')
+        initial_symbol = self.config_data.get('currency_symbol', 'S/')
         currency_symbol_entry.delete(0, tk.END)
         currency_symbol_entry.insert(0, initial_symbol)
         
@@ -2254,7 +2254,7 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
             'company_website': '',
             'company_logo': '',
             'currency': 'CLP',
-            'currency_symbol': '$',
+            'currency_symbol': 'S/',
             'tax_rate': '19',
             'include_tax_in_price': True,
             'theme': 'Claro',
@@ -2358,34 +2358,6 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
                         messagebox.showerror("Error", f"❌ {message}")
                 except Exception as e:
                     messagebox.showerror("Error", f"❌ Error restaurando backup:\n{str(e)}")
-    
-    def open_responsive_configurator(self):
-        """Abrir el configurador de escalado responsivo"""
-        import subprocess
-        import sys
-        import os
-        
-        try:
-            # Obtener la ruta del configurador
-            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            configurator_path = os.path.join(script_dir, 'responsive_configurator.py')
-            
-            if not os.path.exists(configurator_path):
-                messagebox.showerror("Error", 
-                                   f"❌ No se encontró el configurador responsivo en:\n{configurator_path}")
-                return
-            
-            # Abrir el configurador en un proceso separado
-            subprocess.Popen([sys.executable, configurator_path])
-            
-            # Mostrar mensaje informativo
-            messagebox.showinfo("Configurador Responsivo", 
-                              "✅ Se ha abierto el configurador de escalado responsivo.\n\n"
-                              "⚠️ Los cambios que realices requerirán reiniciar la aplicación para aplicarse.")
-            
-        except Exception as e:
-            messagebox.showerror("Error", 
-                               f"❌ Error al abrir el configurador responsivo:\n{str(e)}")
     
     def save_configuration(self):
         """Guardar configuración"""

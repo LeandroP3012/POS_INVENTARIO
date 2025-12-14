@@ -229,8 +229,21 @@ class SaleModel(BaseModel):
                     params.append(filters['status'])
                 
                 if filters.get('sale_number'):
-                    query += " AND s.sale_number LIKE %s"
-                    params.append(f"%{filters['sale_number']}%")
+                    like_value = f"%{filters['sale_number'].lower()}%"
+                    query += " AND (LOWER(COALESCE(s.sale_number, '')) LIKE %s"
+                    params.append(like_value)
+
+                    sanitized = filters.get('sale_number_sanitized')
+                    if sanitized:
+                        query += " OR REGEXP_REPLACE(LOWER(COALESCE(s.sale_number, '')), '[^a-z0-9]', '') LIKE %s"
+                        params.append(f"%{sanitized}%")
+
+                    digits = filters.get('sale_number_digits')
+                    if digits:
+                        query += " OR CAST(s.id AS CHAR) LIKE %s"
+                        params.append(f"%{digits}%")
+
+                    query += ")"
 
                 if filters.get('customer_text'):
                     like_value = f"%{filters['customer_text']}%"

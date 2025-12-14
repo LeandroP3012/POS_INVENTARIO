@@ -32,6 +32,7 @@ class MainController:
         self.permission_service = PermissionService()
         self.credit_note_controller = None
         self.sale_controller = None
+        self.is_on_dashboard = False  # Estado para navegación con ESC
         
         # Ventana principal (se crea después del login)
         self.main_window = None
@@ -171,11 +172,18 @@ class MainController:
             
             # Crear interfaz principal
             self._create_main_interface()
+
+            # Atajos globales
+            self._bind_global_shortcuts()
             
             # Mostrar ventana
             self.main_window.deiconify()
             self.main_window.lift()
             self.main_window.focus_force()
+
+            # Maximizar al iniciar (se reintenta brevemente para asegurar)
+            self._maximize_main_window()
+            self.main_window.after(150, self._maximize_main_window)
             
             # Iniciar loop principal
             self.main_window.mainloop()
@@ -198,10 +206,60 @@ class MainController:
             
             # Crear barra de estado
             self._create_status_bar()
+
+            # Marcar que estamos en el dashboard principal
+            self.is_on_dashboard = True
             
         except Exception as e:
             self.logger.error(f"Error creando interfaz principal: {e}")
             raise
+
+    def _bind_global_shortcuts(self):
+        """Configurar atajos globales de teclado (ESC)"""
+        try:
+            if not self.main_window:
+                return
+
+            # Limpiar binding previo para evitar duplicados
+            self.main_window.unbind_all("<Escape>")
+            self.main_window.bind_all("<Escape>", self._handle_escape)
+        except Exception as exc:
+            self.logger.warning(f"No se pudieron enlazar atajos globales: {exc}")
+
+    def _maximize_main_window(self):
+        """Intentar maximizar la ventana principal de forma segura"""
+        if not self.main_window:
+            return
+        try:
+            self.main_window.state('zoomed')
+        except Exception:
+            try:
+                self.main_window.attributes('-zoomed', True)
+            except Exception:
+                pass
+
+    def _handle_escape(self, event=None):
+        """Manejar pulsación de ESC según contexto"""
+        try:
+            # Si hay ventanas flotantes prioritarias, cerrarlas primero
+            if self.category_window and self.category_window.winfo_exists():
+                self._close_category_window()
+                return
+
+            if self.stock_window and self.stock_window.winfo_exists():
+                self._close_stock_window()
+                return
+
+            # Si estamos en un módulo, regresar al dashboard
+            if not self.is_on_dashboard:
+                self._back_to_dashboard()
+                return
+
+            # En el dashboard, ESC cierra sesión
+            self._logout()
+
+        except Exception as exc:
+            self.logger.error(f"Error manejando ESC: {exc}")
     
     def _create_menu_bar(self):
         """Crear barra de menú"""
@@ -884,6 +942,9 @@ class MainController:
         """Limpiar contenido principal de la ventana"""
         # PRIMERO: Guardar geometría actual ANTES de limpiar
         self._save_window_geometry()
+
+        # Al limpiar contenido asumimos que salimos del dashboard
+        self.is_on_dashboard = False
         
         # Destruir todos los widgets hijos excepto la barra de menú
         for widget in self.main_window.winfo_children():
@@ -989,8 +1050,17 @@ class MainController:
             
             # Recrear interfaz principal
             self._create_main_interface()
+
+            # Reaplicar atajos globales
+            self._bind_global_shortcuts()
             
             # IMPORTANTE: Restaurar geometría después de recrear
+
+            # Maximizar al iniciar (solo si el SO/gestor lo permite)
+            try:
+                self.main_window.state('zoomed')
+            except Exception:
+                pass
             self._restore_window_geometry()
             
         except Exception as e:
@@ -1377,9 +1447,11 @@ class MainController:
 
     def _fetch_sales_for_credit_notes(self, search_text: str | None = None):
         try:
+            print(f"🔍 [DEBUG MAIN] _fetch_sales_for_credit_notes - Recibido: '{search_text}'")
             self._ensure_sale_controller()
-            keyword = (search_text or '').strip()
-            return self.sale_controller.get_recent_sales_for_credit_notes(keyword or None)
+            sale_code = (search_text or '').strip()
+            print(f"🔍 [DEBUG MAIN] Llamando a get_recent_sales_for_credit_notes con: '{sale_code}'")
+            return self.sale_controller.get_recent_sales_for_credit_notes(sale_code or None)
         except Exception as e:
             self.logger.error(f"Error obteniendo ventas para notas de crédito: {e}")
             return {'success': False, 'message': f'No se pudieron obtener las ventas: {str(e)}'}
@@ -1547,6 +1619,12 @@ class MainController:
             product_data = dialog.show()
             
             if product_data:
+                try:
+                    print("🔍 [DEBUG MAIN] Datos recibidos de diálogo de producto:")
+                    for k, v in product_data.items():
+                        print(f"   {k}: {v}")
+                except Exception as _:
+                    pass
                 # Crear producto
                 success, message, product_id = self.product_controller.create_product(
                     product_data, self.current_user
@@ -1945,13 +2023,8 @@ class MainController:
             print(f"   - main_window tipo: {type(self.main_window)}")
             print(f"   - current_user: {self.current_user}")
             
-            # Guardar geometría ANTES de limpiar ventana
-            self._save_window_geometry()
-            
-            # Limpiar ventana
-            for widget in self.main_window.winfo_children():
-                widget.destroy()
-            print("   ✅ Ventana principal limpiada")
+            # Limpiar ventana y marcar salida del dashboard
+            self._clear_main_content()
             
             # Importar vista y controlador
             from views.category_management_view import CategoryManagementView
@@ -2117,14 +2190,17 @@ class MainController:
         """Ver y controlar stock de productos"""
         try:
             print(f"📊 DEBUG: Abriendo control de stock desde main_controller")
+
+            if not self._check_user_permission('inventory.stock'):
+                messagebox.showerror(
+                    "Acceso denegado",
+                    "No tienes permisos para controlar el stock",
+                    parent=self.main_window
+                )
+                return
             
-            # Guardar geometría ANTES de limpiar ventana
-            self._save_window_geometry()
-            
-            # Limpiar ventana
-            for widget in self.main_window.winfo_children():
-                widget.destroy()
-            print("   ✅ Ventana principal limpiada")
+            # Limpiar ventana y marcar salida del dashboard
+            self._clear_main_content()
             
             # Importar vista y controlador
             from views.stock_control_view import StockControlView

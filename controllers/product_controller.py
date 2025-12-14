@@ -33,6 +33,25 @@ class ProductController:
             if not self.permission_service.check_permission(user_data, 'inventory.create'):
                 self.logger.warning(f"Usuario {user_data.get('username')} sin permiso inventory.create")
                 return False, "No tienes permiso para crear productos", None
+
+            # Log de entrada
+            try:
+                self.logger.info(
+                    "[CREATE_PRODUCT] Payload recibido",
+                    extra={
+                        'sku': product_data.get('sku'),
+                        'name': product_data.get('name'),
+                        'stock_quantity': product_data.get('stock_quantity'),
+                        'min_stock': product_data.get('min_stock'),
+                        'max_stock': product_data.get('max_stock'),
+                        'category_id': product_data.get('category_id'),
+                        'unit_id': product_data.get('unit_id'),
+                        'price': product_data.get('price'),
+                        'cost': product_data.get('cost'),
+                    }
+                )
+            except Exception:
+                pass
             
             # Validar datos
             is_valid, validation_errors = self._validate_product_data(product_data)
@@ -50,7 +69,18 @@ class ProductController:
             product_id = self.product_model.create_product(product_data)
             
             if product_id:
-                self.logger.info(f"Producto creado por {user_data.get('username')}: {product_data['name']}")
+                try:
+                    self.logger.info(
+                        f"Producto creado por {user_data.get('username')}: {product_data['name']}",
+                        extra={
+                            'product_id': product_id,
+                            'stock_quantity': product_data.get('stock_quantity'),
+                            'min_stock': product_data.get('min_stock'),
+                            'max_stock': product_data.get('max_stock'),
+                        }
+                    )
+                except Exception:
+                    pass
                 return True, "Producto creado exitosamente", product_id
             else:
                 return False, "Error al crear el producto", None
@@ -192,9 +222,9 @@ class ProductController:
                            min_stock: float = 0, max_stock: float = 0) -> Tuple[bool, str]:
         """Actualizar stock de producto por SKU con diferentes tipos de movimiento"""
         try:
-            # Verificar permisos
-            if not self.permission_service.check_permission(user, 'inventory.edit'):
-                self.logger.warning(f"Usuario {user.get('username')} sin permiso inventory.edit")
+            # Verificar permisos específicos para ajustes de stock manuales
+            if not self.permission_service.check_permission(user, 'inventory.stock'):
+                self.logger.warning(f"Usuario {user.get('username')} sin permiso inventory.stock")
                 return False, "No tienes permiso para actualizar stock"
             
             # Mapear tipos de movimiento del español al inglés (base de datos)

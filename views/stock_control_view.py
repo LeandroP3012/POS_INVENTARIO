@@ -20,6 +20,7 @@ class StockControlView(BaseView):
         self.products = []
         self.filtered_products = []
         self.permission_service = PermissionService()
+        self.can_manage_stock = self.has_permission('inventory.stock')
         
         # Inicializar gestor responsivo
         self.responsive = ResponsiveManager(self.root)
@@ -632,7 +633,7 @@ class StockControlView(BaseView):
         self.max_stock_var.set(str(max_stock))
         
         # Habilitar botones
-        self.update_button.config(state='normal')
+        self.update_button.config(state='normal' if self.can_manage_stock else 'disabled')
         self.save_limits_button.config(state='normal')
     
     def on_update_stock(self):
@@ -640,6 +641,10 @@ class StockControlView(BaseView):
         print("\n" + "="*60)
         print("🔍 DEBUG: Iniciando actualización de stock")
         print("="*60)
+
+        if not self.can_manage_stock:
+            messagebox.showerror("Permisos", "No tienes permiso para ajustar stock")
+            return
         
         selection = self.tree.selection()
         if not selection:

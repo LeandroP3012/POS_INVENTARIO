@@ -308,6 +308,9 @@ class RoleManagementView(BaseView):
                 pady=10
             )
             new_role_btn.pack(side='left', padx=(0, 10), pady=5)
+            # Atajo: Ctrl+N para nuevo rol
+            self.root.bind_all('<Control-n>', lambda e: self.create_role())
+            self.root.bind_all('<Control-N>', lambda e: self.create_role())
         
         # Botón editar - Solo si tiene permiso roles.edit
         if self.has_permission('roles.edit'):
@@ -1070,6 +1073,10 @@ class RoleDialog:
         self.dialog.transient(self.parent)
         self.dialog.grab_set()
         self.dialog.configure(bg='#f5f6fa')
+
+        # Atajo: Ctrl+S para guardar rol
+        self.dialog.bind_all('<Control-s>', lambda e: self.save())
+        self.dialog.bind_all('<Control-S>', lambda e: self.save())
         
         # Centrar ventana
         self.dialog.update_idletasks()

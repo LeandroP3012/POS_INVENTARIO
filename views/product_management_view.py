@@ -266,6 +266,9 @@ class ProductManagementView(BaseView):
                 pady=8,
                 command=self.on_new_product
             ).pack(side='left', padx=5)
+            # Atajo: Ctrl+N para nuevo producto
+            self.main_frame.bind_all('<Control-n>', lambda e: self.on_new_product())
+            self.main_frame.bind_all('<Control-N>', lambda e: self.on_new_product())
         
         # Botón Actualizar Stock - Solo si tiene permiso inventory.stock
         if self.has_permission('inventory.stock'):
@@ -530,8 +533,8 @@ class ProductManagementView(BaseView):
             fg='#2c3e50'
         ).pack(anchor='w', pady=(0, 5))
         
-        self._add_detail_row(scrollable_frame, "Precio Venta:", f"${product.get('price', 0):,.2f}")
-        self._add_detail_row(scrollable_frame, "Costo:", f"${product.get('cost', 0):,.2f}")
+        self._add_detail_row(scrollable_frame, "Precio Venta:", f"S/ {product.get('price', 0):,.2f}")
+        self._add_detail_row(scrollable_frame, "Costo:", f"S/ {product.get('cost', 0):,.2f}")
         self._add_detail_row(
             scrollable_frame, 
             "Margen:", 
@@ -848,7 +851,7 @@ class ProductManagementView(BaseView):
                     product.get('name', ''),
                     product.get('category_name', 'Sin categoría'),
                     stock_qty,
-                    f"${product.get('price', 0):,.2f}",
+                    f"S/ {product.get('price', 0):,.2f}",
                     status_text
                 ),
                 tags=(tag,)

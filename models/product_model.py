@@ -247,6 +247,24 @@ class ProductModel(BaseModel):
                 product_data.get('image_path'),
                 product_data.get('created_by', 1)
             )
+
+            try:
+                self.logger.info(
+                    "[MODEL CREATE_PRODUCT] Ejecutando insert",
+                    extra={
+                        'sku': sku,
+                        'name': name,
+                        'stock_quantity': product_data.get('stock_quantity', 0),
+                        'min_stock': product_data.get('min_stock', 0),
+                        'max_stock': product_data.get('max_stock', 0),
+                        'price': price,
+                        'cost': cost,
+                        'category_id': category_id,
+                        'unit_id': unit_id,
+                    }
+                )
+            except Exception:
+                pass
             
             cursor.execute(query, values)
             connection.commit()

@@ -17,40 +17,156 @@ class LoginView(BaseView):
         
         # Inicializar gestor responsivo
         self.responsive = ResponsiveManager(self.root)
+        self.ui_metrics = self._build_ui_metrics()
+        self.fonts = self._build_font_config()
         
         self.setup_ui()
         self.load_company_info()  # Cargar info de la empresa
+
+    def _build_ui_metrics(self):
+        """Definir medidas según tipo de pantalla"""
+        presets = {
+            'small': {
+                'window_width': 370,
+                'window_height': 500,
+                'min_width': 360,
+                'min_height': 480,
+                'form_width': 290,
+                'form_height': 260,
+                'entry_chars': 26,
+                'button_chars': 26,
+                'button_height': 2,
+                'logo_size': 60,
+                'company_font': 12,
+                'welcome_font': 11,
+                'label_font': 10,
+                'input_font': 10,
+                'button_font': 11,
+                'status_font': 9,
+                'footer_font': 8,
+                'outer_top': 12,
+                'outer_bottom': 12,
+                'inner_padx': 16
+            },
+            'medium': {
+                'window_width': 420,
+                'window_height': 550,
+                'min_width': 400,
+                'min_height': 530,
+                'form_width': 320,
+                'form_height': 290,
+                'entry_chars': 28,
+                'button_chars': 28,
+                'button_height': 2,
+                'logo_size': 68,
+                'company_font': 13,
+                'welcome_font': 12,
+                'label_font': 11,
+                'input_font': 11,
+                'button_font': 12,
+                'status_font': 10,
+                'footer_font': 9,
+                'outer_top': 15,
+                'outer_bottom': 15,
+                'inner_padx': 19
+            },
+            'large': {
+                'window_width': 470,
+                'window_height': 600,
+                'min_width': 450,
+                'min_height': 580,
+                'form_width': 360,
+                'form_height': 320,
+                'entry_chars': 32,
+                'button_chars': 32,
+                'button_height': 2,
+                'logo_size': 78,
+                'company_font': 14,
+                'welcome_font': 12,
+                'label_font': 12,
+                'input_font': 12,
+                'button_font': 13,
+                'status_font': 11,
+                'footer_font': 10,
+                'outer_top': 16,
+                'outer_bottom': 16,
+                'inner_padx': 22
+            },
+            'xlarge': {
+                'window_width': 500,
+                'window_height': 620,
+                'min_width': 480,
+                'min_height': 600,
+                'form_width': 380,
+                'form_height': 340,
+                'entry_chars': 34,
+                'button_chars': 34,
+                'button_height': 2,
+                'logo_size': 82,
+                'company_font': 15,
+                'welcome_font': 13,
+                'label_font': 12,
+                'input_font': 12,
+                'button_font': 13,
+                'status_font': 11,
+                'footer_font': 10,
+                'outer_top': 18,
+                'outer_bottom': 18,
+                'inner_padx': 24
+            }
+        }
+        screen_type = getattr(self.responsive, 'screen_type', 'medium')
+        return presets.get(screen_type, presets['medium']).copy()
+
+    def _build_font_config(self):
+        """Configurar tipografías según métricas"""
+        m = self.ui_metrics
+        return {
+            'company': ('Arial', m['company_font'], 'bold'),
+            'welcome': ('Arial', m['welcome_font']),
+            'label': ('Arial', m['label_font'], 'bold'),
+            'input': ('Arial', m['input_font']),
+            'button': ('Arial', m['button_font'], 'bold'),
+            'status': ('Arial', m['status_font']),
+            'footer': ('Arial', m['footer_font'])
+        }
         
     def setup_ui(self):
         # Configuración del estilo visual - fondo gris claro como en la imagen
         self.root.configure(bg='#f5f5f5')
         
-        # Login debe mantener tamaño original (NO usar make_window_responsive)
-        # Tamaño fijo optimizado para login - AMPLIADO
-        self.root.geometry("500x650")
+        metrics = self.ui_metrics
+        width = metrics['window_width']
+        height = metrics['window_height']
+        
+        self.root.geometry(f"{width}x{height}")
         
         # Centrar ventana de login
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
-        x = (screen_width - 500) // 2
-        y = (screen_height - 650) // 2
-        self.root.geometry(f"500x650+{x}+{y}")
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        self.root.geometry(f"{width}x{height}+{x}+{y}")
         
         # Tamaño mínimo y máximo (login no debe redimensionarse)
-        self.root.minsize(500, 650)
-        self.root.maxsize(500, 650)
+        self.root.minsize(metrics['min_width'], metrics['min_height'])
+        self.root.maxsize(metrics['window_width'], metrics['window_height'])
         self.root.resizable(False, False)
         
         self.create_widgets()
         self.setup_layout()
         
     def create_widgets(self):
+        m = self.ui_metrics
+        fonts = self.fonts
+        inner_padx = m['inner_padx']
+        
         # Marco para el logo (FUERA del cuadro blanco) - Tamaño FIJO original
-        logo_frame = tk.Frame(self.root, bg='#f5f5f5', width=100, height=100)
+        logo_frame = tk.Frame(self.root, bg='#f5f5f5', width=m['logo_size'] + 20, height=m['logo_size'] + 20)
         logo_frame.pack_propagate(False)
         
         # Logo dinámico de la empresa - fondo azul con diamante
-        self.logo_bg_frame = tk.Frame(logo_frame, bg='#2196f3', width=80, height=80)
+        self.logo_bg_frame = tk.Frame(logo_frame, bg='#2196f3', width=m['logo_size'], height=m['logo_size'])
         self.logo_bg_frame.pack_propagate(False)
         
         # Logo dinámico simple - Tamaño FIJO original
@@ -70,7 +186,7 @@ class LoginView(BaseView):
         self.company_label = tk.Label(
             self.root,
             text="Importadora Punto de Venta",
-            font=('Arial', 16, 'bold'),
+            font=fonts['company'],
             bg='#f5f5f5',
             fg='#333333'
         )
@@ -79,13 +195,13 @@ class LoginView(BaseView):
         welcome_label = tk.Label(
             self.root,
             text="Inicia sesión para continuar",
-            font=('Arial', 14),
+            font=fonts['welcome'],
             bg='#f5f5f5',
             fg='#666666'
         )
         
         # CUADRO BLANCO - Solo para campos de entrada (ampliado)
-        self.login_frame = tk.Frame(self.root, bg='#ffffff', width=400, height=360, relief='solid', bd=1)
+        self.login_frame = tk.Frame(self.root, bg='#ffffff', width=m['form_width'], height=m['form_height'], relief='solid', bd=1)
         self.login_frame.pack_propagate(False)
         
         # Campo de usuario con icono (DENTRO del cuadro blanco)
@@ -94,15 +210,15 @@ class LoginView(BaseView):
         user_icon_label = tk.Label(
             user_frame,
             text="👤 Usuario",
-            font=('Arial', 12, 'bold'),
+            font=fonts['label'],
             bg='#ffffff',
             fg='#555555'
         )
         
         self.user_entry = tk.Entry(
             user_frame,
-            font=('Arial', 12),
-            width=36,
+            font=fonts['input'],
+            width=m['entry_chars'],
             relief='solid',
             bd=1,
             bg='#ffffff',
@@ -121,7 +237,7 @@ class LoginView(BaseView):
         password_icon_label = tk.Label(
             password_frame,
             text="🔒 Contraseña",
-            font=('Arial', 12, 'bold'),
+            font=fonts['label'],
             bg='#ffffff',
             fg='#555555'
         )
@@ -131,8 +247,8 @@ class LoginView(BaseView):
         
         self.password_entry = tk.Entry(
             password_input_frame,
-            font=('Arial', 12),
-            width=32,
+            font=fonts['input'],
+            width=max(m['entry_chars'] - 4, 24),
             show='*',
             relief='flat',
             bd=0,
@@ -145,7 +261,7 @@ class LoginView(BaseView):
         self.show_password_button = tk.Button(
             password_input_frame,
             text="👁",
-            font=('Arial', 12),
+            font=fonts['input'],
             bg='#ffffff',
             fg='#999999',
             relief='flat',
@@ -163,7 +279,7 @@ class LoginView(BaseView):
             remember_frame,
             text="Recordar mis datos",
             variable=self.remember_var,
-            font=('Arial', 11),
+            font=('Arial', max(m['input_font'] - 1, 9)),
             bg='#ffffff',
             fg='#666666',
             selectcolor='#ffffff',
@@ -176,11 +292,11 @@ class LoginView(BaseView):
         self.login_button = tk.Button(
             self.login_frame,
             text="🔓 Iniciar Sesión",
-            font=('Arial', 13, 'bold'),
+            font=fonts['button'],
             bg='#2196f3',
             fg='white',
-            width=36,
-            height=2,
+            width=m['button_chars'],
+            height=m['button_height'],
             cursor='hand2',
             relief='flat',
             bd=0,
@@ -193,7 +309,7 @@ class LoginView(BaseView):
         self.status_label = tk.Label(
             self.login_frame,
             text="",
-            font=('Arial', 11),
+            font=fonts['status'],
             bg='#ffffff',
             fg='#666666',
             wraplength=300,
@@ -206,7 +322,7 @@ class LoginView(BaseView):
         help_label = tk.Label(
             footer_frame,
             text="¿Problemas para acceder? Contacta al administrador",
-            font=('Arial', 10),
+            font=fonts['footer'],
             bg='#f5f5f5',
             fg='#999999'
         )
@@ -214,7 +330,7 @@ class LoginView(BaseView):
         version_label = tk.Label(
             footer_frame,
             text="Sistema POS v1.0 • 2025",
-            font=('Arial', 9),
+            font=('Arial', max(m['footer_font'] - 1, 8)),
             bg='#f5f5f5',
             fg='#cccccc'
         )
@@ -315,46 +431,50 @@ class LoginView(BaseView):
     
     def setup_layout(self):
         # Layout OPTIMIZADO con espaciados reducidos
+        m = self.ui_metrics
+        inner_padx = m['inner_padx']
+        outer_top = m['outer_top']
+        outer_bottom = m['outer_bottom']
         
         # PARTE SUPERIOR (fuera del cuadro blanco)
         # Logo
-        self.logo_frame.pack(pady=(20, 10))
+        self.logo_frame.pack(pady=(outer_top, 10))
         
         # Nombre de empresa (sin título de iniciales)
-        self.company_label.pack(pady=(0, 8))
+        self.company_label.pack(pady=(0, 6))
         
         # Mensaje de bienvenida
-        self.welcome_label.pack(pady=(0, 15))
+        self.welcome_label.pack(pady=(0, 12))
         
         # CUADRO BLANCO CENTRADO con campos de entrada
-        self.login_frame.pack(pady=(0, 15))
+        self.login_frame.pack(pady=(0, 12))
         
         # DENTRO del cuadro blanco - ESPACIADOS COMPACTOS:
         # Campo de usuario
-        self.user_frame.pack(fill='x', padx=25, pady=(20, 12))
+        self.user_frame.pack(fill='x', padx=inner_padx, pady=(18, 10))
         self.user_icon_label.pack(anchor='w', pady=(0, 4))
         self.user_entry.pack(fill='x', ipady=6)
         
         # Campo de contraseña
-        self.password_frame.pack(fill='x', padx=25, pady=(0, 12))
+        self.password_frame.pack(fill='x', padx=inner_padx, pady=(0, 10))
         self.password_icon_label.pack(anchor='w', pady=(0, 4))
         self.password_input_frame.pack(fill='x')
         self.password_entry.pack(side='left', fill='x', expand=True, ipady=6, padx=(6, 0))
         self.show_password_button.pack(side='right', padx=(0, 6))
         
         # Checkbox recordar
-        self.remember_frame.pack(fill='x', padx=25, pady=(0, 15))
+        self.remember_frame.pack(fill='x', padx=inner_padx, pady=(0, 12))
         self.remember_checkbox.pack(anchor='w')
         
         # Botón de login
-        self.login_button.pack(padx=25, pady=(0, 8), fill='x', ipady=4)
+        self.login_button.pack(padx=inner_padx, pady=(0, 8), fill='x', ipady=4)
         
         # Mensaje de estado
-        self.status_label.pack(padx=25, pady=(0, 12))
+        self.status_label.pack(padx=inner_padx, pady=(0, 10))
         
         # PARTE INFERIOR (fuera del cuadro blanco)
         # Footer
-        self.footer_frame.pack(fill='x', padx=30, pady=(0, 20))
+        self.footer_frame.pack(fill='x', padx=inner_padx + 5, pady=(0, outer_bottom))
         self.help_label.pack()
         self.version_label.pack(pady=(5, 0))
         

@@ -202,21 +202,116 @@ class SaleController:
         except Exception as e:
             return {'success': False, 'message': f'Error: {str(e)}'}
 
-    def get_recent_sales_for_credit_notes(self, search_text: str | None = None, limit: int = 100):
-        """Obtiene ventas elegibles para notas de crédito"""
+    def get_recent_sales_for_credit_notes(self, sale_code: str | None = None, limit: int = 100):
+        """Obtiene ventas elegibles para notas de crédito filtrando por número"""
         try:
-            filters = {'status': 'completed', 'limit': limit, 'exclude_credit_notes': True}
-            if search_text:
-                filters['search_text'] = search_text
+            print(f"🔍 [DEBUG] get_recent_sales_for_credit_notes - Recibido: '{sale_code}' (tipo: {type(sale_code).__name__})")
+            
+            base_filters = {'status': 'completed', 'limit': limit, 'exclude_credit_notes': True}
+            filters = dict(base_filters)
 
+            sale_code_clean = None
+            sale_digits = None
+            sale_sanitized = None
+
+            if sale_code:
+                sale_code_clean = sale_code.strip().lower()
+                print(f"🔍 [DEBUG] sale_code_clean: '{sale_code_clean}'")
+                if sale_code_clean:
+                    filters['sale_number'] = sale_code_clean
+
+                    sale_digits = ''.join(ch for ch in sale_code_clean if ch.isdigit())
+                    if sale_digits:
+                        filters['sale_number_digits'] = sale_digits
+
+                    sale_sanitized = ''.join(ch for ch in sale_code_clean if ch.isalnum())
+                    if sale_sanitized:
+                        filters['sale_number_sanitized'] = sale_sanitized
+            else:
+                print(f"⚠️ [DEBUG] sale_code es None o vacío, no se aplicará filtro")
+
+            print(f"🔍 [DEBUG] Filtros: {filters}")
+            
             result = self.get_sales_list(filters)
             if not result.get('success'):
+                print(f"❌ [DEBUG] get_sales_list falló: {result.get('message')}")
                 return result
 
             sales = result.get('sales', [])
+            print(f"🔍 [DEBUG] Primera consulta devolvió {len(sales)} ventas")
+
+            # Si la consulta SQL no devolvió filas, reintentar sin filtro y luego filtrar en memoria
+            if sale_code_clean and not sales:
+                print(f"🔄 [DEBUG] Reintentando sin filtro...")
+                fallback_result = self.get_sales_list(base_filters)
+                if fallback_result.get('success'):
+                    sales = fallback_result.get('sales', [])
+                    print(f"🔍 [DEBUG] Fallback devolvió {len(sales)} ventas")
+
+            if sale_code_clean:
+                print(f"🔍 [DEBUG] Aplicando filtro en memoria con:")
+                print(f"  - term_lower: '{sale_code_clean}'")
+                print(f"  - term_digits: '{sale_digits}'")
+                print(f"  - term_sanitized: '{sale_sanitized}'")
+                print(f"🔍 [DEBUG] Antes del filtro: {len(sales)} ventas")
+                
+                filtered = []
+                for sale in sales:
+                    matches = self._matches_sale_code(sale, sale_code_clean, sale_digits, sale_sanitized)
+                    if matches:
+                        print(f"  ✅ Coincide: ID={sale.get('id')}, sale_number={sale.get('sale_number')}")
+                        filtered.append(sale)
+                    else:
+                        print(f"  ❌ No coincide: ID={sale.get('id')}, sale_number={sale.get('sale_number')}")
+                
+                sales = filtered
+                print(f"🔍 [DEBUG] Tras filtro en memoria: {len(sales)} ventas coinciden")
+
+            print(f"🔍 [DEBUG] Retornando {len(sales)} ventas")
             return {'success': True, 'sales': sales}
         except Exception as e:
             return {'success': False, 'message': f'Error: {str(e)}'}
+
+    @staticmethod
+    def _matches_sale_code(sale: dict, term_lower: str, term_digits: str | None, term_sanitized: str | None) -> bool:
+        """Asegura que la lógica de coincidencia sea consistente entre backend y vista"""
+        sale_id = sale.get('id')
+        sale_number_raw = sale.get('sale_number') or (f"Venta #{sale_id}" if sale_id else '')
+        sale_text = str(sale_number_raw)
+        sale_lower = sale_text.lower()
+        sale_digits = ''.join(ch for ch in sale_text if ch.isdigit())
+        sale_sanitized = ''.join(ch for ch in sale_lower if ch.isalnum())
+        sale_id_str = str(sale_id) if sale_id is not None else ''
+
+        # Debug para cada comparación
+        print(f"      [MATCH] Comparando: sale_number='{sale_number_raw}'")
+        print(f"      [MATCH] sale_lower='{sale_lower}', term_lower='{term_lower}'")
+        print(f"      [MATCH] sale_sanitized='{sale_sanitized}', term_sanitized='{term_sanitized}'")
+        print(f"      [MATCH] sale_digits='{sale_digits}', term_digits='{term_digits}'")
+        print(f"      [MATCH] sale_id_str='{sale_id_str}'")
+
+        if term_lower in sale_lower:
+            print(f"      [MATCH] ✅ Coincide por term_lower in sale_lower")
+            return True
+
+        if term_sanitized and term_sanitized in sale_sanitized:
+            print(f"      [MATCH] ✅ Coincide por term_sanitized in sale_sanitized")
+            return True
+
+        if term_digits and term_digits in sale_digits:
+            print(f"      [MATCH] ✅ Coincide por term_digits in sale_digits")
+            return True
+
+        if term_digits and sale_id_str and term_digits == sale_id_str:
+            print(f"      [MATCH] ✅ Coincide por term_digits == sale_id_str")
+            return True
+
+        if sale_id_str and term_lower == sale_id_str:
+            print(f"      [MATCH] ✅ Coincide por term_lower == sale_id_str")
+            return True
+
+        print(f"      [MATCH] ❌ No coincide")
+        return False
     
     def get_daily_summary(self, date=None):
         """Obtiene resumen de ventas del día"""

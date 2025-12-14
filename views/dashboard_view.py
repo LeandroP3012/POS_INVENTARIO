@@ -24,6 +24,7 @@ class DashboardView(BaseView):
         self.module_callbacks = {}
         self.permission_service = PermissionService()
         self.logo_image = None  # Guardar referencia de la imagen
+        self._function_key_bindings = []  # Mantener atajos activos
         
         # Inicializar gestor responsivo
         self.responsive = ResponsiveManager(self.root)
@@ -174,6 +175,9 @@ class DashboardView(BaseView):
         
         # Obtener módulos disponibles
         modules = self.get_available_modules()
+
+        # Asignar atajos de teclado (F1-F12) a los primeros módulos
+        self._assign_function_key_shortcuts(modules)
         
         # Crear layout dinámico con efectos visuales
         self.create_colorful_modules_grid(modules_frame, modules)
@@ -272,14 +276,6 @@ class DashboardView(BaseView):
                 'permission': 'system.config'
             },
             {
-                'id': 'responsive_config',
-                'title': 'Escalado Responsivo',
-                'icon_path': 'assets/images/monitor.png',
-                'color': '#0891b2',
-                'description': 'Abrir configurador de tamaños',
-                'permission': 'system.config'
-            },
-            {
                 'id': 'ticket_config',
                 'title': 'Configuración de Boletas',
                 'icon_path': 'assets/images/ticket.png',
@@ -320,6 +316,24 @@ class DashboardView(BaseView):
                 available_modules.append(module)
         
         return available_modules
+
+    def _assign_function_key_shortcuts(self, modules):
+        """Asignar F1-F12 a los primeros módulos disponibles"""
+        # Limpiar atajos previos para evitar duplicados
+        for key_event in self._function_key_bindings:
+            self.root.unbind(key_event)
+        self._function_key_bindings = []
+
+        for index, module in enumerate(modules[:12]):
+            shortcut = f"F{index + 1}"
+            module['shortcut'] = shortcut
+            key_event = f"<{shortcut}>"
+
+            def _handler(event, module_id=module['id']):
+                self.on_module_click(module_id)
+
+            self.root.bind(key_event, _handler)
+            self._function_key_bindings.append(key_event)
     
     def create_colorful_modules_grid(self, parent, modules):
         """Crear grid centrado con scroll para muchos módulos"""
@@ -700,6 +714,18 @@ class DashboardView(BaseView):
             anchor='center',
             width=card_width - 20
         )
+
+        # Etiqueta de atajo de teclado (F1-F12) en la esquina superior derecha
+        shortcut = module.get('shortcut')
+        if shortcut:
+            canvas.create_text(
+                card_width - 12,
+                12,
+                text=shortcut,
+                font=('Segoe UI', 10, 'bold'),
+                fill='white',
+                anchor='ne'
+            )
         
         # Sistema de eventos con efectos mejorados
         self.setup_enhanced_card_events(canvas, module, card_container)
@@ -1114,43 +1140,8 @@ class DashboardView(BaseView):
         """Registrar callback para un módulo específico"""
         self.module_callbacks[module_id] = callback
     
-    def open_responsive_configurator(self):
-        """Abrir el configurador de escalado responsivo"""
-        import subprocess
-        import sys
-        
-        try:
-            # Obtener la ruta del configurador
-            script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            configurator_path = os.path.join(script_dir, 'responsive_configurator.py')
-            
-            if not os.path.exists(configurator_path):
-                from tkinter import messagebox
-                messagebox.showerror("Error", 
-                                   f"❌ No se encontró el configurador responsivo en:\n{configurator_path}")
-                return
-            
-            # Abrir el configurador en un proceso separado
-            subprocess.Popen([sys.executable, configurator_path])
-            
-            # Mostrar mensaje informativo
-            from tkinter import messagebox
-            messagebox.showinfo("Configurador Responsivo", 
-                              "✅ Se ha abierto el configurador de escalado responsivo.\n\n"
-                              "⚠️ Los cambios que realices requerirán reiniciar la aplicación para aplicarse.")
-            
-        except Exception as e:
-            from tkinter import messagebox
-            messagebox.showerror("Error", 
-                               f"❌ Error al abrir el configurador responsivo:\n{str(e)}")
-    
     def on_module_click(self, module_id: str):
         """Manejar click en módulo"""
-        # Manejar módulos especiales
-        if module_id == 'responsive_config':
-            self.open_responsive_configurator()
-            return
-        
         if module_id in self.module_callbacks:
             self.module_callbacks[module_id]()
         else:

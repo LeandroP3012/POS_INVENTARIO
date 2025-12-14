@@ -66,7 +66,6 @@ class UserManagementView(BaseView):
             self.root.configure(bg='#f8f9fa')
         
         self.create_user_management_interface()
-    
     def create_user_management_interface(self):
         """Crear interfaz de gestión de usuarios"""
         # Header
@@ -284,6 +283,9 @@ class UserManagementView(BaseView):
                 pady=12
             )
             new_user_btn.pack(side='left', padx=(0, 12))
+            # Atajo: Ctrl+N para nuevo usuario
+            self.root.bind_all('<Control-n>', lambda e: self.create_new_user())
+            self.root.bind_all('<Control-N>', lambda e: self.create_new_user())
         
         # Botón editar - Solo si tiene permiso users.edit
         if self.has_permission('users.edit'):
@@ -1082,6 +1084,8 @@ class UserDialog:
                 self.role_lookup[code_key] = role
             if id_key:
                 self.role_lookup[id_key] = role
+
+        # Atajo: Ctrl+S para guardar usuario (se enlaza tras crear el diálogo)
         
         # Inicializar variables PRIMERO
         self.username_var = tk.StringVar(value=self.user_data.get('username', '') if self.user_data else '')
@@ -1129,6 +1133,10 @@ class UserDialog:
         self.dialog.resizable(False, False)
         self.dialog.transient(parent)
         self.dialog.grab_set()
+
+        # Atajo: Ctrl+S para guardar usuario
+        self.dialog.bind_all('<Control-s>', lambda e: self.on_save())
+        self.dialog.bind_all('<Control-S>', lambda e: self.on_save())
         
         # Centrar diálogo
         self.center_dialog()

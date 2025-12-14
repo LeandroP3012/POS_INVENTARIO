@@ -46,12 +46,20 @@ class POSView:
         except Exception:
             screen_w, screen_h = 1366, 768
 
+        # Calcular dimensiones responsivas basadas en pantalla real
+        base_width, base_height = self.responsive.get_window_size()
         margin = 40
-        min_height = 640
-        target_height = max(min(screen_h - margin, 860), min_height)
-        target_width = min(screen_w - margin, 1400)
+        usable_width = min(int(screen_w * 0.92), screen_w - margin)
+        usable_height = min(int(screen_h * 0.9), screen_h - margin)
+
+        target_width = max(min(usable_width, screen_w - margin), min(base_width, screen_w - margin))
+        target_height = max(min(usable_height, screen_h - margin), min(int(base_height * 0.9), screen_h - margin))
+
+        min_width = max(min(base_width, screen_w - margin), 1100)
+        min_height = max(min(int(base_height * 0.75), screen_h - margin), 640)
 
         try:
+            master.minsize(min_width, min_height)
             master.geometry(f"{target_width}x{target_height}")
         except Exception:
             pass
@@ -75,17 +83,68 @@ class POSView:
         v_scroll.pack(side='right', fill='y')
 
         self.main_frame = tk.Frame(self._viewport_canvas, bg='#ecf0f1')
-        self._viewport_canvas.create_window((0, 0), window=self.main_frame, anchor='nw')
+        self._viewport_window = self._viewport_canvas.create_window((0, 0), window=self.main_frame, anchor='nw')
 
         def _update_scroll_region(_event=None):
             self._viewport_canvas.configure(scrollregion=self._viewport_canvas.bbox('all'))
+            self._ensure_content_height()
 
         self.main_frame.bind('<Configure>', _update_scroll_region)
 
         def _on_mousewheel(event):
-            self._viewport_canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+            canvas = getattr(self, '_viewport_canvas', None)
+            if canvas is None:
+                return
+            try:
+                if not canvas.winfo_exists():
+                    self._unbind_mousewheel()
+                    return
+            except Exception:
+                return
+            try:
+                canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+            except tk.TclError:
+                self._unbind_mousewheel()
 
         self._viewport_canvas.bind_all('<MouseWheel>', _on_mousewheel)
+        self._mousewheel_handler = _on_mousewheel
+
+        # Ajustar altura inicial cuando el canvas cambie de tamaño
+        self._viewport_canvas.bind('<Configure>', lambda _e: self._ensure_content_height())
+
+        # Asegurar limpieza cuando se destruya la ventana
+        self.parent.bind('<Destroy>', self._on_parent_destroy)
+
+    def _ensure_content_height(self):
+        """Asegurar que el contenido cubra toda la altura disponible"""
+        if not hasattr(self, '_viewport_canvas') or not hasattr(self, '_viewport_window'):
+            return
+
+        self.main_frame.update_idletasks()
+        content_height = self.main_frame.winfo_reqheight()
+        viewport_height = max(self._viewport_canvas.winfo_height(), 600)
+        target_height = max(content_height, viewport_height)
+
+        try:
+            self._viewport_canvas.itemconfigure(self._viewport_window, height=target_height)
+        except Exception:
+            pass
+
+    def _unbind_mousewheel(self):
+        """Eliminar binding global del mousewheel si sigue activo"""
+        if getattr(self, '_mousewheel_handler', None) is None:
+            return
+        try:
+            self.parent.unbind_all('<MouseWheel>')
+        except Exception:
+            pass
+        self._mousewheel_handler = None
+
+    def _on_parent_destroy(self, event):
+        """Limpiar bindings cuando el contenedor se destruye"""
+        # Solo interesa cuando se destruye la ventana principal
+        if event.widget is self.parent or event.widget is getattr(self.parent, 'winfo_toplevel', lambda: None)():
+            self._unbind_mousewheel()
 
     def setup_ui(self):
         """Configura la interfaz completa"""
@@ -99,6 +158,7 @@ class POSView:
         content_frame.columnconfigure(0, weight=3)
         content_frame.columnconfigure(1, weight=2)
         content_frame.columnconfigure(2, weight=0)
+        content_frame.rowconfigure(0, weight=1)
 
         # Columna izquierda: Búsqueda y productos
         left_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1)
@@ -115,6 +175,9 @@ class POSView:
         right_frame.grid(row=0, column=2, sticky='ns', padx=(5, 0))
         right_frame.grid_propagate(False)
         self.create_totals_section(right_frame)
+
+        # Ajustar altura una vez montada la interfaz
+        self.parent.after(200, self._ensure_content_height)
     
     def create_header(self):
         """Crea el header con información del cajero"""
@@ -230,9 +293,10 @@ class POSView:
         tree_frame = tk.Frame(parent, bg='white')
         tree_frame.pack(fill='both', expand=True, padx=10, pady=(0, 10))
         
-        # Scrollbar
-        scrollbar = tk.Scrollbar(tree_frame)
-        scrollbar.pack(side='right', fill='y')
+        # Scrollbars
+        scrollbar_y = tk.Scrollbar(tree_frame)
+        scrollbar_y.pack(side='right', fill='y')
+        scrollbar_x = tk.Scrollbar(tree_frame, orient='horizontal')
         
         # Treeview de productos
         columns = ('sku', 'name', 'price', 'stock')
@@ -241,7 +305,8 @@ class POSView:
             columns=columns,
             show='headings',
             height=15,
-            yscrollcommand=scrollbar.set
+            yscrollcommand=scrollbar_y.set,
+            xscrollcommand=scrollbar_x.set
         )
         
         # Configurar columnas
@@ -256,7 +321,9 @@ class POSView:
         self.products_tree.column('stock', width=80, anchor='center')
         
         self.products_tree.pack(fill='both', expand=True)
-        scrollbar.config(command=self.products_tree.yview)
+        scrollbar_x.pack(side='bottom', fill='x')
+        scrollbar_y.config(command=self.products_tree.yview)
+        scrollbar_x.config(command=self.products_tree.xview)
         
         # Estilos para el Treeview
         style = ttk.Style()
@@ -386,9 +453,10 @@ class POSView:
         tree_frame = tk.Frame(parent, bg='white')
         tree_frame.pack(fill='both', expand=True, padx=10, pady=(0, 10))
         
-        # Scrollbar
-        scrollbar = tk.Scrollbar(tree_frame)
-        scrollbar.pack(side='right', fill='y')
+        # Scrollbars
+        scrollbar_y = tk.Scrollbar(tree_frame)
+        scrollbar_y.pack(side='right', fill='y')
+        scrollbar_x = tk.Scrollbar(tree_frame, orient='horizontal')
         
         # Treeview
         columns = ('Producto', 'Cant.', 'Precio', 'Subtotal')
@@ -397,7 +465,8 @@ class POSView:
             columns=columns,
             show='headings',
             height=15,
-            yscrollcommand=scrollbar.set
+            yscrollcommand=scrollbar_y.set,
+            xscrollcommand=scrollbar_x.set
         )
         
         # Configurar columnas
@@ -412,7 +481,9 @@ class POSView:
         self.cart_tree.column('Subtotal', width=100, anchor='e')
         
         self.cart_tree.pack(fill='both', expand=True)
-        scrollbar.config(command=self.cart_tree.yview)
+        scrollbar_x.pack(side='bottom', fill='x')
+        scrollbar_y.config(command=self.cart_tree.yview)
+        scrollbar_x.config(command=self.cart_tree.xview)
         
         # ✅ AGREGAR EVENTO DE DOBLE CLIC PARA EDITAR CANTIDAD
         self.cart_tree.bind('<Double-Button-1>', lambda e: self.edit_quantity())
@@ -603,7 +674,7 @@ class POSView:
         payment_combo = ttk.Combobox(
             payment_frame,
             textvariable=self.payment_method_var,
-            values=['cash', 'card', 'transfer'],
+            values=['cash', 'card', 'transfer', 'yape', 'plin'],
             state='readonly',
             font=('Segoe UI', 10),
             width=20
@@ -615,7 +686,9 @@ class POSView:
             mapping = {
                 'cash': '💵 Efectivo',
                 'card': '💳 Tarjeta',
-                'transfer': '🏦 Transferencia'
+                'transfer': '🏦 Transferencia',
+                'yape': '📱 Yape',
+                'plin': '📱 Plin'
             }
             return mapping.get(value, value)
         
@@ -627,7 +700,9 @@ class POSView:
         payment_combo.configure(values=[
             '💵 Efectivo',
             '💳 Tarjeta', 
-            '🏦 Transferencia'
+            '🏦 Transferencia',
+            '📱 Yape',
+            '📱 Plin'
         ])
         
         # Función para obtener el valor real
@@ -636,7 +711,9 @@ class POSView:
             mapping = {
                 '💵 Efectivo': 'cash',
                 '💳 Tarjeta': 'card',
-                '🏦 Transferencia': 'transfer'
+                '🏦 Transferencia': 'transfer',
+                '📱 Yape': 'yape',
+                '📱 Plin': 'plin'
             }
             return mapping.get(display, 'cash')
         
@@ -718,6 +795,10 @@ class POSView:
         # Efecto hover
         self.process_btn.bind('<Enter>', lambda e: self.process_btn.config(bg='#229954') if self.process_btn['state'] == 'normal' else None)
         self.process_btn.bind('<Leave>', lambda e: self.process_btn.config(bg='#27ae60') if self.process_btn['state'] == 'normal' else None)
+
+        # Atajo: Ctrl+P para procesar venta
+        self.parent.bind_all('<Control-p>', lambda e: self.process_sale())
+        self.parent.bind_all('<Control-P>', lambda e: self.process_sale())
     
     def create_total_row(self, parent, label, value, attr_name):
         """Crea una fila de total"""

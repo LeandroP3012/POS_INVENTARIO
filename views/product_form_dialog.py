@@ -111,8 +111,8 @@ class ProductFormDialog:
         self.price_var = tk.StringVar(value="0.00")
         self.cost_var = tk.StringVar(value="0.00")
         self.stock_var = tk.StringVar(value="0")
-        self.min_stock_var = tk.StringVar(value="0")
-        self.max_stock_var = tk.StringVar(value="0")
+        self.min_stock_var = tk.StringVar(value="1")
+        self.max_stock_var = tk.StringVar(value="2")
         self.status_var = tk.StringVar(value="active")
         
         # NO configurar trace aquí - lo haremos después de crear los widgets
@@ -200,6 +200,9 @@ class ProductFormDialog:
     
     def create_widgets(self):
         """Crear widgets del formulario"""
+        # Atajo: Ctrl+S para guardar desde cualquier parte del diálogo
+        self.dialog.bind_all('<Control-s>', lambda e: self.on_save())
+        self.dialog.bind_all('<Control-S>', lambda e: self.on_save())
         # Header mejorado
         header = tk.Frame(self.dialog, bg='#2c3e50', height=70)
         header.pack(fill='x')
@@ -419,66 +422,6 @@ class ProductFormDialog:
             command=self.print_barcode
         ).pack(side='left')
         
-        # === SECCIÓN: CATEGORIZACIÓN ===
-        cat_section = self.create_card(scrollable_frame)
-        self.create_section_title(cat_section, "🏷️", "Categorización")
-        
-        # Categoría y Unidad en fila
-        cat_row = tk.Frame(cat_section, bg='white')
-        cat_row.pack(fill='x', padx=20, pady=(0, 15))
-        
-        # Columna de categoría
-        cat_col = tk.Frame(cat_row, bg='white')
-        cat_col.pack(side='left', fill='both', expand=True, padx=(0, 10))
-        
-        tk.Label(
-            cat_col,
-            text="Categoría *",
-            font=('Segoe UI', 10, 'bold'),
-            bg='white',
-            fg='#2c3e50',
-            anchor='w'
-        ).pack(fill='x', pady=(0, 5))
-        
-        self.category_combo = ttk.Combobox(
-            cat_col,
-            textvariable=self.category_var,
-            font=('Segoe UI', 11),
-            state='readonly',
-            height=8
-        )
-        category_values = [cat['name'] for cat in self.categories]
-        self.category_combo['values'] = category_values
-        if category_values:
-            self.category_combo.current(0)
-        self.category_combo.pack(fill='x')
-        
-        # Columna de unidad
-        unit_col = tk.Frame(cat_row, bg='white')
-        unit_col.pack(side='left', fill='both', expand=True)
-        
-        tk.Label(
-            unit_col,
-            text="Unidad de Medida *",
-            font=('Segoe UI', 10, 'bold'),
-            bg='white',
-            fg='#2c3e50',
-            anchor='w'
-        ).pack(fill='x', pady=(0, 5))
-        
-        self.unit_combo = ttk.Combobox(
-            unit_col,
-            textvariable=self.unit_var,
-            font=('Segoe UI', 11),
-            state='readonly',
-            height=8
-        )
-        unit_values = [f"{unit['name']} ({unit['symbol']})" for unit in self.units]
-        self.unit_combo['values'] = unit_values
-        if unit_values:
-            self.unit_combo.current(0)
-        self.unit_combo.pack(fill='x')
-        
         # === SECCIÓN: PRECIOS Y COSTOS ===
         price_section = self.create_card(scrollable_frame)
         self.create_section_title(price_section, "💰", "Precios y Costos")
@@ -591,70 +534,199 @@ class ProductFormDialog:
         # === SECCIÓN: GESTIÓN DE INVENTARIO ===
         inventory_section = self.create_card(scrollable_frame)
         self.create_section_title(inventory_section, "📦", "Gestión de Inventario")
-        
-        # Nota informativa - TODO el inventario se maneja desde Control de Stock
-        note_frame = tk.Frame(inventory_section, bg='#fff3cd', relief='solid', bd=1)
-        note_frame.pack(fill='x', padx=20, pady=(0, 15))
-        
+
+        stock_frame = tk.Frame(inventory_section, bg='white')
+        stock_frame.pack(fill='x', padx=20, pady=(0, 15))
+
         tk.Label(
-            note_frame,
-            text="ℹ️ Stock Inicial",
+            stock_frame,
+            text="Stock inicial",
             font=('Segoe UI', 10, 'bold'),
-            bg='#fff3cd',
-            fg='#856404',
-            anchor='w'
-        ).pack(padx=15, pady=(10, 5))
+            bg='white',
+            fg='#2c3e50',
+            anchor='center'
+        ).pack(anchor='center', pady=(0, 6))
+
+        # Contenedor centrado para el input
+        stock_input_wrap = tk.Frame(stock_frame, bg='white')
+        stock_input_wrap.pack(anchor='center')
+
+        self.stock_entry = tk.Entry(
+            stock_input_wrap,
+            textvariable=self.stock_var,
+            font=('Segoe UI', 12, 'bold'),
+            relief='solid',
+            bd=1,
+            bg='#f8fbff',
+            fg='#2c3e50',
+            justify='center',
+            width=18,
+            highlightthickness=1,
+            highlightbackground='#d0e4ff',
+            highlightcolor='#4a90e2'
+        )
+        self.stock_entry.pack(pady=(2, 8))
+
+        # Sincronizar stock_var con el Entry en tiempo real
+        def sync_stock(*_args):
+            try:
+                value = self.stock_entry.get()
+                self.stock_var.set(value)
+                print(f"📦 Sync stock_var <- entry: '{value}'")
+            except Exception as e:
+                print(f"⚠️ No se pudo sincronizar stock: {e}")
+
+        self.stock_entry.bind('<KeyRelease>', sync_stock)
+        self.stock_entry.bind('<FocusOut>', sync_stock)
+
+        tk.Label(
+            stock_frame,
+            text="Solo define el stock inicial aquí. El stock mínimo/máximo se gestiona en Control de Stock.",
+            font=('Segoe UI', 9),
+            bg='white',
+            fg='#7f8c8d',
+            anchor='center',
+            wraplength=520,
+            justify='center'
+        ).pack(anchor='center')
+        
+        # === SECCIÓN: CATEGORIZACIÓN (ahora cuarta) ===
+        cat_section = self.create_card(scrollable_frame)
+        self.create_section_title(cat_section, "🏷️", "Categorización")
+        
+        cat_row = tk.Frame(cat_section, bg='white')
+        cat_row.pack(fill='x', padx=20, pady=(0, 15))
+        
+        cat_col = tk.Frame(cat_row, bg='white')
+        cat_col.pack(side='left', fill='both', expand=True, padx=(0, 10))
         
         tk.Label(
-            note_frame,
-            text="El producto se creará con stock inicial = 0.\nPara agregar inventario, utilice el módulo 'Control de Stock' (📊) desde el dashboard.",
-            font=('Segoe UI', 9),
-            bg='#fff3cd',
-            fg='#856404',
-            anchor='w',
-            wraplength=600,
-            justify='left'
-        ).pack(padx=15, pady=(0, 10))
+            cat_col,
+            text="Categoría *",
+            font=('Segoe UI', 10, 'bold'),
+            bg='white',
+            fg='#2c3e50',
+            anchor='w'
+        ).pack(fill='x', pady=(0, 5))
+        
+        self.category_combo = ttk.Combobox(
+            cat_col,
+            textvariable=self.category_var,
+            font=('Segoe UI', 11),
+            state='readonly',
+            height=8
+        )
+        category_values = [cat['name'] for cat in self.categories]
+        self.category_combo['values'] = category_values
+        default_cat_index = 0
+        if not self.product:
+            for idx, cat in enumerate(self.categories):
+                if str(cat.get('id')) == "11" or cat.get('name', '').lower() == 'varios':
+                    default_cat_index = idx
+                    break
+        if category_values:
+            self.category_combo.current(default_cat_index)
+            self.category_var.set(category_values[default_cat_index])
+        self.category_combo.pack(fill='x')
+        
+        unit_col = tk.Frame(cat_row, bg='white')
+        unit_col.pack(side='left', fill='both', expand=True)
+        
+        tk.Label(
+            unit_col,
+            text="Unidad de Medida *",
+            font=('Segoe UI', 10, 'bold'),
+            bg='white',
+            fg='#2c3e50',
+            anchor='w'
+        ).pack(fill='x', pady=(0, 5))
+        
+        self.unit_combo = ttk.Combobox(
+            unit_col,
+            textvariable=self.unit_var,
+            font=('Segoe UI', 11),
+            state='readonly',
+            height=8
+        )
+        unit_values = [f"{unit['name']} ({unit['symbol']})" for unit in self.units]
+        self.unit_combo['values'] = unit_values
+        default_unit_index = 0
+        if not self.product:
+            for idx, unit in enumerate(self.units):
+                if unit.get('name', '').lower() == 'unidad':
+                    default_unit_index = idx
+                    break
+        if unit_values:
+            self.unit_combo.current(default_unit_index)
+            self.unit_var.set(unit_values[default_unit_index])
+        self.unit_combo.pack(fill='x')
         
         # === SECCIÓN: ESTADO ===
         status_section = self.create_card(scrollable_frame)
         self.create_section_title(status_section, "⚡", "Estado del Producto")
-        
+
         status_container = tk.Frame(status_section, bg='white')
         status_container.pack(fill='x', padx=20, pady=(0, 15))
-        
+
         tk.Label(
             status_container,
             text="Estado:",
             font=('Segoe UI', 10, 'bold'),
             bg='white',
             fg='#2c3e50'
-        ).pack(anchor='w', pady=(0, 10))
-        
+        ).pack(anchor='w', pady=(0, 8))
+
         radio_frame = tk.Frame(status_container, bg='white')
-        radio_frame.pack(anchor='w')
-        
-        tk.Radiobutton(
+        radio_frame.pack(anchor='center', pady=(6, 6))
+
+        active_btn = tk.Radiobutton(
             radio_frame,
-            text="✅ Activo",
+            text="Activo (default)",
             variable=self.status_var,
             value="active",
-            font=('Segoe UI', 11),
-            bg='white',
-            activebackground='white',
-            selectcolor='#e8f5e9'
-        ).pack(side='left', padx=(0, 30))
-        
-        tk.Radiobutton(
+            font=('Segoe UI', 11, 'bold'),
+            bg='#e8f5e9',
+            activebackground='#e8f5e9',
+            selectcolor='#d9f6e5',
+            indicatoron=False,
+            padx=16,
+            pady=9,
+            relief='flat',
+            borderwidth=1,
+            highlightthickness=0,
+            width=14
+        )
+        active_btn.pack(side='left', padx=(0, 14))
+
+        inactive_btn = tk.Radiobutton(
             radio_frame,
-            text="❌ Inactivo",
+            text="Inactivo",
             variable=self.status_var,
             value="inactive",
             font=('Segoe UI', 11),
+            bg='#ffebee',
+            activebackground='#ffebee',
+            selectcolor='#ffe1e1',
+            indicatoron=False,
+            padx=16,
+            pady=9,
+            relief='flat',
+            borderwidth=1,
+            highlightthickness=0,
+            width=12
+        )
+        inactive_btn.pack(side='left')
+
+        tk.Label(
+            status_container,
+            text="El producto se crea activo por defecto; puedes inactivarlo si aún no se venderá.",
+            font=('Segoe UI', 9),
             bg='white',
-            activebackground='white',
-            selectcolor='#ffebee'
-        ).pack(side='left')
+            fg='#7f8c8d',
+            anchor='center',
+            wraplength=520,
+            justify='center'
+        ).pack(anchor='center', pady=(10, 0))
         
         # Empaquetar canvas y scrollbar
         self.canvas.pack(side='left', fill='both', expand=True)
@@ -939,6 +1011,31 @@ class ProductFormDialog:
                 print(f"   ✅ Estado: {status_value}")
             except Exception as e:
                 print(f"   ⚠️ Error cargando Estado: {e}")
+
+        # Stock - cargar si viene del producto (para edición)
+        if hasattr(self, 'stock_var'):
+            stock_val = self.product.get('stock_quantity', 0)
+            try:
+                self.stock_var.set(str(stock_val))
+                print(f"   ✅ Stock inicial: {stock_val}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando Stock inicial: {e}")
+
+        if hasattr(self, 'min_stock_var'):
+            min_val = self.product.get('min_stock', 1)
+            try:
+                self.min_stock_var.set(str(min_val))
+                print(f"   ✅ Stock mínimo: {min_val}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando Stock mínimo: {e}")
+
+        if hasattr(self, 'max_stock_var'):
+            max_val = self.product.get('max_stock', 2)
+            try:
+                self.max_stock_var.set(str(max_val))
+                print(f"   ✅ Stock máximo: {max_val}")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando Stock máximo: {e}")
         
         print(f"✅ Datos del producto cargados completamente\n")
     
@@ -1020,8 +1117,25 @@ class ProductFormDialog:
             print(f"      ❌ FALLO: Costo no es número válido")
             return False, "El costo debe ser un número válido"
         
-        # Stock, min_stock y max_stock ya no se validan - siempre serán 0
-        print("\n   🔹 Stock se establecerá en 0 (se gestiona desde Control de Stock)")
+        print("\n   🔹 Validando Stock inicial...")
+        stock_text = (self.stock_var.get() or "").strip()
+        stock_entry_val = (self.stock_entry.get() or "").strip() if hasattr(self, 'stock_entry') else ""
+        if not stock_text:
+            stock_text = stock_entry_val
+        print(f"      Stock text usado para validar: '{stock_text}' (entry='{stock_entry_val}')")
+        try:
+            stock_initial = float(stock_text) if stock_text != "" else 0.0
+            if stock_initial < 0:
+                print(f"      ❌ FALLO: Stock inicial negativo: {stock_initial}")
+                return False, "El stock inicial no puede ser negativo"
+            print(f"      ✅ Stock inicial válido: {stock_initial}")
+        except ValueError:
+            print("      ❌ FALLO: Stock inicial no es número válido")
+            return False, "El stock inicial debe ser un número válido"
+
+        # Stock mínimo y máximo quedan fijos aquí; se ajustan en Control de Stock
+        self.min_stock_var.set("1")
+        self.max_stock_var.set("2")
         
         print("\n   ✅ TODAS LAS VALIDACIONES PASARON")
         return True, ""
@@ -1057,8 +1171,16 @@ class ProductFormDialog:
             name = self.name_entry.get().strip()
         barcode = self.barcode_var.get().strip() or self.barcode_entry.get().strip()
         
-        # Stock siempre será 0 - se gestiona desde Control de Stock
-        # Min stock y max stock también en 0 por defecto
+        # Stock inicial editable aquí; min/max se fijan en 1 y 2 (ajustables en Control de Stock)
+        stock_text = (self.stock_var.get() or "").strip()
+        stock_entry_val = (self.stock_entry.get() or "").strip() if hasattr(self, 'stock_entry') else ""
+        if not stock_text:
+            stock_text = stock_entry_val
+        try:
+            stock_initial = float(stock_text) if stock_text != "" else 0.0
+        except ValueError:
+            stock_initial = 0.0
+
         return {
             'sku': sku,
             'name': name,
@@ -1068,9 +1190,9 @@ class ProductFormDialog:
             'barcode': barcode,
             'price': float(self.price_var.get()),
             'cost': float(self.cost_var.get()),
-            'stock_quantity': 0.0,  # Siempre 0 - se gestiona desde Control de Stock
-            'min_stock': 0.0,
-            'max_stock': 0.0,
+            'stock_quantity': stock_initial,
+            'min_stock': float(self.min_stock_var.get() or 1.0),
+            'max_stock': float(self.max_stock_var.get() or 2.0),
             'status': self.status_var.get()
         }
     
@@ -1548,7 +1670,8 @@ class ProductFormDialog:
         print(f"   Precio (var): '{self.price_var.get()}'")
         print(f"   Costo (var): '{self.cost_var.get()}'")
         print(f"   Estado (var): '{self.status_var.get()}'")
-        print(f"   ℹ️ Stock se establecerá en 0 (gestión desde Control de Stock)")
+        stock_entry_val = self.stock_entry.get() if hasattr(self, 'stock_entry') else ''
+        print(f"   Stock (var): '{self.stock_var.get()}' | Stock (entry): '{stock_entry_val}'")
         
         print("\n📦 CATEGORÍAS DISPONIBLES:")
         for i, cat in enumerate(self.categories):

@@ -277,6 +277,9 @@ class CategoryManagementView:
             padx=20,
             pady=10
         ).pack(side='right', padx=(10, 0))
+        # Atajo: Ctrl+N para nueva categoría
+        self.root.bind_all('<Control-n>', lambda e: self._on_create_click())
+        self.root.bind_all('<Control-N>', lambda e: self._on_create_click())
     
     def create_table(self, parent):
         """Crear tabla de categorías"""

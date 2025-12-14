@@ -76,6 +76,9 @@ class CategoryFormDialog:
     
     def create_widgets(self):
         """Crear widgets del formulario"""
+        # Atajo: Ctrl+S para guardar
+        self.dialog.bind_all('<Control-s>', lambda e: self.on_save())
+        self.dialog.bind_all('<Control-S>', lambda e: self.on_save())
         # Header
         header = tk.Frame(self.dialog, bg='#2c3e50', height=70)
         header.pack(fill='x')

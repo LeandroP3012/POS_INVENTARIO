@@ -192,7 +192,10 @@ class CreditNotesView(BaseView):
         self.sale_selector_window = tk.Toplevel(self.root)
         self.sale_selector_window.title("Seleccionar venta a acreditar")
         self.sale_selector_window.configure(bg=self.colors['background'])
-        self.sale_selector_window.geometry("920x620")
+        dialog_width = 820
+        dialog_height = 540
+        self.sale_selector_window.geometry(f"{dialog_width}x{dialog_height}")
+        self._center_window(self.sale_selector_window, dialog_width, dialog_height)
         self.sale_selector_window.transient(self.root)
         self.sale_selector_window.grab_set()
         self.sale_selector_window.protocol("WM_DELETE_WINDOW", self._close_sale_selector_dialog)
@@ -214,7 +217,7 @@ class CreditNotesView(BaseView):
 
         # Búsqueda
         search_frame = tk.Frame(content, bg=self.colors['background'])
-        search_frame.pack(fill='x', pady=(0, 15))
+        search_frame.pack(fill='x', pady=(0, 12))
 
         tk.Label(
             search_frame,
@@ -225,14 +228,15 @@ class CreditNotesView(BaseView):
         ).pack(side='left')
 
         self.sale_search_var = tk.StringVar()
-        search_entry = ttk.Entry(search_frame, textvariable=self.sale_search_var, width=35)
+        search_entry = ttk.Entry(search_frame, textvariable=self.sale_search_var, width=30)
         search_entry.pack(side='left', padx=10)
-        search_entry.bind('<Return>', lambda _event: self._refresh_sale_selector_list())
+        # Bind Enter to read the entry text explicitly to avoid empty StringVar edge cases
+        search_entry.bind('<Return>', lambda _event: self._on_search_click(search_entry.get()))
 
         ttk.Button(
             search_frame,
             text="Buscar",
-            command=self._refresh_sale_selector_list
+            command=lambda: self._on_search_click(search_entry.get())
         ).pack(side='left')
 
         ttk.Button(
@@ -246,7 +250,7 @@ class CreditNotesView(BaseView):
         table_frame.pack(fill='both', expand=True)
 
         columns = ('sale_number', 'customer', 'total', 'status', 'sale_date', 'cashier')
-        self.sale_selector_tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=12)
+        self.sale_selector_tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=8)
 
         headings = {
             'sale_number': 'Venta',
@@ -258,12 +262,12 @@ class CreditNotesView(BaseView):
         }
 
         widths = {
-            'sale_number': 130,
-            'customer': 180,
-            'total': 110,
-            'status': 110,
-            'sale_date': 170,
-            'cashier': 170
+            'sale_number': 110,
+            'customer': 150,
+            'total': 90,
+            'status': 90,
+            'sale_date': 145,
+            'cashier': 140
         }
 
         for col in columns:
@@ -286,10 +290,10 @@ class CreditNotesView(BaseView):
 
         # Motivo y acciones
         footer = tk.Frame(content, bg='white', relief='groove', bd=1)
-        footer.pack(fill='x', pady=(15, 0))
+        footer.pack(fill='x', pady=(12, 0))
 
         reason_frame = tk.Frame(footer, bg='white')
-        reason_frame.pack(fill='both', expand=True, padx=15, pady=15)
+        reason_frame.pack(fill='both', expand=True, padx=12, pady=(10, 8))
 
         tk.Label(
             reason_frame,
@@ -299,7 +303,7 @@ class CreditNotesView(BaseView):
             fg='#2c3e50'
         ).pack(anchor='w')
 
-        self.sale_reason_text = tk.Text(reason_frame, height=3, font=('Segoe UI', 11))
+        self.sale_reason_text = tk.Text(reason_frame, height=2, font=('Segoe UI', 10))
         self.sale_reason_text.pack(fill='x', pady=(8, 5))
         self.sale_reason_text.insert('1.0', 'Devolución / cancelación')
 
@@ -313,7 +317,7 @@ class CreditNotesView(BaseView):
         info_label.pack(anchor='w')
 
         actions = tk.Frame(footer, bg='white')
-        actions.pack(fill='x', pady=(10, 0))
+        actions.pack(fill='x', pady=(8, 0))
 
         tk.Button(
             actions,
@@ -321,11 +325,11 @@ class CreditNotesView(BaseView):
             command=self._close_sale_selector_dialog,
             bg='#bdc3c7',
             fg='white',
-            font=('Segoe UI', 10, 'bold'),
-            padx=18,
-            pady=8,
+            font=('Segoe UI', 9, 'bold'),
+            padx=14,
+            pady=6,
             relief='flat'
-        ).pack(side='right', padx=10)
+        ).pack(side='right', padx=8)
 
         tk.Button(
             actions,
@@ -333,9 +337,9 @@ class CreditNotesView(BaseView):
             command=self._on_sale_selector_confirm,
             bg='#27ae60',
             fg='white',
-            font=('Segoe UI', 10, 'bold'),
-            padx=20,
-            pady=8,
+            font=('Segoe UI', 9, 'bold'),
+            padx=16,
+            pady=6,
             relief='flat'
         ).pack(side='right')
 
@@ -344,23 +348,49 @@ class CreditNotesView(BaseView):
     def _close_sale_selector_dialog(self):
         if self.sale_selector_window and self.sale_selector_window.winfo_exists():
             self.sale_selector_window.destroy()
+
         self.sale_selector_window = None
         self.sale_selector_tree = None
         self.sale_reason_text = None
         self.sale_search_var = None
         self.sale_selector_data = []
 
+    def _center_window(self, window, width, height):
+        """Centrar ventana secundaria según la resolución actual"""
+        try:
+            screen_w = window.winfo_screenwidth()
+            screen_h = window.winfo_screenheight()
+        except Exception:
+            screen_w, screen_h = 1366, 768
+
+        x = max((screen_w - width) // 2, 0)
+        y = max((screen_h - height) // 2, 0)
+        window.geometry(f"{width}x{height}+{x}+{y}")
+
     def _reset_sale_selector_search(self):
         if self.sale_search_var:
             self.sale_search_var.set('')
         self._refresh_sale_selector_list(search_term="")
 
+    def _on_search_click(self, term_from_event: Optional[str] = None):
+        """Ejecuta la búsqueda cuando se hace clic en el botón o se presiona Enter"""
+        raw = term_from_event if term_from_event is not None else (self.sale_search_var.get() if self.sale_search_var else '')
+        search_term = raw.strip()
+        print(f"🔍 [DEBUG VISTA] _on_search_click - Término capturado: '{search_term}' (raw='{raw}')")
+        self._refresh_sale_selector_list(search_term)
+
     def _refresh_sale_selector_list(self, search_term: Optional[str] = None):
         if not self.sale_selector_tree:
+            print("⚠️ [DEBUG VISTA] sale_selector_tree no existe")
             return
 
+        print(f"🔍 [DEBUG VISTA] search_term recibido: '{search_term}' (tipo: {type(search_term).__name__})")
         term = search_term if search_term is not None else (self.sale_search_var.get().strip() if self.sale_search_var else "")
+        print(f"🔍 [DEBUG VISTA] term final: '{term}' (longitud: {len(term)})")
+        print(f"🔍 [DEBUG VISTA] Llamando trigger_callback con event='fetch_credit_note_sales', term='{term}'")
         result = self.trigger_callback('fetch_credit_note_sales', term)
+        print(f"🔍 [DEBUG VISTA] Callback retornó: {result}")
+        print(f"🔍 [DEBUG VISTA] Resultado del callback: success={result.get('success') if result else None}, ventas={len(result.get('sales', [])) if result else 0}")
 
         if not result or not result.get('success'):
             message = (result or {}).get('message', 'No se pudo obtener el listado de ventas')
@@ -369,13 +399,16 @@ class CreditNotesView(BaseView):
 
         self.sale_selector_data = result.get('sales', [])
 
+        # El backend ya aplica el filtro, usamos directamente los datos devueltos
+        filtered_sales = self.sale_selector_data
+
         for item in self.sale_selector_tree.get_children():
             self.sale_selector_tree.delete(item)
 
-        if not self.sale_selector_data:
+        if not filtered_sales:
             return
 
-        for sale in self.sale_selector_data:
+        for sale in filtered_sales:
             sale_id = sale.get('id')
             sale_number = sale.get('sale_number') or f"Venta #{sale_id}"
             customer = sale.get('customer_name') or 'Cliente Genérico'
