@@ -1562,6 +1562,28 @@ class POSView:
                 foreground='#7f8c8d',
                 font=('Segoe UI', 13)
             )
+
+    def reset_payment_fields(self):
+        """Reinicia los campos de pago después de procesar la venta"""
+        # Limpiar entrada de monto pagado (no solo la variable)
+        self.paid_var.set("")
+        try:
+            self.paid_entry.delete(0, tk.END)
+        except Exception:
+            pass
+
+        # Restablecer método de pago a efectivo (display con emoji)
+        try:
+            self.payment_method_var.set('💵 Efectivo')
+        except Exception:
+            pass
+
+        # Reiniciar etiqueta de vuelto
+        self.change_label.config(
+            text="S/ 0.00",
+            foreground='#7f8c8d',
+            font=('Segoe UI', 13, 'bold')
+        )
     
     # ==========================================
     # CLIENTE
@@ -1656,7 +1678,7 @@ class POSView:
             # ✅ LIMPIAR CARRITO AUTOMÁTICAMENTE SIN CONFIRMACIÓN
             self.clear_cart(ask_confirmation=False)
             self.discount_var.set("0.00")
-            self.paid_var.set("0.00")
+            self.reset_payment_fields()
             
             # ✅ ACTUALIZAR LISTA DE PRODUCTOS (refrescar stock)
             self.refresh_product_list()

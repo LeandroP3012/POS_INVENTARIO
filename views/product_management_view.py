@@ -8,6 +8,7 @@ from tkinter import ttk, messagebox
 from typing import Dict, Any, Callable, Optional, List
 from views.base_view import BaseView
 from decimal import Decimal
+import unicodedata
 from services.permission_service import PermissionService
 from utils.responsive_utils import ResponsiveManager
 
@@ -27,6 +28,7 @@ class ProductManagementView(BaseView):
         
         self.callbacks = {}
         self.products = []
+        self.all_products_cache = []  # Mantiene la lista completa para filtrar en memoria
         self.categories = []
         self.units = []
         self.selected_product = None
@@ -236,9 +238,13 @@ class ProductManagementView(BaseView):
         ).pack(side='left', padx=(0, 10))
         
         self.search_var = tk.StringVar()
-        self.search_var.trace('w', lambda *args: self.on_search())
+        # Trace incremental y binding por tecla para asegurar que dispare en todos los entornos
+        try:
+            self.search_var.trace_add('write', lambda *args: self.on_search())
+        except Exception:
+            self.search_var.trace('w', lambda *args: self.on_search())
         
-        search_entry = tk.Entry(
+        self.search_entry = tk.Entry(
             left_frame,
             textvariable=self.search_var,
             font=('Segoe UI', 10),
@@ -246,7 +252,8 @@ class ProductManagementView(BaseView):
             relief='solid',
             bd=1
         )
-        search_entry.pack(side='left')
+        self.search_entry.pack(side='left')
+        self.search_entry.bind('<KeyRelease>', lambda e: self.on_search())
         
         # Frame derecho: Botones de acción
         right_frame = tk.Frame(toolbar, bg='#ecf0f1')
@@ -375,7 +382,9 @@ class ProductManagementView(BaseView):
         
         # Eventos
         self.products_tree.bind('<<TreeviewSelect>>', self.on_product_select)
-        self.products_tree.bind('<Double-1>', lambda e: self.on_edit_product())
+        # Solo permitir doble click para editar si el usuario tiene permiso
+        if self.has_permission('inventory.edit'):
+            self.products_tree.bind('<Double-1>', lambda e: self.on_edit_product())
         
         # Grid layout
         self.products_tree.grid(row=0, column=0, sticky='nsew')
@@ -510,6 +519,14 @@ class ProductManagementView(BaseView):
         def on_canvas_configure(event):
             # Ajustar ancho del frame interno al ancho del canvas
             canvas.itemconfig(canvas_window, width=event.width)
+
+        # Habilitar scroll con rueda del mouse
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+
+        canvas.bind_all('<MouseWheel>', _on_mousewheel)
+        canvas.bind_all('<Button-4>', lambda e: canvas.yview_scroll(-1, 'units'))  # Linux
+        canvas.bind_all('<Button-5>', lambda e: canvas.yview_scroll(1, 'units'))   # Linux
         
         scrollable_frame.bind("<Configure>", on_frame_configure)
         canvas.bind("<Configure>", on_canvas_configure)
@@ -706,7 +723,17 @@ class ProductManagementView(BaseView):
     # Métodos de eventos
     def on_search(self):
         """Manejar búsqueda"""
-        search_term = self.search_var.get().strip()
+        # Leer directamente del widget para evitar problemas con StringVar en algunos entornos
+        if hasattr(self, 'search_entry'):
+            search_term = self.search_entry.get().strip()
+        else:
+            search_term = self.search_var.get().strip()
+
+
+        # Filtro inmediato en memoria (SKU o Nombre)
+        self._filter_products_local(search_term)
+
+        # Notificar al controlador para traer datos frescos (DB) si existe callback
         if self.callbacks.get('search'):
             self.callbacks['search'](search_term)
     
@@ -819,25 +846,37 @@ class ProductManagementView(BaseView):
     
     # Métodos públicos
     def load_products(self, products: List[Dict[str, Any]]):
-        """Cargar productos en la tabla"""
-        self.products = products
-        
+        """Cargar productos en la tabla y refrescar cache si no hay búsqueda activa"""
+        current_term = self.search_var.get().strip() if hasattr(self, 'search_var') else ''
+
+        # Si no hay término de búsqueda, refrescamos el cache completo.
+        # Si hay término, solo renderizamos para no perder el cache completo (incremental).
+        if current_term:
+            self._render_products(products)
+        else:
+            self.all_products_cache = list(products) if products else []
+            self._render_products(products)
+
+    def _render_products(self, products: List[Dict[str, Any]]):
+        """Renderizar productos en el Treeview"""
+        self.products = products or []
+
         # Limpiar tabla
         for item in self.products_tree.get_children():
             self.products_tree.delete(item)
-        
+
         # Agregar productos
-        for product in products:
+        for product in self.products:
             stock_qty = product.get('stock_quantity', 0)
             stock_status = product.get('stock_status', 'normal')
-            
+
             # Determinar tag para color
             tag = 'normal'
             if stock_status == 'low_stock':
                 tag = 'low_stock'
             elif stock_status == 'out_of_stock':
                 tag = 'out_of_stock'
-            
+
             # Estado visual
             status_text = '✅ Activo' if product.get('status') == 'active' else '❌ Inactivo'
             row_id = str(product.get('id') or product.get('sku') or product.get('name'))
@@ -850,15 +889,37 @@ class ProductManagementView(BaseView):
                     product.get('sku', ''),
                     product.get('name', ''),
                     product.get('category_name', 'Sin categoría'),
-                    stock_qty,
+                    product.get('stock_quantity', 0),
                     f"S/ {product.get('price', 0):,.2f}",
                     status_text
                 ),
                 tags=(tag,)
             )
-        
+
         # Actualizar estadísticas
         self.update_statistics()
+
+    def _filter_products_local(self, search_term: str):
+        """Filtrar localmente por SKU o Nombre (case-insensitive)"""
+        if not search_term:
+            self._render_products(self.all_products_cache)
+            return
+
+        term = self._normalize_text(search_term)
+        filtered = [
+            p for p in self.all_products_cache
+            if term in self._normalize_text(str(p.get('sku', '')))
+            or term in self._normalize_text(str(p.get('name', '')))
+        ]
+
+        self._render_products(filtered)
+
+    def _normalize_text(self, text: str) -> str:
+        """Normaliza texto a minúsculas y sin acentos para búsquedas flexibles"""
+        if not text:
+            return ''
+        normalized = unicodedata.normalize('NFD', text)
+        return ''.join(ch for ch in normalized if unicodedata.category(ch) != 'Mn').lower()
     
     def update_statistics(self):
         """Actualizar estadísticas en el footer"""

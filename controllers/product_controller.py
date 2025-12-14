@@ -20,6 +20,7 @@ class ProductController:
         self._cache_ttl = 60  # segundos
         self._categories_cache: Optional[Tuple[float, List[Dict[str, Any]]]] = None
         self._units_cache: Optional[Tuple[float, List[Dict[str, Any]]]] = None
+        self.default_limit = 500  # Límite defensivo para listados grandes
     
     def create_product(self, product_data: Dict[str, Any], user_data: Dict[str, Any]) -> Tuple[bool, str, Optional[int]]:
         """
@@ -97,7 +98,8 @@ class ProductController:
             self.logger.error(f"Error generando próximo SKU: {exc}")
             return None
     
-    def get_all_products(self, user_data: Dict[str, Any], include_inactive: bool = False) -> List[Dict[str, Any]]:
+    def get_all_products(self, user_data: Dict[str, Any], include_inactive: bool = False,
+                         limit: Optional[int] = None, offset: int = 0) -> List[Dict[str, Any]]:
         """Obtener todos los productos"""
         try:
             # Verificar permisos
@@ -106,7 +108,11 @@ class ProductController:
                 return []
             
             self.logger.info(f"Obteniendo productos (incluir inactivos: {include_inactive})")
-            return self.product_model.get_all_products(include_inactive)
+            return self.product_model.get_all_products(
+                include_inactive=include_inactive,
+                limit=limit,
+                offset=offset
+            )
             
         except Exception as e:
             self.logger.error(f"Error en get_all_products: {e}")

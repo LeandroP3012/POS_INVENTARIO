@@ -36,9 +36,19 @@ class ProductFormDialog:
         screen_h = self.dialog.winfo_screenheight()
         preferred_w, preferred_h = 720, 800
         margin = 80
-        min_w, min_h = 640, 600
+        min_w, min_h = 520, 500
+
         dialog_w = max(min(preferred_w, screen_w - margin), min_w)
         dialog_h = max(min(preferred_h, screen_h - margin), min_h)
+
+        # Escalar la ventana para que no ocupe casi toda la pantalla (aprox. 65%)
+        scale_factor = 0.65
+        dialog_w = max(int(dialog_w * scale_factor), min_w)
+        dialog_h = max(int(dialog_h * scale_factor), min_h)
+
+        self.dialog_width = dialog_w
+        self.dialog_height = dialog_h
+
         self.dialog.geometry(f"{dialog_w}x{dialog_h}")
         self.dialog.resizable(False, False)
         self.dialog.transient(parent)
@@ -233,7 +243,9 @@ class ProductFormDialog:
             lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         )
         
-        self.canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=680)
+        # Ajustar el ancho interno al tamaño reducido del diálogo
+        inner_width = max(480, int(getattr(self, 'dialog_width', 560) * 0.85))
+        self.canvas.create_window((0, 0), window=scrollable_frame, anchor="nw", width=inner_width)
         self.canvas.configure(yscrollcommand=scrollbar.set)
         
         # === SECCIÓN: INFORMACIÓN BÁSICA ===

@@ -211,22 +211,6 @@ class ConfigurationController:
             self.logger.error(f"Error restaurando backup: {e}")
             return False, f"Error restaurando backup: {str(e)}"
     
-    def get_available_printers(self) -> list[str]:
-        """Obtener lista de impresoras disponibles"""
-        try:
-            # En un sistema real, aquí consultaríamos las impresoras del sistema
-            # Por ahora devolvemos una lista simulada
-            return [
-                'Impresora del sistema',
-                'POS Printer',
-                'Térmica 80mm',
-                'HP LaserJet',
-                'Canon PIXMA'
-            ]
-        except Exception as e:
-            self.logger.error(f"Error obteniendo impresoras: {e}")
-            return ['Impresora del sistema']
-    
     def validate_configuration(self, config_data: Dict[str, Any]) -> tuple[bool, list[str]]:
         """Validar configuración antes de guardar"""
         errors = []

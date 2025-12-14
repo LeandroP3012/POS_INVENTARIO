@@ -1294,7 +1294,8 @@ class MainController:
             self.sales_history_view.bind_callback('delete_sale', self._delete_sale_from_history)
 
             # Estado inicial de filtros y carga
-            self.sales_filters = {'status': 'completed'}
+            default_sales_limit = getattr(self.sale_controller, 'default_sales_limit', 500)
+            self.sales_filters = {'status': 'completed', 'limit': default_sales_limit}
             self._load_sales_history(self.sales_filters)
 
             self._restore_window_geometry()
@@ -1313,6 +1314,7 @@ class MainController:
                 self.sale_controller = SaleController()
 
             filters = filters or {}
+            filters.setdefault('limit', getattr(self.sale_controller, 'default_sales_limit', 500))
             result = self.sale_controller.get_sales_list(filters)
 
             if result.get('success'):
@@ -1334,7 +1336,10 @@ class MainController:
 
     def _reset_sales_filters(self):
         """Restablecer filtros a los valores por defecto"""
-        self.sales_filters = {'status': 'completed'}
+        self.sales_filters = {
+            'status': 'completed',
+            'limit': getattr(self.sale_controller, 'default_sales_limit', 500)
+        }
         self._load_sales_history(self.sales_filters)
 
     def _load_sale_detail(self, sale_id: int):
@@ -1566,7 +1571,11 @@ class MainController:
     def _load_products(self):
         """Cargar lista de productos"""
         try:
-            products = self.product_controller.get_all_products(self.current_user, include_inactive=False)
+            products = self.product_controller.get_all_products(
+                self.current_user,
+                include_inactive=False,
+                limit=getattr(self.product_controller, 'default_limit', 500)
+            )
             self.product_view.load_products(products)
         except Exception as e:
             self.logger.error(f"Error cargando productos: {e}")
@@ -1594,7 +1603,11 @@ class MainController:
             if search_term.strip():
                 products = self.product_controller.search_products(search_term, self.current_user)
             else:
-                products = self.product_controller.get_all_products(self.current_user)
+                products = self.product_controller.get_all_products(
+                    self.current_user,
+                    include_inactive=False,
+                    limit=getattr(self.product_controller, 'default_limit', 500)
+                )
             
             self.product_view.load_products(products)
         except Exception as e:
@@ -2239,7 +2252,11 @@ class MainController:
     def _load_stock_products(self, view, controller):
         """Cargar productos para control de stock"""
         try:
-            products = controller.get_all_products(self.current_user, include_inactive=False)
+            products = controller.get_all_products(
+                self.current_user,
+                include_inactive=False,
+                limit=getattr(controller, 'default_limit', 500)
+            )
             if products:
                 view.load_products(products)
                 print(f"   ✅ {len(products)} productos cargados")

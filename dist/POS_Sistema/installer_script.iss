@@ -9,7 +9,7 @@
 
 [Setup]
 ; Información de la aplicación
-AppId={{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
+AppId={{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
@@ -425,7 +425,7 @@ begin
   DBConfigPage.Values[1] := '3306';
   DBConfigPage.Values[2] := 'root';
   DBConfigPage.Values[3] := '';
-  DBConfigPage.Values[4] := 'pos_db';
+  DBConfigPage.Values[4] := 'pos_system';
   
   { Página de PRUEBA de conexión a base de datos }
   DBTestPage := CreateCustomPage(DBConfigPage.ID,
@@ -577,6 +577,7 @@ begin
       ConfigContent.Add('    "port": ' + DBConfigPage.Values[1] + ',');
       ConfigContent.Add('    "user": "' + DBConfigPage.Values[2] + '",');
       ConfigContent.Add('    "password": "' + DBConfigPage.Values[3] + '",');
+      ConfigContent.Add('    "name": "' + DBConfigPage.Values[4] + '",');
       ConfigContent.Add('    "database": "' + DBConfigPage.Values[4] + '",');
       ConfigContent.Add('    "charset": "utf8mb4"');
       ConfigContent.Add('}');

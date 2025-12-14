@@ -282,7 +282,7 @@ class ProductModel(BaseModel):
                 connection.rollback()
             return None
     
-    def get_all_products(self, include_inactive: bool = False) -> List[Dict[str, Any]]:
+    def get_all_products(self, include_inactive: bool = False, limit: Optional[int] = None, offset: int = 0) -> List[Dict[str, Any]]:
         """
         Obtener todos los productos
         COMPATIBLE con scriptDB.txt: usa 'code', 'active', 'current_stock', 'sale_price', 'cost_price'
@@ -299,7 +299,7 @@ class ProductModel(BaseModel):
                 return []
             
             cursor = connection.cursor(dictionary=True)
-            
+
             # Query compatible con estructura real de la tabla
             query = """
                 SELECT 
@@ -328,13 +328,22 @@ class ProductModel(BaseModel):
                 LEFT JOIN categories c ON p.category_id = c.id
                 LEFT JOIN units u ON p.unit_id = u.id
             """
-            
+
+            params: List[Any] = []
+
             if not include_inactive:
                 query += " WHERE p.status = 'active'"
-            
+
             query += " ORDER BY p.name ASC"
-            
-            cursor.execute(query)
+
+            if limit is not None:
+                query += " LIMIT %s"
+                params.append(int(limit))
+                if offset:
+                    query += " OFFSET %s"
+                    params.append(int(offset))
+
+            cursor.execute(query, tuple(params) if params else None)
             products = cursor.fetchall()
             cursor.close()
             

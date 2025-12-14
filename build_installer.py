@@ -46,7 +46,7 @@ CONFIG_TEMPLATE_DEFAULTS: Dict[str, Dict] = {
         "port": "3306",
         "name": "pos_system",
         "user": "root",
-        "password": "",
+        "password": "D3v3l0p3r@@$",
         "max_connections": "10",
         "timeout": "30",
     },

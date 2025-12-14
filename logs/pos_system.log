@@ -34185,3 +34185,633 @@ KeyError: 0
 2025-12-14 03:28:57,009 - MainController - INFO - Mostrando pantalla de login
 2025-12-14 03:29:11,236 - AuthController - INFO - Logout exitoso para: admin
 2025-12-14 03:29:11,236 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'
+2025-12-14 04:06:47,391 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 04:06:47,484 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 04:06:47,484 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 04:06:47,486 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 04:06:47,486 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 04:06:47,487 - MainController - INFO - Sistema POS iniciado
+2025-12-14 04:06:47,487 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 04:06:47,487 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 04:06:47,621 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-12-14 04:06:47,622 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-12-14 04:06:51,640 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 04:06:51,756 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 04:06:51,756 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 04:06:51,757 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 04:06:52,082 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 04:06:52,084 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 04:06:52,086 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 04:06:52,087 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 4, 6, 52, 84596), 'updated_at': datetime.datetime(2025, 12, 14, 4, 6, 52, 86539)}
+2025-12-14 04:06:52,091 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 04:06:52,092 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 04:06:52,094 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 04:06:54,098 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 04:06:54,115 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 04:06:54,115 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 04:06:57,146 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 04:07:05,936 - ConfigController - INFO - Configuración del sistema cargada: 33 elementos
+2025-12-14 04:07:05,937 - ConfigController - INFO - Configuración de base de datos cargada
+2025-12-14 04:07:27,498 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 04:07:30,470 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 04:07:34,170 - DatabaseConnection - WARNING - ⚠️  Conexión inválida detectada (AttributeError), restableciendo handle.
+2025-12-14 04:07:34,171 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 04:07:34,171 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 04:07:34,171 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 04:07:34,173 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 04:07:34,182 - DatabaseConnection - WARNING - ⚠️  Conexión inválida detectada (AttributeError), restableciendo handle.
+2025-12-14 04:07:34,182 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 04:07:34,182 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 04:07:34,183 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 04:07:34,183 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 04:07:34,244 - ThermalPrinter - INFO - ThermalPrinter inicializado
+2025-12-14 04:07:34,244 - ThermalPrinter - INFO - Impresora configurada: TP-300
+2025-12-14 04:07:34,244 - ThermalPrinter - INFO - Iniciando impresión térmica
+2025-12-14 04:07:34,244 - ThermalPrinter - INFO - Impresora configurada: TP-300
+2025-12-14 04:07:34,331 - ThermalPrinter - INFO - Ticket enviado a impresora exitosamente
+2025-12-14 04:07:34,333 - DatabaseConnection - WARNING - ⚠️  Conexión inválida detectada (AttributeError), restableciendo handle.
+2025-12-14 04:07:34,333 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 04:07:34,333 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 04:07:34,333 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 04:07:34,334 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 04:07:34,336 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 04:07:34,340 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 04:11:37,251 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 04:11:37,251 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 04:11:37,254 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 475
+2025-12-14 04:11:37,254 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 4, 11, 37, 252229), 'logout_reason': 'cleanup'}
+2025-12-14 04:11:37,259 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 04:11:37,262 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 04:11:37,262 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 04:11:37,263 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 04:11:37,362 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 04:11:37,401 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 04:11:37,401 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 04:25:09,968 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 04:25:10,004 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 04:25:10,004 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 04:25:10,005 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 04:25:10,005 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 04:25:10,006 - MainController - INFO - Sistema POS iniciado
+2025-12-14 04:25:10,006 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 04:25:10,007 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 04:25:10,127 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-12-14 04:25:10,127 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-12-14 04:25:15,307 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 04:25:15,414 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 04:25:15,415 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 04:25:15,415 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 04:25:15,690 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 04:25:15,693 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 04:25:15,695 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 04:25:15,695 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 4, 25, 15, 693251), 'updated_at': datetime.datetime(2025, 12, 14, 4, 25, 15, 695223)}
+2025-12-14 04:25:15,700 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 04:25:15,700 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 04:25:15,702 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 04:25:17,714 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 04:25:17,731 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 04:25:17,731 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 04:25:20,767 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 04:25:26,546 - DatabaseConnection - WARNING - ⚠️  Conexión inválida detectada (AttributeError), restableciendo handle.
+2025-12-14 04:25:26,546 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 04:25:26,547 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 04:25:26,547 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 04:25:26,548 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 04:25:35,662 - DatabaseConnection - WARNING - ⚠️  Conexión inválida detectada (AttributeError), restableciendo handle.
+2025-12-14 04:25:35,662 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 04:25:35,663 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 04:25:35,663 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 04:25:35,663 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 04:25:35,665 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 04:26:06,794 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 04:26:06,795 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 04:26:06,797 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 476
+2025-12-14 04:26:06,797 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 4, 26, 6, 795610), 'logout_reason': 'cleanup'}
+2025-12-14 04:26:06,801 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 04:26:06,803 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 04:26:06,803 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 04:26:06,803 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 04:26:06,886 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 04:26:06,912 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 04:26:06,913 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 04:26:06,926 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2025-12-14 04:26:06,950 - DatabaseConnection - INFO - ✅ Conexión a MySQL cerrada
+2025-12-14 12:47:12,119 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 12:47:12,258 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 12:47:12,258 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 12:47:12,260 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 12:47:12,260 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 12:47:12,261 - MainController - INFO - Sistema POS iniciado
+2025-12-14 12:47:12,262 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 12:47:12,262 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 12:47:12,542 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-12-14 12:47:12,542 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-12-14 12:47:16,251 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 12:47:16,357 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 12:47:16,357 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 12:47:16,358 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 12:47:16,751 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 12:47:16,758 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:47:16,763 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 12:47:16,763 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 12, 47, 16, 759157), 'updated_at': datetime.datetime(2025, 12, 14, 12, 47, 16, 763003)}
+2025-12-14 12:47:16,775 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 12:47:16,776 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:47:16,777 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 12:47:18,790 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:47:18,808 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 12:47:18,808 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 12:47:21,851 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 12:47:24,287 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:47:24,291 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:24,849 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 12:49:24,849 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:49:24,851 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 477
+2025-12-14 12:49:24,851 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 12, 49, 24, 849954), 'logout_reason': 'cleanup'}
+2025-12-14 12:49:24,854 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 12:49:24,856 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 12:49:24,856 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 12:49:24,856 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 12:49:24,908 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 12:49:24,958 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 12:49:24,958 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 12:49:26,924 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 12:49:26,963 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 12:49:26,964 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 12:49:26,965 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 12:49:26,965 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 12:49:26,966 - MainController - INFO - Sistema POS iniciado
+2025-12-14 12:49:26,966 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 12:49:26,966 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 12:49:27,087 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-12-14 12:49:27,088 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-12-14 12:49:29,953 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 12:49:30,064 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 12:49:30,064 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 12:49:30,064 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 12:49:30,334 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 12:49:30,336 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:49:30,338 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 12:49:30,339 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 12, 49, 30, 336796), 'updated_at': datetime.datetime(2025, 12, 14, 12, 49, 30, 338935)}
+2025-12-14 12:49:30,346 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 12:49:30,347 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:49:30,348 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 12:49:32,362 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:49:32,370 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 12:49:32,370 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 12:49:35,418 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 12:49:37,392 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:37,394 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:41,701 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:41,703 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:41,979 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:41,985 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:42,052 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:42,054 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:42,429 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:42,433 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:42,552 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:42,556 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:42,678 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:42,680 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:42,746 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:42,749 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:44,601 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:44,603 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:44,796 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:44,800 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:44,876 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:44,878 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:45,260 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:45,264 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:49:45,479 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:49:45,484 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:50:48,619 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 12:50:48,619 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:50:48,623 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 478
+2025-12-14 12:50:48,623 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 12, 50, 48, 619811), 'logout_reason': 'cleanup'}
+2025-12-14 12:50:48,627 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 12:50:48,629 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 12:50:48,629 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 12:50:48,629 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 12:50:48,691 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 12:50:48,843 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 12:50:48,843 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 12:50:50,965 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 12:50:51,003 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 12:50:51,004 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 12:50:51,005 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 12:50:51,005 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 12:50:51,005 - MainController - INFO - Sistema POS iniciado
+2025-12-14 12:50:51,006 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 12:50:51,006 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 12:50:51,125 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-12-14 12:50:51,126 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-12-14 12:50:54,022 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 12:50:54,134 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 12:50:54,134 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 12:50:54,135 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 12:50:54,432 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 12:50:54,435 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:50:54,437 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 12:50:54,438 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 12, 50, 54, 435772), 'updated_at': datetime.datetime(2025, 12, 14, 12, 50, 54, 437668)}
+2025-12-14 12:50:54,444 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 12:50:54,444 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:50:54,446 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 12:50:56,449 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:50:56,462 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 12:50:56,463 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 12:50:59,491 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 12:51:02,846 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:51:02,851 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:51:05,961 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:51:05,962 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:51:06,120 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:51:06,122 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:51:06,194 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:51:06,195 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:51:06,320 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:51:06,322 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:51:06,426 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:51:06,428 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:51:06,562 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:51:06,564 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:51:11,413 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:51:11,416 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:51:12,674 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:51:12,677 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:52:20,885 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 12:52:20,885 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:52:20,887 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 479
+2025-12-14 12:52:20,887 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 12, 52, 20, 885778), 'logout_reason': 'cleanup'}
+2025-12-14 12:52:20,891 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 12:52:20,893 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 12:52:20,893 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 12:52:20,893 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 12:52:20,937 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 12:52:20,973 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 12:52:20,973 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 12:52:48,261 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 12:52:48,299 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 12:52:48,299 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 12:52:48,300 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 12:52:48,300 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 12:52:48,301 - MainController - INFO - Sistema POS iniciado
+2025-12-14 12:52:48,301 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 12:52:48,301 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 12:52:48,422 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-12-14 12:52:48,422 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-12-14 12:52:51,979 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 12:52:52,085 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 12:52:52,086 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 12:52:52,086 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 12:52:52,388 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 12:52:52,390 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:52:52,393 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 12:52:52,394 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 12, 52, 52, 391391), 'updated_at': datetime.datetime(2025, 12, 14, 12, 52, 52, 393503)}
+2025-12-14 12:52:52,399 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 12:52:52,400 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:52:52,402 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 12:52:54,407 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:52:54,417 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 12:52:54,417 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 12:52:57,446 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 12:53:07,391 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:53:07,394 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:53:12,188 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 12:53:12,190 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 12:53:16,975 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 12:53:16,975 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 12:53:16,977 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 480
+2025-12-14 12:53:16,977 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 12, 53, 16, 976147), 'logout_reason': 'cleanup'}
+2025-12-14 12:53:16,981 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 12:53:16,982 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 12:53:16,982 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 12:53:16,983 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 12:53:17,053 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 12:53:17,074 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 12:53:17,075 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 13:14:13,542 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 13:14:13,581 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:14:13,581 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 13:14:13,583 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:14:13,583 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:14:13,584 - MainController - INFO - Sistema POS iniciado
+2025-12-14 13:14:13,584 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 13:14:13,584 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 13:14:13,707 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-12-14 13:14:13,708 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-12-14 13:14:16,382 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 13:14:16,486 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:14:16,487 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 13:14:16,488 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 13:14:16,780 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 13:14:16,782 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:14:16,784 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 13:14:16,785 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 13, 14, 16, 782511), 'updated_at': datetime.datetime(2025, 12, 14, 13, 14, 16, 784390)}
+2025-12-14 13:14:16,791 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:14:16,792 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:14:16,793 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 13:14:18,800 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:14:18,809 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:14:18,809 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 13:14:21,834 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 13:14:23,702 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 13:14:23,705 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 13:14:53,204 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 13:14:53,206 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 13:18:59,295 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 13:18:59,296 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:18:59,298 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 481
+2025-12-14 13:18:59,298 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 13, 18, 59, 296372), 'logout_reason': 'cleanup'}
+2025-12-14 13:18:59,303 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:18:59,305 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:18:59,305 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 13:18:59,305 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 13:18:59,387 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 13:18:59,416 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 13:18:59,416 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 13:19:01,089 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 13:19:01,130 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:19:01,131 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 13:19:01,132 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:19:01,132 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:19:01,133 - MainController - INFO - Sistema POS iniciado
+2025-12-14 13:19:01,133 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 13:19:01,133 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 13:19:01,252 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-12-14 13:19:01,252 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-12-14 13:19:03,763 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 13:19:03,866 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:19:03,867 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 13:19:03,867 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 13:19:04,188 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 13:19:04,190 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:19:04,193 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 13:19:04,194 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 13, 19, 4, 190836), 'updated_at': datetime.datetime(2025, 12, 14, 13, 19, 4, 193772)}
+2025-12-14 13:19:04,199 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:19:04,199 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:19:04,201 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 13:19:06,201 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:19:06,209 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:19:06,210 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 13:19:09,251 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 13:19:13,621 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 13:19:13,623 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 13:19:33,775 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 13:19:33,777 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 13:23:56,883 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 13:23:56,884 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:23:56,886 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 482
+2025-12-14 13:23:56,886 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 13, 23, 56, 884524), 'logout_reason': 'cleanup'}
+2025-12-14 13:23:56,891 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:23:56,893 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:23:56,893 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 13:23:56,893 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 13:23:56,966 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 13:23:56,984 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 13:23:56,985 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 13:24:01,166 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 13:24:01,206 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:24:01,207 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 13:24:01,208 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:24:01,208 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:24:01,208 - MainController - INFO - Sistema POS iniciado
+2025-12-14 13:24:01,208 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 13:24:01,209 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 13:24:01,326 - utils.AutoScaler - INFO - 🖥️  Resolución: 1360x768
+2025-12-14 13:24:01,326 - utils.AutoScaler - INFO - 📊 Factor de escala: 0.71
+2025-12-14 13:24:04,990 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 13:24:05,091 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:24:05,091 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 13:24:05,091 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 13:24:05,379 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 13:24:05,382 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:24:05,384 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 13:24:05,385 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 13, 24, 5, 383056), 'updated_at': datetime.datetime(2025, 12, 14, 13, 24, 5, 384892)}
+2025-12-14 13:24:05,390 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:24:05,391 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:24:05,392 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 13:24:07,405 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:24:07,423 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:24:07,423 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 13:24:10,461 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 13:24:12,458 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 13:24:12,461 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 13:24:37,413 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 13:24:37,414 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 13:24:38,398 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-12-14 13:24:38,399 - model.ProductModel - INFO -    Último código encontrado: PROD-000023
+2025-12-14 13:24:38,399 - model.ProductModel - INFO -    Último número: 23
+2025-12-14 13:24:38,400 - model.ProductModel - INFO -    ✅ Siguiente número: 24
+2025-12-14 13:24:38,400 - model.ProductModel - INFO -    📦 Código generado: PROD-000024
+2025-12-14 13:24:57,602 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-12-14 13:24:57,604 - model.ProductModel - INFO -    Último código encontrado: PROD-000023
+2025-12-14 13:24:57,604 - model.ProductModel - INFO -    Último número: 23
+2025-12-14 13:24:57,604 - model.ProductModel - INFO -    ✅ Siguiente número: 24
+2025-12-14 13:24:57,605 - model.ProductModel - INFO -    📦 Código generado: PROD-000024
+2025-12-14 13:26:09,286 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 13:26:09,286 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:26:09,288 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 483
+2025-12-14 13:26:09,288 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 13, 26, 9, 287181), 'logout_reason': 'cleanup'}
+2025-12-14 13:26:09,293 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:26:09,294 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:26:09,294 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 13:26:09,294 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 13:26:09,342 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 13:26:09,367 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 13:26:09,367 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 13:26:11,951 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 13:26:11,988 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:26:11,989 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 13:26:11,989 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:26:11,990 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:26:11,990 - MainController - INFO - Sistema POS iniciado
+2025-12-14 13:26:11,991 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 13:26:11,991 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 13:26:12,109 - utils.AutoScaler - INFO - 🖥️  Resolución: 1360x768
+2025-12-14 13:26:12,110 - utils.AutoScaler - INFO - 📊 Factor de escala: 0.71
+2025-12-14 13:26:15,504 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 13:26:15,609 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:26:15,610 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 13:26:15,611 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 13:26:15,929 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 13:26:15,931 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:26:15,934 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 13:26:15,934 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 13, 26, 15, 932405), 'updated_at': datetime.datetime(2025, 12, 14, 13, 26, 15, 934376)}
+2025-12-14 13:26:15,941 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:26:15,941 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:26:15,943 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 13:26:17,945 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:26:17,957 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:26:17,957 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 13:26:20,988 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 13:26:32,127 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 13:26:32,129 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 13:26:33,832 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-12-14 13:26:33,833 - model.ProductModel - INFO -    Último código encontrado: PROD-000023
+2025-12-14 13:26:33,834 - model.ProductModel - INFO -    Último número: 23
+2025-12-14 13:26:33,834 - model.ProductModel - INFO -    ✅ Siguiente número: 24
+2025-12-14 13:26:33,834 - model.ProductModel - INFO -    📦 Código generado: PROD-000024
+2025-12-14 13:29:20,316 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 13:29:20,316 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:29:20,318 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 484
+2025-12-14 13:29:20,318 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 13, 29, 20, 317024), 'logout_reason': 'cleanup'}
+2025-12-14 13:29:20,322 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:29:20,324 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:29:20,324 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 13:29:20,324 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 13:29:20,367 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 13:29:20,387 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 13:29:20,387 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 13:29:34,177 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 13:29:34,215 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:29:34,215 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 13:29:34,216 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:29:34,216 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:29:34,217 - MainController - INFO - Sistema POS iniciado
+2025-12-14 13:29:34,217 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 13:29:34,218 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 13:29:34,335 - utils.AutoScaler - INFO - 🖥️  Resolución: 1360x768
+2025-12-14 13:29:34,335 - utils.AutoScaler - INFO - 📊 Factor de escala: 0.71
+2025-12-14 13:29:37,133 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 13:29:37,238 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:29:37,239 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 13:29:37,240 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 13:29:37,561 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 13:29:37,564 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:29:37,566 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 13:29:37,567 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 13, 29, 37, 565081), 'updated_at': datetime.datetime(2025, 12, 14, 13, 29, 37, 566893)}
+2025-12-14 13:29:37,573 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:29:37,574 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:29:37,576 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 13:29:39,587 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:29:39,595 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:29:39,595 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 13:29:42,619 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 13:29:43,591 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 13:29:43,593 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 13:29:44,503 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-12-14 13:29:44,504 - model.ProductModel - INFO -    Último código encontrado: PROD-000023
+2025-12-14 13:29:44,505 - model.ProductModel - INFO -    Último número: 23
+2025-12-14 13:29:44,505 - model.ProductModel - INFO -    ✅ Siguiente número: 24
+2025-12-14 13:29:44,505 - model.ProductModel - INFO -    📦 Código generado: PROD-000024
+2025-12-14 13:29:55,410 - model.ProductModel - INFO - 📊 Generando código de barras EAN-13 para SKU: PROD-000024
+2025-12-14 13:29:55,411 - model.ProductModel - INFO -    ✓ Formato PROD-XXXXXX detectado
+2025-12-14 13:29:55,411 - model.ProductModel - INFO -    ✓ Número extraído: 000024 (valor numérico: 24)
+2025-12-14 13:29:55,411 - model.ProductModel - INFO -    Base del código (12 dígitos): 775000000024
+2025-12-14 13:29:55,412 - model.ProductModel - INFO -    Dígito verificador calculado: 3
+2025-12-14 13:29:55,412 - model.ProductModel - INFO -    ✅ Código de barras EAN-13 final: 7750000000243
+2025-12-14 13:30:12,448 - model.ProductModel - INFO - 🔍 Buscando último código PROD-XXXXXX en base de datos...
+2025-12-14 13:30:12,449 - model.ProductModel - INFO -    Último código encontrado: PROD-000023
+2025-12-14 13:30:12,449 - model.ProductModel - INFO -    Último número: 23
+2025-12-14 13:30:12,449 - model.ProductModel - INFO -    ✅ Siguiente número: 24
+2025-12-14 13:30:12,450 - model.ProductModel - INFO -    📦 Código generado: PROD-000024
+2025-12-14 13:30:25,107 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 13:30:25,107 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:30:25,109 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 485
+2025-12-14 13:30:25,109 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 13, 30, 25, 107946), 'logout_reason': 'cleanup'}
+2025-12-14 13:30:25,112 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:30:25,113 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:30:25,114 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 13:30:25,114 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 13:30:25,188 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 13:30:25,212 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 13:30:25,212 - MainController - INFO - Aplicación cerrada correctamente
+2025-12-14 13:46:41,743 - POS_SYSTEM - INFO - Sistema POS iniciado
+2025-12-14 13:46:41,780 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:46:41,780 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2025-12-14 13:46:41,781 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2025-12-14 13:46:41,781 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:46:41,782 - MainController - INFO - Sistema POS iniciado
+2025-12-14 13:46:41,782 - MainController - INFO - Iniciando aplicación POS
+2025-12-14 13:46:41,782 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 13:46:41,895 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2025-12-14 13:46:41,896 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2025-12-14 13:46:44,947 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 13:46:45,059 - DatabaseConnection - INFO - 🔍 DEBUG - Config completa: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2025-12-14 13:46:45,060 - DatabaseConnection - INFO - 🔍 DEBUG - Contraseña leída: ************ (12 caracteres)
+2025-12-14 13:46:45,060 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2025-12-14 13:46:45,378 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2025-12-14 13:46:45,381 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:46:45,384 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 13:46:45,384 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 13, 46, 45, 381959), 'updated_at': datetime.datetime(2025, 12, 14, 13, 46, 45, 384509)}
+2025-12-14 13:46:45,392 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:46:45,393 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:46:45,394 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 13:46:47,406 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:46:47,417 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:46:47,417 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 13:46:50,463 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 13:46:53,124 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:46:53,126 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 486
+2025-12-14 13:46:53,126 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 13, 46, 53, 124995), 'logout_reason': 'manual'}
+2025-12-14 13:46:53,129 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:46:53,131 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:46:53,131 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 13:46:53,131 - MainController - INFO - Logout de usuario admin, razón: manual
+2025-12-14 13:46:53,211 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 13:46:57,185 - AuthController - INFO - Intento de login para usuario: caja1
+2025-12-14 13:46:57,289 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:46:57,291 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:46:57,294 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 19
+2025-12-14 13:46:57,294 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 13, 46, 57, 291746), 'updated_at': datetime.datetime(2025, 12, 14, 13, 46, 57, 294160)}
+2025-12-14 13:46:57,301 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:46:57,302 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:46:57,304 - model.UserModel - INFO - Usuario autenticado exitosamente: caja1
+2025-12-14 13:46:59,315 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:46:59,327 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:46:59,328 - model.AuthModel - INFO - Sesión creada para usuario: caja1
+2025-12-14 13:47:02,361 - MainController - INFO - Login exitoso para user: caja1
+2025-12-14 13:47:02,456 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:02,457 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:02,459 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:02,498 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:02,500 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:02,502 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:02,503 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:02,504 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:02,506 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:04,495 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:04,513 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:04,515 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:04,528 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 13:47:04,530 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 13:47:13,639 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:13,640 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:13,642 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:13,643 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:13,644 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:13,645 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:15,619 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:15,620 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 487
+2025-12-14 13:47:15,620 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 13, 47, 15, 619430), 'logout_reason': 'manual'}
+2025-12-14 13:47:15,625 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:47:15,627 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:47:15,627 - model.AuthModel - INFO - Sesión cerrada para usuario: caja1
+2025-12-14 13:47:15,628 - MainController - INFO - Logout de usuario caja1, razón: manual
+2025-12-14 13:47:15,683 - MainController - INFO - Mostrando pantalla de login
+2025-12-14 13:47:19,851 - AuthController - INFO - Intento de login para usuario: admin
+2025-12-14 13:47:19,952 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:19,954 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:19,957 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2025-12-14 13:47:19,958 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2025, 12, 14, 13, 47, 19, 955021), 'updated_at': datetime.datetime(2025, 12, 14, 13, 47, 19, 957954)}
+2025-12-14 13:47:19,964 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:47:19,965 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:19,967 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2025-12-14 13:47:21,982 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:21,992 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:47:21,992 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2025-12-14 13:47:25,025 - MainController - INFO - Login exitoso para admin: admin
+2025-12-14 13:47:27,022 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2025-12-14 13:47:27,024 - model.ProductModel - INFO - Se obtuvieron 26 productos
+2025-12-14 13:47:36,483 - MainController - INFO - Cerrando aplicación POS
+2025-12-14 13:47:36,483 - DatabaseConnection - INFO - ✅ Ya existe una conexión activa
+2025-12-14 13:47:36,485 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 488
+2025-12-14 13:47:36,485 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2025, 12, 14, 13, 47, 36, 484025), 'logout_reason': 'cleanup'}
+2025-12-14 13:47:36,490 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2025-12-14 13:47:36,491 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2025-12-14 13:47:36,491 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2025-12-14 13:47:36,492 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2025-12-14 13:47:36,564 - AuthController - INFO - Logout exitoso para: admin
+2025-12-14 13:47:36,591 - AuthController - INFO - Controlador de autenticación limpiado
+2025-12-14 13:47:36,591 - MainController - INFO - Aplicación cerrada correctamente

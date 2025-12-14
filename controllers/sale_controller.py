@@ -17,6 +17,8 @@ class SaleController:
         self.sale_model = SaleModel()
         self.customer_model = CustomerModel()
         self.product_model = ProductModel()
+        self.default_sales_limit = 500
+        self.default_product_limit = 500
     
     # ==========================================
     # OPERACIONES DE VENTA
@@ -186,7 +188,11 @@ class SaleController:
     def get_sales_list(self, filters=None):
         """Obtiene lista de ventas con filtros"""
         try:
-            sales = self.sale_model.get_all_sales(filters)
+            normalized_filters = filters.copy() if filters else {}
+            if normalized_filters.get('limit') is None:
+                normalized_filters['limit'] = self.default_sales_limit
+
+            sales = self.sale_model.get_all_sales(normalized_filters)
             return {'success': True, 'sales': sales}
         except Exception as e:
             return {'success': False, 'message': f'Error: {str(e)}'}
@@ -334,7 +340,7 @@ class SaleController:
             # Si no hay texto de búsqueda, devolver todos los productos activos (con o sin stock)
             if not search_text or search_text.strip() == "":
                 # Obtener todos los productos activos
-                products = self.product_model.get_all_products(include_inactive=False)
+                products = self.product_model.get_all_products(include_inactive=False, limit=self.default_product_limit)
                 
                 # ✅ Mostrar TODOS los productos activos (incluso sin stock para ver catálogo completo)
                 available_products = [
