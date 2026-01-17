@@ -435,10 +435,11 @@ class ProductModel(BaseModel):
                 else:
                     product['profit_margin'] = 0
                 
-                # Alias para compatibilidad
-                product['sku'] = product['code']
-                product['unit_name'] = product.get('unit', 'Unidad')
-                product['unit_symbol'] = product.get('unit', 'un')
+                # Asegurar que existen los campos necesarios
+                if not product.get('unit_name'):
+                    product['unit_name'] = 'Unidad'
+                if not product.get('unit_symbol'):
+                    product['unit_symbol'] = 'un'
             
             return product
             
@@ -480,6 +481,11 @@ class ProductModel(BaseModel):
             
             for key, value in product_data.items():
                 if key in field_mapping:
+                    # Validar que campos críticos no sean None
+                    if key in ['category_id', 'unit_id'] and value is None:
+                        self.logger.warning(f"Campo {key} es None, se omitirá de la actualización")
+                        continue
+                    
                     db_field = field_mapping[key]
                     fields.append(f"{db_field} = %s")
                     values.append(value)

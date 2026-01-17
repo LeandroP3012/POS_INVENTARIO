@@ -1652,11 +1652,15 @@ class POSView:
         except:
             pass
         
+        # Obtener el estado del IGV
+        include_tax = self.include_tax_var.get()
+        
         payment_info = {
             'method': payment_method,
             'paid_amount': paid if payment_method == 'cash' else total,
             'change_amount': max(0, paid - total) if payment_method == 'cash' else 0,
-            'discount_amount': discount
+            'discount_amount': discount,
+            'include_tax': include_tax  # ✅ Pasar el estado del IGV al controlador
         }
         
         # Procesar en el controlador

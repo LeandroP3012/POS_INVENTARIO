@@ -958,17 +958,17 @@ class ConfigurationView(BaseView):
         ).pack(anchor='w')
         
         # CREAR COMBOBOX SIN TEXTVARIABLE - APLICAR FIX MANUAL
-        printer_combo = ttk.Combobox(
+        self.printer_combo = ttk.Combobox(
             printer_inner,
             values=self.config_controller.get_available_printers(),
             state='readonly',
             font=('Segoe UI', 11)
         )
-        printer_combo.pack(fill='x', pady=(5, 15), ipady=5)
+        self.printer_combo.pack(fill='x', pady=(5, 15), ipady=5)
         
         # ESTABLECER VALOR INICIAL DIRECTAMENTE
         initial_printer = self.config_data.get('printer', 'Impresora del sistema')
-        printer_combo.set(initial_printer)
+        self.printer_combo.set(initial_printer)
         
         # CREAR VARIABLE PARA TRACKING MANUAL
         self.printer_var = tk.StringVar(value=initial_printer)
@@ -976,23 +976,23 @@ class ConfigurationView(BaseView):
         # SINCRONIZACIÓN MANUAL BIDIRECCIONAL
         def on_printer_change(event):
             """Sincronizar Combobox → Variable"""
-            new_value = printer_combo.get()
+            new_value = self.printer_combo.get()
             self.printer_var.set(new_value)
             self.mark_changes_made()
         
         def on_printer_var_change(*args):
             """Sincronizar Variable → Combobox"""
             new_value = self.printer_var.get()
-            if printer_combo.get() != new_value:
-                printer_combo.set(new_value)
+            if self.printer_combo.get() != new_value:
+                self.printer_combo.set(new_value)
         
-        printer_combo.bind('<<ComboboxSelected>>', on_printer_change)
+        self.printer_combo.bind('<<ComboboxSelected>>', on_printer_change)
         self.printer_var.trace_add('write', on_printer_var_change)
         
         # REGISTRO EN MAPA DE WIDGETS MANUALES
-        self.widget_var_map[printer_combo] = ('printer', self.printer_var)
+        self.widget_var_map[self.printer_combo] = ('printer', self.printer_var)
         
-        print(f"      👀 Combobox creado para printer: valor='{printer_combo.get()}' | ✅ SINCRONIZADO MANUALMENTE")
+        print(f"      👀 Combobox creado para printer: valor='{self.printer_combo.get()}' | ✅ SINCRONIZADO MANUALMENTE")
         
         # Botón para refrescar impresoras
         refresh_button = tk.Button(
@@ -1007,7 +1007,77 @@ class ConfigurationView(BaseView):
             padx=15,
             pady=8
         )
-        refresh_button.pack(anchor='w')
+        refresh_button.pack(anchor='w', pady=(0, 15))
+        
+        # Modo de impresora
+        tk.Label(
+            printer_inner,
+            text="Modo de Impresora:",
+            font=('Segoe UI', 12, 'bold'),
+            fg='#2c3e50',
+            bg='#f8f9fa'
+        ).pack(anchor='w', pady=(10, 5))
+        
+        tk.Label(
+            printer_inner,
+            text="Selecciona cómo detectar el tipo de impresora",
+            font=('Segoe UI', 9),
+            fg='#7f8c8d',
+            bg='#f8f9fa'
+        ).pack(anchor='w')
+        
+        # Combobox para modo de impresora
+        self.printer_mode_combo = ttk.Combobox(
+            printer_inner,
+            values=['auto', 'thermal', 'standard'],
+            state='readonly',
+            font=('Segoe UI', 11)
+        )
+        self.printer_mode_combo.pack(fill='x', pady=(5, 5), ipady=5)
+        
+        # Establecer valor inicial
+        initial_mode = self.config_data.get('printer_mode', 'auto')
+        self.printer_mode_combo.set(initial_mode)
+        self.printer_mode_var = tk.StringVar(value=initial_mode)
+        
+        # Sincronización manual
+        def on_mode_change(event):
+            new_value = self.printer_mode_combo.get()
+            self.printer_mode_var.set(new_value)
+            self.mark_changes_made()
+        
+        def on_mode_var_change(*args):
+            new_value = self.printer_mode_var.get()
+            if self.printer_mode_combo.get() != new_value:
+                self.printer_mode_combo.set(new_value)
+        
+        self.printer_mode_combo.bind('<<ComboboxSelected>>', on_mode_change)
+        self.printer_mode_var.trace_add('write', on_mode_var_change)
+        self.widget_var_map[self.printer_mode_combo] = ('printer_mode', self.printer_mode_var)
+        
+        # Descripción de modos
+        mode_descriptions = {
+            'auto': '🔄 Auto: Detecta automáticamente (recomendado)',
+            'thermal': '🔥 Térmica: Fuerza impresión térmica ESC/POS (GP-L80180, TP-300)',
+            'standard': '📄 Estándar: Fuerza impresión estándar/PDF'
+        }
+        
+        mode_label = tk.Label(
+            printer_inner,
+            text=mode_descriptions.get(initial_mode, ''),
+            font=('Segoe UI', 9, 'italic'),
+            fg='#27ae60',
+            bg='#f8f9fa',
+            wraplength=400,
+            justify='left'
+        )
+        mode_label.pack(anchor='w', pady=(0, 10))
+        
+        def update_mode_description(*args):
+            mode = self.printer_mode_var.get()
+            mode_label.config(text=mode_descriptions.get(mode, ''))
+        
+        self.printer_mode_var.trace_add('write', update_mode_description)
         
         # Configuración de formato
         format_section = tk.Frame(left_column, bg='#f8f9fa', relief='solid', bd=1)
@@ -1302,10 +1372,34 @@ class ConfigurationView(BaseView):
     def refresh_printers(self):
         """Actualizar lista de impresoras disponibles"""
         try:
+            # Obtener lista actualizada de impresoras
             printers = self.config_controller.get_available_printers()
-            # Actualizar el combobox con la nueva lista
-            # Nota: Esto requeriría mantener una referencia al combobox
-            messagebox.showinfo("Impresoras", f"Lista actualizada. {len(printers)} impresoras encontradas.")
+            
+            # Guardar el valor actual
+            current_value = self.printer_combo.get()
+            
+            # Actualizar la lista de valores del combobox
+            self.printer_combo['values'] = printers
+            
+            # Si el valor actual sigue siendo válido, mantenerlo
+            # Si no, seleccionar la primera impresora de la lista
+            if current_value in printers:
+                self.printer_combo.set(current_value)
+            elif printers:
+                self.printer_combo.set(printers[0])
+                self.printer_var.set(printers[0])
+                self.mark_changes_made()
+            
+            # Mostrar mensaje con las impresoras encontradas
+            printer_list = "\n".join(f"  • {p}" for p in printers)
+            messagebox.showinfo(
+                "Impresoras Detectadas",
+                f"Se encontraron {len(printers)} impresora(s):\n\n{printer_list}\n\n" +
+                "Si tu impresora GP-L80180 Series no aparece, verifica que:\n" +
+                "1. La impresora esté correctamente instalada en Windows\n" +
+                "2. Los drivers estén actualizados\n" +
+                "3. La impresora esté encendida y conectada"
+            )
         except Exception as e:
             messagebox.showerror("Error", f"Error actualizando impresoras:\n{str(e)}")
     

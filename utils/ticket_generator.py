@@ -592,7 +592,7 @@ class TicketGenerator:
                     printer_mode = str(system_config.get('printer_mode', 'auto')).strip().lower()
                     force_thermal = bool(system_config.get('force_thermal_print', False))
 
-                    thermal_keywords = ['TP-', 'TM-', 'THERMAL', 'TERMICA', 'POS', '80MM', 'TICKET']
+                    thermal_keywords = ['TP-', 'TM-', 'GP-', 'THERMAL', 'TERMICA', 'POS', '80MM', 'TICKET', 'GPRINTER']
                     extra_keywords = system_config.get('thermal_printer_keywords', [])
 
                     if isinstance(extra_keywords, str):

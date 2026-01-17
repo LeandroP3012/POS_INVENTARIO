@@ -46,8 +46,11 @@ class ReportModel(BaseModel):
                     s.id,
                     s.sale_number,
                     s.sale_date,
+                    s.subtotal,
                     s.total_amount,
                     s.discount_amount,
+                    s.tax_rate,
+                    s.include_tax,
                     s.tax_amount,
                     s.payment_method,
                     s.status,
@@ -97,7 +100,14 @@ class ReportModel(BaseModel):
             total_sales = len(sales)
             total_amount = sum(Decimal(str(s['total_amount'])) for s in sales)
             total_discount = sum(Decimal(str(s['discount_amount'] or 0)) for s in sales)
-            total_tax = sum(Decimal(str(s['tax_amount'] or 0)) for s in sales)
+            # ✅ Solo sumar IGV de ventas que lo incluyen
+            total_tax = sum(Decimal(str(s['tax_amount'] or 0)) for s in sales if s.get('include_tax', True))
+            
+            # ✅ Calcular subtotales separados
+            total_with_tax = sum(Decimal(str(s['total_amount'])) for s in sales if s.get('include_tax', True))
+            total_without_tax = sum(Decimal(str(s['total_amount'])) for s in sales if not s.get('include_tax', True))
+            sales_with_tax_count = sum(1 for s in sales if s.get('include_tax', True))
+            sales_without_tax_count = sum(1 for s in sales if not s.get('include_tax', True))
             
             # Ventas por método de pago
             payment_methods = {}
@@ -121,6 +131,11 @@ class ReportModel(BaseModel):
                         'total_tax': float(total_tax),
                         'total_products': total_products,
                         'average_ticket': float(total_amount / total_sales) if total_sales > 0 else 0,
+                        # ✅ Información adicional de ventas con/sin IGV
+                        'sales_with_tax': sales_with_tax_count,
+                        'sales_without_tax': sales_without_tax_count,
+                        'total_with_tax': float(total_with_tax),
+                        'total_without_tax': float(total_without_tax),
                         'payment_methods': {
                             k: {'count': v['count'], 'amount': float(v['amount'])}
                             for k, v in payment_methods.items()

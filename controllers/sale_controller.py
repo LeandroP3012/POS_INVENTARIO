@@ -32,7 +32,7 @@ class SaleController:
             cart_items: lista de productos en el carrito
             customer_id: ID del cliente (None para genérico)
             user_id: ID del cajero
-            payment_info: dict con información de pago
+            payment_info: dict con información de pago (debe incluir 'include_tax': bool)
             notes: notas adicionales
         
         Returns:
@@ -49,8 +49,11 @@ class SaleController:
                 if generic_customer:
                     customer_id = generic_customer['id']
             
+            # Obtener si la venta incluye IGV (por defecto True para compatibilidad)
+            include_tax = payment_info.get('include_tax', True)
+            
             # Calcular totales
-            totals = self._calculate_totals(cart_items, payment_info.get('discount_amount', 0))
+            totals = self._calculate_totals(cart_items, payment_info.get('discount_amount', 0), include_tax)
             
             # Preparar datos de venta
             sale_data = {
@@ -58,6 +61,7 @@ class SaleController:
                 'customer_id': customer_id,
                 'subtotal': totals['subtotal'],
                 'tax_rate': totals['tax_rate'],
+                'include_tax': include_tax,
                 'tax_amount': totals['tax_amount'],
                 'discount_amount': totals['discount_amount'],
                 'total_amount': totals['total'],
@@ -112,9 +116,15 @@ class SaleController:
             traceback.print_exc()
             return {'success': False, 'message': f'Error: {str(e)}'}
     
-    def _calculate_totals(self, cart_items, discount_amount=0):
-        """Calcula los totales de la venta"""
-        tax_rate = Decimal('18.00')  # IGV 18%
+    def _calculate_totals(self, cart_items, discount_amount=0, include_tax=True):
+        """Calcula los totales de la venta
+        
+        Args:
+            cart_items: lista de productos en el carrito
+            discount_amount: monto de descuento a aplicar
+            include_tax: si True, calcula IGV; si False, no calcula IGV
+        """
+        tax_rate = Decimal('18.00') if include_tax else Decimal('0.00')  # IGV 18% solo si está activado
         subtotal = Decimal('0')
         
         # Calcular subtotal de cada item
@@ -123,8 +133,12 @@ class SaleController:
             item_discount = item.get('discount_amount', 0)
             item_subtotal_after_discount = item_subtotal - Decimal(str(item_discount))
             
-            # Calcular impuesto del item
-            item_tax = (item_subtotal_after_discount * tax_rate / Decimal('100')).quantize(Decimal('0.01'))
+            # Calcular impuesto del item (solo si include_tax es True)
+            if include_tax:
+                item_tax = (item_subtotal_after_discount * tax_rate / Decimal('100')).quantize(Decimal('0.01'))
+            else:
+                item_tax = Decimal('0.00')
+            
             item_total = item_subtotal_after_discount + item_tax
             
             # Actualizar item con cálculos
@@ -138,8 +152,11 @@ class SaleController:
         discount = Decimal(str(discount_amount))
         subtotal_after_discount = subtotal - discount
         
-        # Calcular impuesto total
-        tax_amount = (subtotal_after_discount * tax_rate / Decimal('100')).quantize(Decimal('0.01'))
+        # Calcular impuesto total (solo si include_tax es True)
+        if include_tax:
+            tax_amount = (subtotal_after_discount * tax_rate / Decimal('100')).quantize(Decimal('0.01'))
+        else:
+            tax_amount = Decimal('0.00')
         
         # Total final
         total = subtotal_after_discount + tax_amount

@@ -13,6 +13,8 @@
     "theme": "Claro",
     "auto_print": true,
     "printer": "",
+    "printer_mode": "auto",
+    "thermal_printer_keywords": [],
     "copies": "1",
     "paper_size": "A4",
     "print_logo": true,

@@ -50,13 +50,13 @@ class SaleModel(BaseModel):
             sale_query = """
                 INSERT INTO sales (
                     sale_number, user_id, customer_id, 
-                    subtotal, tax_rate, tax_amount, 
+                    subtotal, tax_rate, include_tax, tax_amount, 
                     discount_amount, total_amount,
                     payment_method, paid_amount, change_amount,
                     status, notes
                 ) VALUES (
                     %(sale_number)s, %(user_id)s, %(customer_id)s,
-                    %(subtotal)s, %(tax_rate)s, %(tax_amount)s,
+                    %(subtotal)s, %(tax_rate)s, %(include_tax)s, %(tax_amount)s,
                     %(discount_amount)s, %(total_amount)s,
                     %(payment_method)s, %(paid_amount)s, %(change_amount)s,
                     %(status)s, %(notes)s

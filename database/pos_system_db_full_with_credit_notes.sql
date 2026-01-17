@@ -1417,11 +1417,45 @@ CREATE TABLE IF NOT EXISTS credit_note_items (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Ampliar estados de ventas y referencia a nota de crédito
-ALTER TABLE sales
-    ADD COLUMN IF NOT EXISTS credit_note_id INT NULL AFTER cancellation_reason,
-    MODIFY COLUMN status ENUM('completed','cancelled','pending','refunded','credited') DEFAULT 'completed',
-    ADD CONSTRAINT fk_sale_credit_note FOREIGN KEY (credit_note_id) REFERENCES credit_notes(id) ON DELETE SET NULL;
+-- Agregar columna credit_note_id solo si no existe (compatibilidad con versiones < 8.0.29)
+SET @has_credit_note_id := (
+    SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sales' AND COLUMN_NAME = 'credit_note_id'
+);
+SET @sql_add_credit_col := IF(@has_credit_note_id = 0,
+    'ALTER TABLE `sales` ADD COLUMN `credit_note_id` INT NULL AFTER `cancellation_reason`',
+    'SELECT ''credit_note_id ya existe'''
+);
+PREPARE stmt FROM @sql_add_credit_col; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- Asegurar indice para la nueva columna
+SET @idx_credit_note := (
+    SELECT COUNT(1) FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'sales' AND INDEX_NAME = 'idx_credit_note_id'
+);
+SET @sql_idx_credit_note := IF(@idx_credit_note = 0,
+    'ALTER TABLE `sales` ADD INDEX `idx_credit_note_id` (`credit_note_id`)',
+    'SELECT ''idx_credit_note_id ya existe'''
+);
+PREPARE stmt FROM @sql_idx_credit_note; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- Extender el enum de status para incluir credited
+ALTER TABLE `sales`
+    MODIFY COLUMN `status` ENUM('completed','cancelled','pending','refunded','credited')
+        CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'completed';
+
+-- Agregar FK a credit_notes si aun no existe
+SET @fk_sale_credit_note := (
+    SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE() AND CONSTRAINT_NAME = 'fk_sale_credit_note'
+);
+SET @sql_fk_sale := IF(@fk_sale_credit_note = 0,
+    'ALTER TABLE `sales` ADD CONSTRAINT `fk_sale_credit_note` FOREIGN KEY (`credit_note_id`) REFERENCES `credit_notes`(`id`) ON DELETE SET NULL',
+    'SELECT ''fk_sale_credit_note ya existe'''
+);
+PREPARE stmt FROM @sql_fk_sale; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- Ajustar tipos de movimiento de inventario para soportar notas de crédito
-ALTER TABLE inventory_movements
-    MODIFY COLUMN movement_type ENUM('sale','purchase','adjustment','return','transfer','credit_note') NOT NULL;
+ALTER TABLE `inventory_movements`
+    MODIFY COLUMN `movement_type` ENUM('sale','purchase','adjustment','return','transfer','credit_note')
+        CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL;

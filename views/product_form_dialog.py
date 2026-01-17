@@ -118,12 +118,12 @@ class ProductFormDialog:
         self.unit_var = tk.StringVar(master=master)
         self.barcode_var = tk.StringVar(master=master)
         self.auto_barcode_var = tk.BooleanVar(master=master, value=False)
-        self.price_var = tk.StringVar(value="0.00")
-        self.cost_var = tk.StringVar(value="0.00")
-        self.stock_var = tk.StringVar(value="0")
-        self.min_stock_var = tk.StringVar(value="1")
-        self.max_stock_var = tk.StringVar(value="2")
-        self.status_var = tk.StringVar(value="active")
+        self.price_var = tk.StringVar(master=master, value="0.00")
+        self.cost_var = tk.StringVar(master=master, value="0.00")
+        self.stock_var = tk.StringVar(master=master, value="0")
+        self.min_stock_var = tk.StringVar(master=master, value="1")
+        self.max_stock_var = tk.StringVar(master=master, value="2")
+        self.status_var = tk.StringVar(master=master, value="active")
         
         # NO configurar trace aquí - lo haremos después de crear los widgets
 
@@ -457,21 +457,13 @@ class ProductFormDialog:
         
         price_entry = tk.Entry(
             price_col,
+            textvariable=self.price_var,
             font=('Segoe UI', 12),
             relief='solid',
             bd=1,
             bg='#f8f9fa'
         )
         price_entry.pack(fill='x')
-        
-        # Solución: actualizar StringVar manualmente en cada KeyRelease
-        def sync_price(*args):
-            value = price_entry.get()
-            self.price_var.set(value)
-            print(f"💰 Sincronizando price: {value}")
-        
-        price_entry.bind('<KeyRelease>', sync_price)
-        price_entry.bind('<FocusOut>', sync_price)
         
         # Guardar referencia al entry
         self.price_entry = price_entry
@@ -491,21 +483,13 @@ class ProductFormDialog:
         
         cost_entry = tk.Entry(
             cost_col,
+            textvariable=self.cost_var,
             font=('Segoe UI', 12),
             relief='solid',
             bd=1,
             bg='#f8f9fa'
         )
         cost_entry.pack(fill='x')
-        
-        # Solución: actualizar StringVar manualmente en cada KeyRelease
-        def sync_cost(*args):
-            value = cost_entry.get()
-            self.cost_var.set(value)
-            print(f"💵 Sincronizando cost: {value}")
-        
-        cost_entry.bind('<KeyRelease>', sync_cost)
-        cost_entry.bind('<FocusOut>', sync_cost)
         
         # Guardar referencia al entry
         self.cost_entry = cost_entry
@@ -995,25 +979,21 @@ class ProductFormDialog:
             except Exception as e:
                 print(f"   ⚠️ Error cargando Unidad: {e}")
         
-        # Precio - Cargar en Entry directamente
+        # Precio - Solo actualizar StringVar (Entry está vinculado)
         price_value = self.product.get('price', 0)
-        if hasattr(self, 'price_entry'):
-            try:
-                self.price_entry.delete(0, tk.END)
-                self.price_entry.insert(0, str(price_value))
-                print(f"   ✅ Precio: {price_value}")
-            except Exception as e:
-                print(f"   ⚠️ Error cargando Precio: {e}")
+        try:
+            self.price_var.set(str(price_value))
+            print(f"   ✅ Precio: {price_value}")
+        except Exception as e:
+            print(f"   ⚠️ Error cargando Precio: {e}")
         
-        # Costo - Cargar en Entry directamente
+        # Costo - Solo actualizar StringVar (Entry está vinculado)
         cost_value = self.product.get('cost', 0)
-        if hasattr(self, 'cost_entry'):
-            try:
-                self.cost_entry.delete(0, tk.END)
-                self.cost_entry.insert(0, str(cost_value))
-                print(f"   ✅ Costo: {cost_value}")
-            except Exception as e:
-                print(f"   ⚠️ Error cargando Costo: {e}")
+        try:
+            self.cost_var.set(str(cost_value))
+            print(f"   ✅ Costo: {cost_value}")
+        except Exception as e:
+            print(f"   ⚠️ Error cargando Costo: {e}")
         
         # Estado - Cargar en RadioButtons (via StringVar)
         status_value = self.product.get('status', 'active')
@@ -1165,6 +1145,11 @@ class ProductFormDialog:
                 category_id = cat['id']
                 break
         
+        # Si es edición y no se encontró ID, mantener el ID original
+        if category_id is None and self.product:
+            category_id = self.product.get('category_id')
+            print(f"⚠️ Categoría no encontrada, usando ID original: {category_id}")
+        
         # Obtener ID de unidad con fallback
         unit_id = None
         unit_text = self.unit_var.get()
@@ -1175,6 +1160,11 @@ class ProductFormDialog:
             if f"{unit['name']} ({unit['symbol']})" == unit_text:
                 unit_id = unit['id']
                 break
+        
+        # Si es edición y no se encontró ID, mantener el ID original
+        if unit_id is None and self.product:
+            unit_id = self.product.get('unit_id')
+            print(f"⚠️ Unidad no encontrada, usando ID original: {unit_id}")
         
         # Obtener valores con fallback a Entry widgets directos
         sku = self.sku_var.get().strip() or self.sku_entry.get().strip()
@@ -1192,6 +1182,24 @@ class ProductFormDialog:
             stock_initial = float(stock_text) if stock_text != "" else 0.0
         except ValueError:
             stock_initial = 0.0
+        
+        # Obtener precio con fallback al Entry directo
+        price_text = (self.price_var.get() or "").strip()
+        if not price_text and hasattr(self, 'price_entry'):
+            price_text = (self.price_entry.get() or "").strip()
+        try:
+            price_value = float(price_text) if price_text else 0.0
+        except ValueError:
+            price_value = 0.0
+        
+        # Obtener costo con fallback al Entry directo
+        cost_text = (self.cost_var.get() or "").strip()
+        if not cost_text and hasattr(self, 'cost_entry'):
+            cost_text = (self.cost_entry.get() or "").strip()
+        try:
+            cost_value = float(cost_text) if cost_text else 0.0
+        except ValueError:
+            cost_value = 0.0
 
         return {
             'sku': sku,
@@ -1200,8 +1208,8 @@ class ProductFormDialog:
             'category_id': category_id,
             'unit_id': unit_id,
             'barcode': barcode,
-            'price': float(self.price_var.get()),
-            'cost': float(self.cost_var.get()),
+            'price': price_value,
+            'cost': cost_value,
             'stock_quantity': stock_initial,
             'min_stock': float(self.min_stock_var.get() or 1.0),
             'max_stock': float(self.max_stock_var.get() or 2.0),

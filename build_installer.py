@@ -65,6 +65,8 @@ CONFIG_TEMPLATE_DEFAULTS: Dict[str, Dict] = {
         "theme": "Claro",
         "auto_print": True,
         "printer": "",
+        "printer_mode": "auto",
+        "thermal_printer_keywords": [],
         "copies": "1",
         "paper_size": "A4",
         "print_logo": True,
