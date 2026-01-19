@@ -4,6 +4,7 @@ Lógica de negocio para gestión de productos
 """
 
 from typing import Dict, Any, List, Optional, Tuple
+import time
 from models.product_model import ProductModel
 from services.permission_service import PermissionService
 import logging
@@ -16,6 +17,10 @@ class ProductController:
         self.product_model = ProductModel()
         self.permission_service = PermissionService()
         self.logger = logging.getLogger('controller.ProductController')
+        self._cache_ttl = 60  # segundos
+        self._categories_cache: Optional[Tuple[float, List[Dict[str, Any]]]] = None
+        self._units_cache: Optional[Tuple[float, List[Dict[str, Any]]]] = None
+        self.default_limit = 500  # Límite defensivo para listados grandes
     
     def create_product(self, product_data: Dict[str, Any], user_data: Dict[str, Any]) -> Tuple[bool, str, Optional[int]]:
         """
@@ -29,6 +34,25 @@ class ProductController:
             if not self.permission_service.check_permission(user_data, 'inventory.create'):
                 self.logger.warning(f"Usuario {user_data.get('username')} sin permiso inventory.create")
                 return False, "No tienes permiso para crear productos", None
+
+            # Log de entrada
+            try:
+                self.logger.info(
+                    "[CREATE_PRODUCT] Payload recibido",
+                    extra={
+                        'sku': product_data.get('sku'),
+                        'name': product_data.get('name'),
+                        'stock_quantity': product_data.get('stock_quantity'),
+                        'min_stock': product_data.get('min_stock'),
+                        'max_stock': product_data.get('max_stock'),
+                        'category_id': product_data.get('category_id'),
+                        'unit_id': product_data.get('unit_id'),
+                        'price': product_data.get('price'),
+                        'cost': product_data.get('cost'),
+                    }
+                )
+            except Exception:
+                pass
             
             # Validar datos
             is_valid, validation_errors = self._validate_product_data(product_data)
@@ -46,7 +70,18 @@ class ProductController:
             product_id = self.product_model.create_product(product_data)
             
             if product_id:
-                self.logger.info(f"Producto creado por {user_data.get('username')}: {product_data['name']}")
+                try:
+                    self.logger.info(
+                        f"Producto creado por {user_data.get('username')}: {product_data['name']}",
+                        extra={
+                            'product_id': product_id,
+                            'stock_quantity': product_data.get('stock_quantity'),
+                            'min_stock': product_data.get('min_stock'),
+                            'max_stock': product_data.get('max_stock'),
+                        }
+                    )
+                except Exception:
+                    pass
                 return True, "Producto creado exitosamente", product_id
             else:
                 return False, "Error al crear el producto", None
@@ -54,8 +89,17 @@ class ProductController:
         except Exception as e:
             self.logger.error(f"Error en create_product: {e}")
             return False, f"Error interno: {str(e)}", None
+
+    def generate_next_sku(self) -> Optional[str]:
+        """Obtener el siguiente SKU disponible"""
+        try:
+            return self.product_model.generate_next_code()
+        except Exception as exc:
+            self.logger.error(f"Error generando próximo SKU: {exc}")
+            return None
     
-    def get_all_products(self, user_data: Dict[str, Any], include_inactive: bool = False) -> List[Dict[str, Any]]:
+    def get_all_products(self, user_data: Dict[str, Any], include_inactive: bool = False,
+                         limit: Optional[int] = None, offset: int = 0) -> List[Dict[str, Any]]:
         """Obtener todos los productos"""
         try:
             # Verificar permisos
@@ -64,7 +108,11 @@ class ProductController:
                 return []
             
             self.logger.info(f"Obteniendo productos (incluir inactivos: {include_inactive})")
-            return self.product_model.get_all_products(include_inactive)
+            return self.product_model.get_all_products(
+                include_inactive=include_inactive,
+                limit=limit,
+                offset=offset
+            )
             
         except Exception as e:
             self.logger.error(f"Error en get_all_products: {e}")
@@ -180,9 +228,9 @@ class ProductController:
                            min_stock: float = 0, max_stock: float = 0) -> Tuple[bool, str]:
         """Actualizar stock de producto por SKU con diferentes tipos de movimiento"""
         try:
-            # Verificar permisos
-            if not self.permission_service.check_permission(user, 'inventory.edit'):
-                self.logger.warning(f"Usuario {user.get('username')} sin permiso inventory.edit")
+            # Verificar permisos específicos para ajustes de stock manuales
+            if not self.permission_service.check_permission(user, 'inventory.stock'):
+                self.logger.warning(f"Usuario {user.get('username')} sin permiso inventory.stock")
                 return False, "No tienes permiso para actualizar stock"
             
             # Mapear tipos de movimiento del español al inglés (base de datos)
@@ -315,9 +363,14 @@ class ProductController:
         try:
             if not self.permission_service.check_permission(user_data, 'inventory.view'):
                 return []
-            
-            return self.product_model.get_categories()
-            
+            cached = self._categories_cache
+            if cached and time.time() - cached[0] < self._cache_ttl:
+                return cached[1]
+
+            categories = self.product_model.get_categories()
+            self._categories_cache = (time.time(), categories)
+            return categories
+
         except Exception as e:
             self.logger.error(f"Error en get_categories: {e}")
             return []
@@ -327,12 +380,23 @@ class ProductController:
         try:
             if not self.permission_service.check_permission(user_data, 'inventory.view'):
                 return []
-            
-            return self.product_model.get_units()
-            
+            cached = self._units_cache
+            if cached and time.time() - cached[0] < self._cache_ttl:
+                return cached[1]
+
+            units = self.product_model.get_units()
+            self._units_cache = (time.time(), units)
+            return units
+
         except Exception as e:
             self.logger.error(f"Error en get_units: {e}")
             return []
+
+    def invalidate_category_cache(self):
+        self._categories_cache = None
+
+    def invalidate_units_cache(self):
+        self._units_cache = None
     
     def _validate_product_data(self, data: Dict[str, Any], is_update: bool = False) -> Tuple[bool, List[str]]:
         """Validar datos del producto"""
@@ -386,10 +450,7 @@ class ProductController:
     def _sku_exists(self, sku: str, exclude_id: Optional[int] = None) -> bool:
         """Verificar si un SKU ya existe"""
         try:
-            products = self.product_model.get_all_products(include_inactive=True)
-            for product in products:
-                if product['sku'] == sku and product['id'] != exclude_id:
-                    return True
-            return False
-        except:
+            return self.product_model.sku_exists(sku, exclude_id)
+        except Exception as exc:
+            self.logger.error(f"Error verificando SKU '{sku}': {exc}")
             return False

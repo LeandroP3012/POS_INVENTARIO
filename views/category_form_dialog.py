@@ -12,11 +12,13 @@ class CategoryFormDialog:
     """Diálogo para crear o editar categorías"""
     
     def __init__(self, parent, category: Optional[Dict[str, Any]] = None, 
-                 categories: List[Dict[str, Any]] = None):
+                 categories: List[Dict[str, Any]] = None,
+                 allow_delete: bool = False):
         self.parent = parent
         self.category = category
         self.categories = categories or []
         self.result = None
+        self.allow_delete = allow_delete and category is not None
         
         # Crear ventana
         self.dialog = tk.Toplevel(parent)
@@ -74,6 +76,9 @@ class CategoryFormDialog:
     
     def create_widgets(self):
         """Crear widgets del formulario"""
+        # Atajo: Ctrl+S para guardar
+        self.dialog.bind_all('<Control-s>', lambda e: self.on_save())
+        self.dialog.bind_all('<Control-S>', lambda e: self.on_save())
         # Header
         header = tk.Frame(self.dialog, bg='#2c3e50', height=70)
         header.pack(fill='x')
@@ -201,7 +206,22 @@ class CategoryFormDialog:
             padx=25,
             pady=10
         ).pack(side='left', padx=10)
-        
+
+        if self.allow_delete:
+            tk.Button(
+                button_container,
+                text="🗑️ Eliminar",
+                command=self.on_delete,
+                font=('Segoe UI', 11),
+                bg='#e74c3c',
+                fg='white',
+                activebackground='#c0392b',
+                relief='flat',
+                cursor='hand2',
+                padx=25,
+                pady=10
+            ).pack(side='left', padx=10)
+
         tk.Button(
             button_container,
             text="❌ Cancelar",
@@ -276,6 +296,21 @@ class CategoryFormDialog:
         """Manejar cancelar"""
         self.result = None
         self.dialog.destroy()
+
+    def on_delete(self):
+        """Solicitar eliminación de la categoría actual"""
+        if not self.category:
+            return
+        if messagebox.askyesno(
+            "Confirmar eliminación",
+            f"¿Deseas eliminar la categoría '{self.category.get('name', '')}'?",
+            parent=self.dialog
+        ):
+            self.result = {
+                '__action__': 'delete',
+                'category_id': self.category.get('id')
+            }
+            self.dialog.destroy()
     
     def show(self) -> Optional[Dict[str, Any]]:
         """Mostrar diálogo y retornar resultado"""

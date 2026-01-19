@@ -11,6 +11,8 @@ from datetime import datetime
 from views.base_view import BaseView
 from controllers.user_controller import UserController
 from controllers.role_controller import RoleController
+from services.permission_service import PermissionService
+from utils.responsive_utils import ResponsiveManager
 
 
 class UserManagementView(BaseView):
@@ -25,9 +27,17 @@ class UserManagementView(BaseView):
         self.selected_user = None
         self.roles_data = []
         
-        # Inicializar controladores
+        # Inicializar controladores y servicios
         self.user_controller = UserController()
         self.role_controller = RoleController()
+        self.permission_service = PermissionService()
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(self.root)
+        
+        # Callbacks para navegación del navbar
+        self.callbacks = {}
+        self.navbar_built = False
         
         # Configurar ventana
         self.setup_user_management_window()
@@ -35,6 +45,14 @@ class UserManagementView(BaseView):
         # Cargar datos iniciales
         self.load_roles_data()
         self.load_users_data()
+    
+    def has_permission(self, permission: str) -> bool:
+        """Verificar si el usuario actual tiene un permiso específico"""
+        try:
+            return self.permission_service.check_permission(self.user_data, permission)
+        except Exception as e:
+            print(f"Error verificando permiso {permission}: {e}")
+            return False
     
     def setup_user_management_window(self):
         """Configurar ventana de gestión de usuarios"""
@@ -48,14 +66,13 @@ class UserManagementView(BaseView):
             self.root.configure(bg='#f8f9fa')
         
         self.create_user_management_interface()
-    
     def create_user_management_interface(self):
         """Crear interfaz de gestión de usuarios"""
         # Header
         self.create_header()
         
-        # Navbar
-        self.create_navbar()
+        # El navbar se creará después de registrar callbacks
+        # en build_navbar()
         
         # Toolbar con búsqueda y botones
         self.create_toolbar()
@@ -112,10 +129,13 @@ class UserManagementView(BaseView):
         )
         user_label.pack(side='right')
     
-    def create_navbar(self):
+    def create_navbar(self, after_widget=None):
         """Crear navbar personalizado - GLOBAL para todos los módulos"""
         navbar_frame = tk.Frame(self.root, bg='#2c3e50', height=50)
-        navbar_frame.pack(fill='x')
+        if after_widget:
+            navbar_frame.pack(fill='x', after=after_widget)
+        else:
+            navbar_frame.pack(fill='x')
         navbar_frame.pack_propagate(False)
         
         # Estilo de botones
@@ -136,59 +156,75 @@ class UserManagementView(BaseView):
         buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
         buttons_container.pack(side='left', padx=10, pady=5)
         
+        # Helper para ejecutar callbacks de forma segura
+        def safe_call(callback_name):
+            def wrapper():
+                print(f"🔄 Navbar (users): Intentando ejecutar '{callback_name}'")
+                callback = self.callbacks.get(callback_name)
+                if callback:
+                    print(f"   ✓ Callback encontrado, ejecutando...")
+                    callback()
+                else:
+                    print(f"   ✗ Callback no encontrado o es None")
+            return wrapper
+        
         # Botón Archivo
         file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
         file_btn.pack(side='left', padx=2)
         file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
         file_btn.config(menu=file_menu)
-        file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        file_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
         file_menu.add_separator()
-        if self.embedded:
-            file_menu.add_command(label="Volver al Dashboard", command=self.go_back_to_dashboard)
+        file_menu.add_command(label="Volver al Dashboard", command=safe_call('back_to_dashboard'))
         
         # Botón Ventas
         sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
         sales_btn.pack(side='left', padx=2)
         sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
         sales_btn.config(menu=sales_menu)
-        sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
-        sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        if self.has_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+            file_menu.add_separator()
         
         # Botón Inventario
         inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
         inv_btn.pack(side='left', padx=2)
         inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
         inv_btn.config(menu=inv_menu)
-        inv_menu.add_command(label="Ver Productos", command=self.callbacks.get('view_products', lambda: None))
-        inv_menu.add_command(label="Gestionar Categorías", command=self.callbacks.get('view_categories', lambda: None))
-        inv_menu.add_command(label="Control de Stock", command=self.callbacks.get('stock_control', lambda: None))
+        if self.has_permission('sales.create'):
+            sales_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+        if self.has_permission('sales.view'):
+            sales_menu.add_command(label="Historial de Ventas", command=safe_call('sales_history'))
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
+        inv_menu.add_command(label="Control de Stock", command=safe_call('stock_control'))
         
         # Botón Reportes
         rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
         rep_btn.pack(side='left', padx=2)
         rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
         rep_btn.config(menu=rep_menu)
-        rep_menu.add_command(label="Ventas del Día", command=self.callbacks.get('daily_report', lambda: None))
-        rep_menu.add_command(label="Reporte Completo", command=self.callbacks.get('full_report', lambda: None))
+        rep_menu.add_command(label="Ventas del Día", command=safe_call('daily_report'))
+        rep_menu.add_command(label="Reporte Completo", command=safe_call('full_report'))
         
-        # Botón Administración
+        # Botón Administración (ACTIVO)
         admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
+        admin_btn.config(bg='#34495e')  # Resaltar activo
         admin_btn.pack(side='left', padx=2)
         admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
         admin_btn.config(menu=admin_menu)
-        admin_menu.add_command(label="Gestionar Usuarios", command=self.callbacks.get('refresh', lambda: None))
-        if hasattr(self, 'manage_roles_callback') and self.manage_roles_callback:
-            admin_menu.add_command(label="Gestionar Roles", command=self.manage_roles_callback)
+        admin_menu.add_command(label="Gestionar Usuarios ✓", command=lambda: None)  # Actual
+        admin_menu.add_command(label="Gestionar Roles", command=safe_call('manage_roles'))
         admin_menu.add_separator()
-        admin_menu.add_command(label="Configuración", command=self.callbacks.get('system_config', lambda: None))
+        admin_menu.add_command(label="Configuración", command=safe_call('system_config'))
         
         # Botón Ayuda
         help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
         help_btn.pack(side='left', padx=2)
         help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 11))
         help_btn.config(menu=help_menu)
-        help_menu.add_command(label="Manual de Usuario", command=self.callbacks.get('show_manual', lambda: None))
-        help_menu.add_command(label="Acerca de", command=self.callbacks.get('show_about', lambda: None))
+        help_menu.add_command(label="Manual de Usuario", command=safe_call('show_manual'))
+        help_menu.add_command(label="Acerca de", command=safe_call('show_about'))
     
     def create_toolbar(self):
         """Crear toolbar con búsqueda y botones de acción"""
@@ -212,91 +248,117 @@ class UserManagementView(BaseView):
             fg='#2c3e50'
         ).pack(side='left', padx=(0, 10))
         
-        self.search_var = tk.StringVar()
-        self.search_var.trace_add('write', self.on_search_change)
-        search_entry = tk.Entry(
+        # Campo de búsqueda con autocompletado
+        self.search_entry = tk.Entry(
             search_frame,
-            textvariable=self.search_var,
             font=('Segoe UI', 13),
-            width=28,
+            width=35,
             relief='solid',
             bd=1
         )
-        search_entry.pack(side='left', padx=(0, 15), ipady=8)
+        self.search_entry.pack(side='left', padx=(0, 15), ipady=8)
         
-        # Filtro por rol
-        tk.Label(
-            search_frame,
-            text="Rol:",
-            font=('Segoe UI', 13, 'bold'),
-            bg='white',
-            fg='#2c3e50'
-        ).pack(side='left', padx=(25, 8))
+        # Bind para búsqueda incremental
+        self.search_entry.bind('<KeyRelease>', lambda e: self.on_search_change())
         
-        self.role_filter_var = tk.StringVar(value='Todos')
-        # Obtener valores de roles dinámicamente
-        role_values = ['Todos'] + [role.get('name', '') for role in self.roles_data if role.get('active', True)]
-        role_combo = ttk.Combobox(
-            search_frame,
-            textvariable=self.role_filter_var,
-            values=role_values,
-            state='readonly',
-            width=18,
-            font=('Segoe UI', 12)
-        )
-        role_combo.pack(side='left', padx=(0, 15))
-        role_combo.bind('<<ComboboxSelected>>', self.on_filter_change)
+        # Timer para búsqueda con delay
+        self.search_timer = None
         
         # Frame derecho - Botones de acción
         buttons_frame = tk.Frame(inner_frame, bg='white')
         buttons_frame.pack(side='right', fill='y')
         
-        # Botón nuevo usuario
-        new_user_btn = tk.Button(
-            buttons_frame,
-            text="➕ Nuevo Usuario",
-            command=self.create_new_user,
-            bg='#27ae60',
-            fg='white',
-            font=('Segoe UI', 13, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            padx=20,
-            pady=12
-        )
-        new_user_btn.pack(side='left', padx=(0, 12))
+        # Botón nuevo usuario - Solo si tiene permiso users.create
+        if self.has_permission('users.create'):
+            new_user_btn = tk.Button(
+                buttons_frame,
+                text="➕ Nuevo Usuario",
+                command=self.create_new_user,
+                bg='#27ae60',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12
+            )
+            new_user_btn.pack(side='left', padx=(0, 12))
+            # Atajo: Ctrl+N para nuevo usuario
+            self.root.bind_all('<Control-n>', lambda e: self.create_new_user())
+            self.root.bind_all('<Control-N>', lambda e: self.create_new_user())
         
-        # Botón editar
-        self.edit_user_btn = tk.Button(
-            buttons_frame,
-            text="✏️ Editar",
-            command=self.edit_selected_user,
-            bg='#3498db',
-            fg='white',
-            font=('Segoe UI', 13, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            padx=20,
-            pady=12,
-            state='disabled'
-        )
-        self.edit_user_btn.pack(side='left', padx=(0, 12))
+        # Botón editar - Solo si tiene permiso users.edit
+        if self.has_permission('users.edit'):
+            self.edit_user_btn = tk.Button(
+                buttons_frame,
+                text="✏️ Editar",
+                command=self.edit_selected_user,
+                bg='#3498db',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12,
+                state='disabled'
+            )
+            self.edit_user_btn.pack(side='left', padx=(0, 12))
+        else:
+            self.edit_user_btn = None
         
-        # Botón eliminar
-        self.delete_user_btn = tk.Button(
-            buttons_frame,
-            text="🗑️ Eliminar",
-            command=self.delete_selected_user,
-            bg='#e74c3c',
-            fg='white',
-            font=('Segoe UI', 13, 'bold'),
-            relief='flat',
-            cursor='hand2',
-            padx=20,
-            pady=12,
-            state='disabled'
-        )
-        self.delete_user_btn.pack(side='left')
+        # Botón eliminar - Solo si tiene permiso users.delete
+        if self.has_permission('users.delete'):
+            self.delete_user_btn = tk.Button(
+                buttons_frame,
+                text="🗑️ Eliminar",
+                command=self.delete_selected_user,
+                bg='#e74c3c',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12,
+                state='disabled'
+            )
+            self.delete_user_btn.pack(side='left', padx=(0, 12))
+        else:
+            self.delete_user_btn = None
+        
+        # Botón activar/desactivar - Solo si tiene permiso users.activate o users.deactivate
+        if self.has_permission('users.activate') or self.has_permission('users.deactivate'):
+            self.toggle_status_btn = tk.Button(
+                buttons_frame,
+                text="✓ Activar",
+                command=self.toggle_user_status,
+                bg='#16a085',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12,
+                state='disabled'
+            )
+            self.toggle_status_btn.pack(side='left', padx=(0, 12))
+        else:
+            self.toggle_status_btn = None
+        
+        # Botón exportar - Solo si tiene permiso users.export
+        if self.has_permission('users.export'):
+            export_btn = tk.Button(
+                buttons_frame,
+                text="📄 Exportar Excel",
+                command=self.export_users_to_excel,
+                bg='#8e44ad',
+                fg='white',
+                font=('Segoe UI', 13, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=20,
+                pady=12
+            )
+            export_btn.pack(side='left')
     
     def create_main_panel(self):
         """Crear panel principal con tabla de usuarios"""
@@ -492,44 +554,49 @@ class UserManagementView(BaseView):
         stats_text = f"👥 Total: {total} | ✅ Activos: {active} | ❌ Inactivos: {inactive} | 👑 Admins: {admins}"
         self.stats_label.configure(text=stats_text)
     
-    def on_search_change(self, *args):
-        """Manejar cambio en búsqueda"""
-        self.apply_filters()
-    
-    def on_filter_change(self, event=None):
-        """Manejar cambio en filtros"""
-        self.apply_filters()
-    
-    def apply_filters(self):
-        """Aplicar filtros de búsqueda y rol"""
-        search_term = self.search_var.get().lower()
-        role_filter = self.role_filter_var.get()
+    def on_search_change(self):
+        """Manejar cambio en búsqueda con delay para evitar consultas excesivas"""
+        # Leer directamente del Entry widget
+        search_text = self.search_entry.get().strip().lower()
         
+        # Cancelar búsqueda anterior si existe
+        if self.search_timer:
+            self.root.after_cancel(self.search_timer)
+        
+        # Si está vacío, mostrar todos los usuarios inmediatamente
+        if not search_text:
+            self.filtered_users = self.users_data.copy()
+            self.update_users_table()
+            return
+        
+        # Buscar después de 300ms de inactividad (evita filtrado mientras escribe)
+        self.search_timer = self.root.after(300, lambda: self.perform_search(search_text))
+    
+    def perform_search(self, search_text):
+        """Realizar búsqueda de usuarios"""
         self.filtered_users = []
         
         for user in self.users_data:
-            # Filtro de búsqueda
+            # Búsqueda en username, nombre completo y email
             search_match = (
-                search_term in user.get('username', '').lower() or
-                search_term in user.get('full_name', '').lower() or
-                search_term in user.get('email', '').lower()
+                search_text in user.get('username', '').lower() or
+                search_text in user.get('full_name', '').lower() or
+                search_text in user.get('email', '').lower() or
+                search_text in user.get('user_type', '').lower()
             )
             
-            # Filtro de rol - buscar tanto en user_type como en el nombre del rol
-            user_role = user.get('user_type', '')
-            # Intentar encontrar el rol en el sistema de roles
-            role_name = user_role
-            for role in self.roles_data:
-                if role.get('name', '').lower() == user_role.lower():
-                    role_name = role.get('name', '')
-                    break
-            
-            role_match = role_filter == 'Todos' or user_role == role_filter or role_name == role_filter
-            
-            if search_match and role_match:
+            if search_match:
                 self.filtered_users.append(user)
         
         self.update_users_table()
+    
+    def on_filter_change(self, event=None):
+        """Manejar cambio en filtros (método legacy - ya no se usa)"""
+        pass
+    
+    def apply_filters(self):
+        """Aplicar filtros (método legacy - redirige a búsqueda)"""
+        self.on_search_change()
     
     def on_user_select(self, event):
         """Manejar selección de usuario en la tabla"""
@@ -542,17 +609,51 @@ class UserManagementView(BaseView):
             # Buscar usuario seleccionado
             self.selected_user = next((u for u in self.users_data if u.get('id') == user_id), None)
             
-            # Habilitar botones
-            self.edit_user_btn.configure(state='normal')
-            # Solo permitir eliminar si no es el usuario actual
-            if self.selected_user and self.selected_user.get('username') != self.user_data.get('username', ''):
-                self.delete_user_btn.configure(state='normal')
-            else:
-                self.delete_user_btn.configure(state='disabled')
+            # Habilitar botón editar solo si tiene permiso users.edit
+            if self.edit_user_btn:
+                self.edit_user_btn.configure(state='normal')
+            
+            # Habilitar botón eliminar solo si:
+            # 1. Tiene permiso users.delete
+            # 2. No es el usuario actual
+            if self.delete_user_btn:
+                if self.selected_user and self.selected_user.get('username') != self.user_data.get('username', ''):
+                    self.delete_user_btn.configure(state='normal')
+                else:
+                    self.delete_user_btn.configure(state='disabled')
+            
+            # Habilitar/configurar botón activar/desactivar
+            if self.toggle_status_btn and self.selected_user:
+                is_active = self.selected_user.get('status', 'active') == 'active'
+                is_current_user = self.selected_user.get('username') == self.user_data.get('username', '')
+                
+                # No permitir cambiar el estado del usuario actual
+                if is_current_user:
+                    self.toggle_status_btn.configure(state='disabled')
+                else:
+                    # Verificar permiso correspondiente
+                    if is_active and self.has_permission('users.deactivate'):
+                        self.toggle_status_btn.configure(
+                            text="⊗ Desactivar",
+                            bg='#e67e22',
+                            state='normal'
+                        )
+                    elif not is_active and self.has_permission('users.activate'):
+                        self.toggle_status_btn.configure(
+                            text="✓ Activar",
+                            bg='#16a085',
+                            state='normal'
+                        )
+                    else:
+                        self.toggle_status_btn.configure(state='disabled')
         else:
             self.selected_user = None
-            self.edit_user_btn.configure(state='disabled')
-            self.delete_user_btn.configure(state='disabled')
+            if self.edit_user_btn:
+                self.edit_user_btn.configure(state='disabled')
+            if self.delete_user_btn:
+                self.delete_user_btn.configure(state='disabled')
+            if self.toggle_status_btn:
+                self.toggle_status_btn.configure(state='disabled')
     
     def on_user_double_click(self, event):
         """Manejar doble clic en usuario"""
@@ -561,6 +662,11 @@ class UserManagementView(BaseView):
     
     def create_new_user(self):
         """Crear nuevo usuario"""
+        # Verificar permiso
+        if not self.has_permission('users.create'):
+            messagebox.showerror("Acceso Denegado", "❌ No tienes permisos para crear usuarios")
+            return
+        
         dialog = UserDialog(self.root, "Crear Nuevo Usuario", None, self.roles_data)
         self.root.wait_window(dialog.dialog)
         
@@ -581,6 +687,11 @@ class UserManagementView(BaseView):
         if not self.selected_user:
             return
         
+        # Verificar permiso
+        if not self.has_permission('users.edit'):
+            messagebox.showerror("Acceso Denegado", "❌ No tienes permisos para editar usuarios")
+            return
+        
         dialog = UserDialog(self.root, "Editar Usuario", self.selected_user, self.roles_data)
         self.root.wait_window(dialog.dialog)
         
@@ -589,7 +700,22 @@ class UserManagementView(BaseView):
                 # Actualizar usuario a través del controlador
                 success = self.user_controller.update_user(self.selected_user['id'], dialog.result)
                 if success:
+                    updated_id = self.selected_user['id']
                     self.load_users_data()  # Recargar datos
+
+                    # Reasignar usuario seleccionado con información actualizada
+                    self.selected_user = next((u for u in self.users_data if u.get('id') == updated_id), None)
+
+                    # Intentar resaltar el registro actualizado en la tabla
+                    if self.selected_user:
+                        for item in self.users_tree.get_children():
+                            values = self.users_tree.item(item, 'values')
+                            if values and str(values[0]) == str(updated_id):
+                                self.users_tree.selection_set(item)
+                                self.users_tree.focus(item)
+                                self.users_tree.see(item)
+                                break
+
                     messagebox.showinfo("Usuario Actualizado", f"✅ Usuario '{dialog.result['username']}' actualizado exitosamente")
                 else:
                     messagebox.showerror("Error", "❌ Error actualizando el usuario")
@@ -599,6 +725,11 @@ class UserManagementView(BaseView):
     def delete_selected_user(self):
         """Eliminar usuario seleccionado"""
         if not self.selected_user:
+            return
+        
+        # Verificar permiso
+        if not self.has_permission('users.delete'):
+            messagebox.showerror("Acceso Denegado", "❌ No tienes permisos para eliminar usuarios")
             return
         
         # Confirmar eliminación
@@ -612,13 +743,230 @@ class UserManagementView(BaseView):
                 if success:
                     self.selected_user = None
                     self.load_users_data()  # Recargar datos
-                    self.edit_user_btn.configure(state='disabled')
-                    self.delete_user_btn.configure(state='disabled')
+                    if self.edit_user_btn:
+                        self.edit_user_btn.configure(state='disabled')
+                    if self.delete_user_btn:
+                        self.delete_user_btn.configure(state='disabled')
                     messagebox.showinfo("Usuario Eliminado", "✅ Usuario eliminado exitosamente")
                 else:
                     messagebox.showerror("Error", "❌ Error eliminando el usuario")
             except Exception as e:
                 messagebox.showerror("Error", f"❌ Error eliminando usuario: {str(e)}")
+    
+    def toggle_user_status(self):
+        """Activar o desactivar usuario seleccionado"""
+        if not self.selected_user:
+            return
+        
+        # Obtener estado actual
+        current_status = self.selected_user.get('status', 'active')
+        is_active = current_status == 'active'
+        new_status = 'inactive' if is_active else 'active'
+        
+        # Verificar permiso correspondiente
+        required_permission = 'users.deactivate' if is_active else 'users.activate'
+        if not self.has_permission(required_permission):
+            action = "desactivar" if is_active else "activar"
+            messagebox.showerror("Acceso Denegado", f"❌ No tienes permisos para {action} usuarios")
+            return
+        
+        # No permitir desactivar el usuario actual
+        if self.selected_user.get('username') == self.user_data.get('username', ''):
+            messagebox.showerror("Error", "❌ No puedes cambiar el estado de tu propio usuario")
+            return
+        
+        # Confirmar acción
+        action_text = "desactivar" if is_active else "activar"
+        icon = "⚠️" if is_active else "✓"
+        
+        if messagebox.askyesno("Confirmar Acción", 
+                             f"{icon} ¿Está seguro de que desea {action_text} al usuario '{self.selected_user.get('full_name', '')}'?"):
+            
+            try:
+                # Actualizar estado a través del controlador
+                success = self.user_controller.update_user_status(
+                    self.selected_user['id'], 
+                    new_status
+                )
+                
+                if success:
+                    self.selected_user = None
+                    self.load_users_data()  # Recargar datos
+                    
+                    # Deshabilitar botones
+                    if self.edit_user_btn:
+                        self.edit_user_btn.configure(state='disabled')
+                    if self.delete_user_btn:
+                        self.delete_user_btn.configure(state='disabled')
+                    if self.toggle_status_btn:
+                        self.toggle_status_btn.configure(state='disabled')
+                    
+                    success_text = "activado" if new_status == 'active' else "desactivado"
+                    messagebox.showinfo("Estado Actualizado", f"✅ Usuario {success_text} exitosamente")
+                else:
+                    messagebox.showerror("Error", "❌ Error actualizando el estado del usuario")
+            except Exception as e:
+                messagebox.showerror("Error", f"❌ Error actualizando estado: {str(e)}")
+    
+    def export_users_to_excel(self):
+        """Exportar lista de usuarios a Excel"""
+        # Verificar permiso
+        if not self.has_permission('users.export'):
+            messagebox.showerror("Acceso Denegado", "❌ No tienes permisos para exportar usuarios")
+            return
+        
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from tkinter import filedialog
+            from datetime import datetime as dt
+            
+            # Verificar si hay datos para exportar
+            if not self.filtered_users:
+                messagebox.showwarning("Sin Datos", "⚠️ No hay usuarios para exportar")
+                return
+            
+            # Solicitar ubicación de guardado
+            timestamp = dt.now().strftime('%Y%m%d_%H%M%S')
+            default_filename = f"usuarios_{timestamp}.xlsx"
+            
+            file_path = filedialog.asksaveasfilename(
+                defaultextension='.xlsx',
+                initialfile=default_filename,
+                filetypes=[('Excel files', '*.xlsx'), ('All files', '*.*')],
+                title='Guardar exportación de usuarios'
+            )
+            
+            if not file_path:
+                return  # Usuario canceló
+            
+            # Crear workbook
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Usuarios"
+            
+            # Estilos
+            header_font = Font(name='Segoe UI', size=12, bold=True, color='FFFFFF')
+            header_fill = PatternFill(start_color='2c3e50', end_color='2c3e50', fill_type='solid')
+            header_alignment = Alignment(horizontal='center', vertical='center')
+            
+            cell_font = Font(name='Segoe UI', size=11)
+            cell_alignment = Alignment(horizontal='left', vertical='center')
+            center_alignment = Alignment(horizontal='center', vertical='center')
+            
+            border = Border(
+                left=Side(style='thin', color='000000'),
+                right=Side(style='thin', color='000000'),
+                top=Side(style='thin', color='000000'),
+                bottom=Side(style='thin', color='000000')
+            )
+            
+            # Headers
+            headers = ['ID', 'Usuario', 'Nombre Completo', 'Email', 'Rol', 'Estado', 'Último Acceso', 'Fecha Creación']
+            ws.append(headers)
+            
+            # Aplicar estilo a headers
+            for col_num, header in enumerate(headers, 1):
+                cell = ws.cell(row=1, column=col_num)
+                cell.font = header_font
+                cell.fill = header_fill
+                cell.alignment = header_alignment
+                cell.border = border
+            
+            # Agregar datos
+            for user in self.filtered_users:
+                status_text = 'Activo' if user.get('status', 'active') == 'active' else 'Inactivo'
+                last_login = self.format_datetime(user.get('last_login', 'Nunca'))
+                created_at = self.format_datetime(user.get('created_at', ''))
+                
+                row_data = [
+                    user.get('id', ''),
+                    user.get('username', ''),
+                    user.get('full_name', ''),
+                    user.get('email', ''),
+                    user.get('user_type', ''),
+                    status_text,
+                    last_login,
+                    created_at
+                ]
+                ws.append(row_data)
+            
+            # Aplicar estilos a las celdas de datos
+            for row_num in range(2, len(self.filtered_users) + 2):
+                for col_num in range(1, len(headers) + 1):
+                    cell = ws.cell(row=row_num, column=col_num)
+                    cell.font = cell_font
+                    cell.border = border
+                    
+                    # Alineación
+                    if col_num in [1, 5, 6]:  # ID, Rol, Estado - centrados
+                        cell.alignment = center_alignment
+                    else:
+                        cell.alignment = cell_alignment
+                    
+                    # Color para estado
+                    if col_num == 6:  # Columna Estado
+                        if cell.value == 'Activo':
+                            cell.fill = PatternFill(start_color='d4edda', end_color='d4edda', fill_type='solid')
+                            cell.font = Font(name='Segoe UI', size=11, bold=True, color='155724')
+                        else:
+                            cell.fill = PatternFill(start_color='f8d7da', end_color='f8d7da', fill_type='solid')
+                            cell.font = Font(name='Segoe UI', size=11, bold=True, color='721c24')
+            
+            # Ajustar ancho de columnas
+            column_widths = {
+                'A': 8,   # ID
+                'B': 18,  # Usuario
+                'C': 35,  # Nombre Completo
+                'D': 35,  # Email
+                'E': 20,  # Rol
+                'F': 12,  # Estado
+                'G': 20,  # Último Acceso
+                'H': 20   # Fecha Creación
+            }
+            
+            for col, width in column_widths.items():
+                ws.column_dimensions[col].width = width
+            
+            # Congelar primera fila
+            ws.freeze_panes = 'A2'
+            
+            # Agregar información adicional en una hoja separada
+            ws_info = wb.create_sheet("Información")
+            ws_info.append(["Sistema POS - Exportación de Usuarios"])
+            ws_info.append([])
+            ws_info.append(["Fecha de Exportación:", dt.now().strftime('%d/%m/%Y %H:%M:%S')])
+            ws_info.append(["Exportado por:", self.user_data.get('full_name', '')])
+            ws_info.append(["Total de usuarios:", len(self.filtered_users)])
+            ws_info.append(["Usuarios activos:", len([u for u in self.filtered_users if u.get('status') == 'active'])])
+            ws_info.append(["Usuarios inactivos:", len([u for u in self.filtered_users if u.get('status') == 'inactive'])])
+            
+            # Estilos para hoja de información
+            for row in ws_info.iter_rows(min_row=1, max_row=1):
+                for cell in row:
+                    cell.font = Font(name='Segoe UI', size=14, bold=True, color='2c3e50')
+            
+            ws_info.column_dimensions['A'].width = 25
+            ws_info.column_dimensions['B'].width = 30
+            
+            # Guardar archivo
+            wb.save(file_path)
+            
+            messagebox.showinfo(
+                "Exportación Exitosa", 
+                f"✅ {len(self.filtered_users)} usuarios exportados exitosamente\n\n"
+                f"📁 Archivo guardado en:\n{file_path}"
+            )
+            
+        except ImportError:
+            messagebox.showerror(
+                "Error", 
+                "❌ La librería 'openpyxl' no está instalada.\n\n"
+                "Por favor, ejecuta: pip install openpyxl"
+            )
+        except Exception as e:
+            messagebox.showerror("Error", f"❌ Error exportando a Excel: {str(e)}")
+    
     
     def format_datetime(self, datetime_str: str) -> str:
         """Formatear fecha y hora"""
@@ -640,6 +988,50 @@ class UserManagementView(BaseView):
     def go_back_to_dashboard(self):
         """Volver al dashboard"""
         self.trigger_callback('back_to_dashboard')
+    
+    def bind_callback(self, event_name: str, callback):
+        """Registrar callback para navegación"""
+        self.callbacks[event_name] = callback
+        
+        # Crear navbar cuando se registre el primer callback de navegación
+        if not self.navbar_built and event_name in ['back_to_dashboard', 'new_sale', 'view_products']:
+            print(f"📋 Primer callback de navegación detectado: {event_name}")
+            # Esperar un poco para que se registren todos los callbacks
+            self.root.after(100, self._try_build_navbar)
+    
+    def _try_build_navbar(self):
+        """Intentar construir navbar después de un delay"""
+        if not self.navbar_built:
+            print(f"📋 Callbacks totales registrados: {len(self.callbacks)}")
+            for key in self.callbacks:
+                print(f"   - {key}")
+            self.build_navbar()
+            self.navbar_built = True
+    
+    def build_navbar(self):
+        """Construir navbar DESPUÉS de registrar callbacks"""
+        print("🔨 Construyendo navbar en user_management_view...")
+        # Encontrar el widget header para insertar el navbar después
+        header_widget = None
+        for widget in self.root.winfo_children():
+            if isinstance(widget, tk.Frame):
+                # Buscar el frame con bg='#2c3e50' (el header)
+                try:
+                    if widget.cget('bg') == '#2c3e50':
+                        # Verificar si no es el navbar (tiene height=50)
+                        if widget.cget('height') != 50:
+                            header_widget = widget
+                            break
+                except:
+                    pass
+        
+        if header_widget:
+            self.create_navbar(header_widget)
+            print("   ✅ Navbar construido")
+        else:
+            print("   ✗ No se encontró el header")
+            # Si no encuentra header, crear navbar sin after
+            self.create_navbar()
     
     def on_close(self):
         """Manejar cierre de ventana"""
@@ -669,6 +1061,32 @@ class UserDialog:
         self.is_edit = bool(user_data)
         self.roles_data = roles_data or []
         
+        # DEBUG: Ver qué datos estamos recibiendo
+        if self.is_edit:
+            print(f"\n🔍 DEBUG UserDialog - Modo EDICIÓN")
+            print(f"   user_data recibido: {self.user_data}")
+            print(f"   username: '{self.user_data.get('username', 'N/A')}'")
+            print(f"   full_name: '{self.user_data.get('full_name', 'N/A')}'")
+            print(f"   email: '{self.user_data.get('email', 'N/A')}'")
+            print(f"   user_type: '{self.user_data.get('user_type', 'N/A')}'")
+            print(f"   role_name: '{self.user_data.get('role_name', 'N/A')}'")
+            print(f"   role_id: '{self.user_data.get('role_id', 'N/A')}'")
+            print(f"   status/active: '{self.user_data.get('status', self.user_data.get('active', 'N/A'))}'")
+        
+        self.role_lookup = {}
+        for role in self.roles_data:
+            name_key = str(role.get('name', '')).strip().lower()
+            code_key = str(role.get('code', '')).strip().lower()
+            id_key = str(role.get('id')) if role.get('id') is not None else ''
+            if name_key:
+                self.role_lookup[name_key] = role
+            if code_key:
+                self.role_lookup[code_key] = role
+            if id_key:
+                self.role_lookup[id_key] = role
+
+        # Atajo: Ctrl+S para guardar usuario (se enlaza tras crear el diálogo)
+        
         # Inicializar variables PRIMERO
         self.username_var = tk.StringVar(value=self.user_data.get('username', '') if self.user_data else '')
         self.full_name_var = tk.StringVar(value=self.user_data.get('full_name', '') if self.user_data else '')
@@ -676,14 +1094,36 @@ class UserDialog:
         self.password_var = tk.StringVar()
         self.confirm_password_var = tk.StringVar()
         
+        # DEBUG: Verificar valores de StringVar
+        if self.is_edit:
+            print(f"\n📋 DEBUG StringVar inicializadas:")
+            print(f"   username_var: '{self.username_var.get()}'")
+            print(f"   full_name_var: '{self.full_name_var.get()}'")
+            print(f"   email_var: '{self.email_var.get()}'")
+        
         # Para el rol, usar el rol del usuario o el primer rol disponible como default
         default_role = self.user_data.get('user_type', '') if self.user_data else ''
+        if not default_role and self.user_data.get('role_id'):
+            lookup_role = self.role_lookup.get(str(self.user_data['role_id']))
+            if lookup_role:
+                default_role = lookup_role.get('name', default_role)
+        if not default_role and self.user_data.get('role_name'):
+            default_role = self.user_data.get('role_name')
         if not default_role and self.roles_data:
             # Si no hay rol seleccionado, usar el último rol (generalmente Cajero)
             default_role = self.roles_data[-1].get('name', 'Cajero')
         
         self.user_type_var = tk.StringVar(value=default_role)
-        self.status_var = tk.StringVar(value='active' if self.user_data and self.user_data.get('status', 'active') == 'active' else 'active')
+        
+        # DEBUG: Verificar rol seleccionado
+        if self.is_edit:
+            print(f"   user_type_var (rol): '{self.user_type_var.get()}'")
+
+        # Normalizar estado inicial a valores del backend
+        raw_status = str(self.user_data.get('status', 'active') if self.user_data else 'active').strip().lower()
+        status_default = 'inactive' if raw_status in {'inactive', 'inactivo', '0', 'false', 'no'} else 'active'
+        self.status_var = tk.StringVar(value=status_default)
+        self.status_display_var = tk.StringVar(value='Activo' if status_default == 'active' else 'Inactivo')
         
         # Crear ventana de diálogo
         self.dialog = tk.Toplevel(parent)
@@ -693,6 +1133,10 @@ class UserDialog:
         self.dialog.resizable(False, False)
         self.dialog.transient(parent)
         self.dialog.grab_set()
+
+        # Atajo: Ctrl+S para guardar usuario
+        self.dialog.bind_all('<Control-s>', lambda e: self.on_save())
+        self.dialog.bind_all('<Control-S>', lambda e: self.on_save())
         
         # Centrar diálogo
         self.center_dialog()
@@ -700,8 +1144,51 @@ class UserDialog:
         # Crear interfaz
         self.create_dialog_interface()
         
+        # CRÍTICO: Forzar actualización de widgets con valores de StringVar
+        if self.is_edit:
+            self.dialog.after(50, self.force_widget_update)
+        
         # Enfocar primer campo y forzar actualización
         self.dialog.after(100, lambda: self.username_entry.focus_set())
+    
+    def force_widget_update(self):
+        """Forzar actualización visual de widgets con valores de StringVar"""
+        try:
+            print(f"\n🔄 DEBUG - Forzando actualización de widgets...")
+            
+            # Actualizar Entry widgets
+            if hasattr(self, 'username_entry'):
+                current_val = self.username_var.get()
+                self.username_entry.delete(0, tk.END)
+                self.username_entry.insert(0, current_val)
+                print(f"   ✅ username_entry actualizado: '{current_val}'")
+            
+            if hasattr(self, 'fullname_entry'):
+                current_val = self.full_name_var.get()
+                self.fullname_entry.delete(0, tk.END)
+                self.fullname_entry.insert(0, current_val)
+                print(f"   ✅ fullname_entry actualizado: '{current_val}'")
+            
+            if hasattr(self, 'email_entry'):
+                current_val = self.email_var.get()
+                self.email_entry.delete(0, tk.END)
+                self.email_entry.insert(0, current_val)
+                print(f"   ✅ email_entry actualizado: '{current_val}'")
+            
+            # Actualizar ComboBox de rol
+            if hasattr(self, 'user_type_combo'):
+                current_val = self.user_type_var.get()
+                self.user_type_combo.set(current_val)
+                print(f"   ✅ user_type_combo actualizado: '{current_val}'")
+            
+            # Actualizar ComboBox de status
+            if hasattr(self, 'status_combo'):
+                current_val = self.status_display_var.get()
+                self.status_combo.set(current_val)
+                print(f"   ✅ status_combo actualizado: '{current_val}'")
+                
+        except Exception as e:
+            print(f"   ❌ Error forzando actualización: {e}")
     
     def create_dialog_interface(self):
         """Crear interfaz del diálogo"""
@@ -721,56 +1208,87 @@ class UserDialog:
             bg='#3498db'
         ).pack(expand=True)
         
-        # Contenido - usando pack en lugar de place para mayor simplicidad
-        content_frame = tk.Frame(self.dialog, bg='white')
-        content_frame.pack(fill='both', expand=True, padx=30, pady=30)
+        # Contenedor principal con Canvas para scroll
+        main_container = tk.Frame(self.dialog, bg='white')
+        main_container.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # Canvas con scrollbar
+        canvas = tk.Canvas(main_container, bg='white', highlightthickness=0)
+        scrollbar = ttk.Scrollbar(main_container, orient='vertical', command=canvas.yview)
+        
+        # Frame que contendrá todo el contenido scrolleable
+        content_frame = tk.Frame(canvas, bg='white')
+        
+        # Configurar el canvas
+        content_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=content_frame, anchor='nw', width=420)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Empaquetar canvas y scrollbar
+        canvas.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
+        
+        # Habilitar scroll con rueda del ratón
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
+        # Padding interno para el contenido
+        inner_frame = tk.Frame(content_frame, bg='white')
+        inner_frame.pack(fill='both', expand=True, padx=20, pady=20)
         
         # Campos del formulario usando pack para simplicidad
         # Username
-        tk.Label(content_frame, text="👤 Nombre de Usuario:", bg='white', 
+        tk.Label(inner_frame, text="👤 Nombre de Usuario:", bg='white', 
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
-        self.username_entry = tk.Entry(content_frame, textvariable=self.username_var, 
+        self.username_entry = tk.Entry(inner_frame, textvariable=self.username_var, 
                                       font=('Segoe UI', 11), relief='solid', bd=1)
         self.username_entry.pack(fill='x', pady=(0, 15))
         
-        # Debug: verificar binding
-        print(f"DEBUG - Username entry creado, var actual: '{self.username_var.get()}'")
-        
-        # Verificar que el binding funciona
-        def test_username_change(*args):
-            print(f"DEBUG - Username cambió a: '{self.username_var.get()}'")
-        self.username_var.trace('w', test_username_change)
+        # Agregar binding para sincronización bidireccional
+        def _on_username_change(*args):
+            current = self.username_entry.get()
+            if self.username_var.get() != current:
+                self.username_var.set(current)
+        self.username_entry.bind('<KeyRelease>', _on_username_change)
+        self.username_entry.bind('<FocusOut>', _on_username_change)
         
         # Full name
-        tk.Label(content_frame, text="📝 Nombre Completo:", bg='white',
+        tk.Label(inner_frame, text="📝 Nombre Completo:", bg='white',
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
-        self.fullname_entry = tk.Entry(content_frame, textvariable=self.full_name_var, 
+        self.fullname_entry = tk.Entry(inner_frame, textvariable=self.full_name_var, 
                 font=('Segoe UI', 11), relief='solid', bd=1)
         self.fullname_entry.pack(fill='x', pady=(0, 15))
         
-        # Debug: verificar binding
-        print(f"DEBUG - Fullname entry creado, var actual: '{self.full_name_var.get()}'")
-        
-        def test_fullname_change(*args):
-            print(f"DEBUG - Fullname cambió a: '{self.full_name_var.get()}'")
-        self.full_name_var.trace('w', test_fullname_change)
+        # Agregar binding para sincronización bidireccional
+        def _on_fullname_change(*args):
+            current = self.fullname_entry.get()
+            if self.full_name_var.get() != current:
+                self.full_name_var.set(current)
+        self.fullname_entry.bind('<KeyRelease>', _on_fullname_change)
+        self.fullname_entry.bind('<FocusOut>', _on_fullname_change)
         
         # Email
-        tk.Label(content_frame, text="📧 Email:", bg='white',
+        tk.Label(inner_frame, text="📧 Email:", bg='white',
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
-        self.email_entry = tk.Entry(content_frame, textvariable=self.email_var, 
+        self.email_entry = tk.Entry(inner_frame, textvariable=self.email_var, 
                 font=('Segoe UI', 11), relief='solid', bd=1)
         self.email_entry.pack(fill='x', pady=(0, 15))
         
-        # Debug: verificar binding
-        print(f"DEBUG - Email entry creado, var actual: '{self.email_var.get()}'")
-        
-        def test_email_change(*args):
-            print(f"DEBUG - Email cambió a: '{self.email_var.get()}'")
-        self.email_var.trace('w', test_email_change)
+        # Agregar binding para sincronización bidireccional
+        def _on_email_change(*args):
+            current = self.email_entry.get()
+            if self.email_var.get() != current:
+                self.email_var.set(current)
+        self.email_entry.bind('<KeyRelease>', _on_email_change)
+        self.email_entry.bind('<FocusOut>', _on_email_change)
         
         # User Type (Role)
-        tk.Label(content_frame, text="🎭 Rol:", bg='white',
+        tk.Label(inner_frame, text="🎭 Rol:", bg='white',
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
         
         # Obtener valores de roles dinámicamente
@@ -778,72 +1296,110 @@ class UserDialog:
         if not role_values:  # Fallback si no hay roles
             role_values = ['Admin', 'Manager', 'Employee', 'Cashier']
         
-        user_type_combo = ttk.Combobox(content_frame, textvariable=self.user_type_var,
+        self.user_type_combo = ttk.Combobox(inner_frame, textvariable=self.user_type_var,
                                       values=role_values, state='readonly', font=('Segoe UI', 11))
-        user_type_combo.pack(fill='x', pady=(0, 15))
+        self.user_type_combo.pack(fill='x', pady=(0, 15))
+        
+        # Si hay datos existentes, forzar actualización visual del rol
+        if self.user_data and self.user_data.get('user_type'):
+            user_type = self.user_data.get('user_type', '')
+            # Buscar el nombre del rol correspondiente
+            for role in self.roles_data:
+                if role.get('name', '').lower() == user_type.lower() or role.get('code', '').lower() == user_type.lower():
+                    self.user_type_combo.set(role.get('name', ''))
+                    self.user_type_var.set(role.get('name', ''))  # Actualizar la variable también
+                    break
+            else:
+                # Si no se encuentra, usar el valor directo
+                self.user_type_combo.set(user_type)
+                self.user_type_var.set(user_type)
+        
+        # CRÍTICO: Binding para actualizar la variable cuando cambia el ComboBox
+        def _on_role_change(event=None):
+            selected_role_name = self.user_type_combo.get()
+            self.user_type_var.set(selected_role_name)
+            print(f"🎭 DEBUG - Rol seleccionado: '{selected_role_name}'")
+        
+        self.user_type_combo.bind("<<ComboboxSelected>>", _on_role_change)
         
         # Status (solo en edición)
         if self.is_edit:
-            tk.Label(content_frame, text="📊 Estado:", bg='white',
+            tk.Label(inner_frame, text="📊 Estado:", bg='white',
                     font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
             
-            status_combo = ttk.Combobox(content_frame, textvariable=self.status_var,
-                                       values=['active', 'inactive'], state='readonly', font=('Segoe UI', 11))
-            status_combo.pack(fill='x', pady=(0, 15))
+            self.status_combo = ttk.Combobox(
+                inner_frame,
+                textvariable=self.status_display_var,
+                values=['Activo', 'Inactivo'],
+                state='readonly',
+                font=('Segoe UI', 11)
+            )
+            self.status_combo.pack(fill='x', pady=(0, 15))
+            
+            # Establecer valor inicial coherente con el backend
+            self.status_combo.set('Activo' if self.status_var.get() == 'active' else 'Inactivo')
+
+            def _on_status_change(event=None):
+                display_value = self.status_display_var.get().strip().lower()
+                self.status_var.set('inactive' if display_value.startswith('inac') else 'active')
+
+            self.status_combo.bind("<<ComboboxSelected>>", _on_status_change)
         
         # Contraseña
         password_label = "🔒 Nueva Contraseña:" if self.is_edit else "🔒 Contraseña:"
         required = "" if self.is_edit else " *"
         
-        tk.Label(content_frame, text=password_label + required, bg='white',
+        tk.Label(inner_frame, text=password_label + required, bg='white',
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
         
-        self.password_entry = tk.Entry(content_frame, textvariable=self.password_var, font=('Segoe UI', 11), 
+        self.password_entry = tk.Entry(inner_frame, textvariable=self.password_var, font=('Segoe UI', 11), 
                 show='*', relief='solid', bd=1)
         self.password_entry.pack(fill='x', pady=(0, 15))
         
-        # Debug: verificar binding
-        print(f"DEBUG - Password entry creado, var actual: '{self.password_var.get()}'")
-        
-        def test_password_change(*args):
-            print(f"DEBUG - Password cambió a: '{'*' * len(self.password_var.get())}'")
-        self.password_var.trace('w', test_password_change)
+        # Binding para sincronización de password
+        def _on_password_change(*args):
+            current = self.password_entry.get()
+            if self.password_var.get() != current:
+                self.password_var.set(current)
+        self.password_entry.bind('<KeyRelease>', _on_password_change)
+        self.password_entry.bind('<FocusOut>', _on_password_change)
         
         # Confirmar contraseña
         confirm_label = "🔒 Confirmar Nueva Contraseña:" if self.is_edit else "🔒 Confirmar Contraseña:"
         
-        tk.Label(content_frame, text=confirm_label + required, bg='white',
+        tk.Label(inner_frame, text=confirm_label + required, bg='white',
                 font=('Segoe UI', 12, 'bold'), fg='#2c3e50').pack(anchor='w', pady=(0, 5))
         
-        self.confirm_password_entry = tk.Entry(content_frame, textvariable=self.confirm_password_var, font=('Segoe UI', 11), 
+        self.confirm_password_entry = tk.Entry(inner_frame, textvariable=self.confirm_password_var, font=('Segoe UI', 11), 
                 show='*', relief='solid', bd=1)
         self.confirm_password_entry.pack(fill='x', pady=(0, 15))
         
-        # Debug: verificar binding
-        print(f"DEBUG - Confirm password entry creado, var actual: '{self.confirm_password_var.get()}'")
-        
-        def test_confirm_password_change(*args):
-            print(f"DEBUG - Confirm password cambió a: '{'*' * len(self.confirm_password_var.get())}'")
-        self.confirm_password_var.trace('w', test_confirm_password_change)
+        # Binding para sincronización de confirm password
+        def _on_confirm_password_change(*args):
+            current = self.confirm_password_entry.get()
+            if self.confirm_password_var.get() != current:
+                self.confirm_password_var.set(current)
+        self.confirm_password_entry.bind('<KeyRelease>', _on_confirm_password_change)
+        self.confirm_password_entry.bind('<FocusOut>', _on_confirm_password_change)
         
         # Nota para edición
         if self.is_edit:
-            tk.Label(content_frame, text="💡 Deje las contraseñas vacías si no desea cambiarla",
+            tk.Label(inner_frame, text="💡 Deje las contraseñas vacías si no desea cambiarla",
                     font=('Segoe UI', 10), fg='#7f8c8d', bg='white').pack(anchor='w', pady=(10, 0))
         
         # Botones
-        buttons_frame = tk.Frame(content_frame, bg='white')
-        buttons_frame.pack(fill='x', pady=(20, 0))
+        buttons_frame = tk.Frame(inner_frame, bg='white')
+        buttons_frame.pack(fill='x', pady=(30, 0))
         
         cancel_btn = tk.Button(buttons_frame, text="❌ Cancelar", command=self.cancel,
                               bg='#95a5a6', fg='white', font=('Segoe UI', 11, 'bold'),
-                              relief='flat', cursor='hand2', width=12)
+                              relief='flat', cursor='hand2', width=12, padx=20, pady=10)
         cancel_btn.pack(side='left')
         
         save_text = "💾 Guardar" if self.is_edit else "➕ Crear Usuario"
         save_btn = tk.Button(buttons_frame, text=save_text, command=self.save,
                             bg='#27ae60', fg='white', font=('Segoe UI', 11, 'bold'),
-                            relief='flat', cursor='hand2', width=15)
+                            relief='flat', cursor='hand2', width=15, padx=20, pady=10)
         save_btn.pack(side='right')
         
         # Bind Enter key
@@ -974,21 +1530,71 @@ class UserDialog:
         username = self.username_var.get().strip()
         if not username and hasattr(self, 'username_entry'):
             username = self.username_entry.get().strip()
+        print(f"👤 DEBUG SAVE - Username: '{username}'")
             
         full_name = self.full_name_var.get().strip()
         if not full_name and hasattr(self, 'fullname_entry'):
             full_name = self.fullname_entry.get().strip()
+        print(f"📝 DEBUG SAVE - Full name: '{full_name}'")
             
         email = self.email_var.get().strip()
         if not email and hasattr(self, 'email_entry'):
             email = self.email_entry.get().strip()
+        print(f"📧 DEBUG SAVE - Email: '{email}'")
         
         password = self.password_var.get()
         if not password and hasattr(self, 'password_entry'):
             password = self.password_entry.get()
+        print(f"🔒 DEBUG SAVE - Password: '{'*' * len(password) if password else '(vacío)'}'")
             
         user_type = self.user_type_var.get()
+        print(f"🎭 DEBUG SAVE - user_type desde StringVar: '{user_type}'")
+        
         status = self.status_var.get() if self.is_edit else 'active'
+        print(f"📊 DEBUG SAVE - status: '{status}'")
+
+        # Determinar rol seleccionado para incluir ID/código en el resultado
+        selected_role = None
+        lookup_candidates = [str(user_type).strip().lower()]
+        lookup_candidates.append(str(self.user_data.get('role_code', '')).strip().lower())
+        lookup_candidates.append(str(self.user_data.get('role_id', '')).strip())
+
+        for key in lookup_candidates:
+            if not key:
+                continue
+            candidate = self.role_lookup.get(key)
+            if candidate:
+                selected_role = candidate
+                break
+
+        if not selected_role:
+            normalized_target = str(user_type).strip().lower()
+            for role in self.roles_data:
+                if str(role.get('name', '')).strip().lower() == normalized_target:
+                    selected_role = role
+                    break
+
+        role_id = None
+        role_code = None
+        if selected_role:
+            role_id = selected_role.get('id')
+            role_code = selected_role.get('code')
+            print(f"✅ DEBUG SAVE - Rol resuelto: ID={role_id}, Code={role_code}, Name={selected_role.get('name')}")
+        else:
+            print(f"⚠️  DEBUG SAVE - No se pudo resolver el rol desde user_type='{user_type}'")
+
+        if role_id is None and self.user_data.get('role_id') is not None:
+            role_id = self.user_data.get('role_id')
+            print(f"🔄 DEBUG SAVE - Usando role_id del usuario existente: {role_id}")
+
+        if role_code is None and self.user_data.get('role_code'):
+            role_code = self.user_data.get('role_code')
+            print(f"🔄 DEBUG SAVE - Usando role_code del usuario existente: {role_code}")
+        
+        try:
+            role_id = int(role_id) if role_id is not None else None
+        except (ValueError, TypeError):
+            role_id = None
         
         # Crear resultado
         self.result = {
@@ -998,6 +1604,11 @@ class UserDialog:
             'user_type': user_type,
             'status': status
         }
+
+        if role_id is not None:
+            self.result['role_id'] = role_id
+        if role_code:
+            self.result['role_code'] = role_code
         
         # Agregar contraseña si se proporcionó
         if password:

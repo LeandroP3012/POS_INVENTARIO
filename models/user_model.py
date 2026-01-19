@@ -74,8 +74,11 @@ class UserModel(BaseModel):
             return self.default_users.get(username)
         
         try:
-            result = self.find_by_field('username', username)
-            return result
+                query = "SELECT * FROM users WHERE username = %s"
+                self.logger.debug("find_by_username query: %s params: (%s,)", query, username)
+                result = self.execute_query(query, (username,))
+                self.logger.debug("find_by_username result: %s", result)
+                return result[0] if result else None
         except Exception as e:
             self.logger.error(f"Error buscando usuario {username}: {e}")
             return self.default_users.get(username)
@@ -182,18 +185,21 @@ class UserModel(BaseModel):
     
     def prepare_user_data(self, user: Dict[str, Any]) -> Dict[str, Any]:
         """Preparar datos del usuario para uso en la aplicación"""
-        permissions = user.get('permissions', {})
+        # Obtener permisos del usuario (si tiene)
+        user_permissions = user.get('permissions', None)
         
         # Si permissions es string JSON, convertir
-        if isinstance(permissions, str):
+        if isinstance(user_permissions, str):
             try:
-                permissions = json.loads(permissions)
+                user_permissions = json.loads(user_permissions)
             except:
-                permissions = {}
+                user_permissions = None
         
         # Obtener información del rol si existe role_id
         role_name = None
+        role_permissions = []
         role_id = user.get('role_id')
+        
         if role_id:
             try:
                 # Importar aquí para evitar import circular
@@ -202,8 +208,33 @@ class UserModel(BaseModel):
                 role_data = role_model.get_role_by_id(role_id)
                 if role_data:
                     role_name = role_data.get('name')
+                    # ⭐ OBTENER PERMISOS DEL ROL
+                    role_perms = role_data.get('permissions', [])
+                    if isinstance(role_perms, str):
+                        try:
+                            role_permissions = json.loads(role_perms)
+                        except:
+                            role_permissions = []
+                    elif isinstance(role_perms, list):
+                        role_permissions = role_perms
+                    
+                    print(f"DEBUG PREPARE_USER_DATA - Rol '{role_name}' tiene {len(role_permissions)} permisos")
             except Exception as e:
-                self.logger.warning(f"Error obteniendo nombre del rol {role_id}: {e}")
+                self.logger.warning(f"Error obteniendo datos del rol {role_id}: {e}")
+        
+        # ⭐ COMBINAR PERMISOS: primero del rol, luego específicos del usuario
+        final_permissions = role_permissions if role_permissions else []
+        
+        # Si el usuario tiene permisos específicos, combinarlos
+        if user_permissions:
+            if isinstance(user_permissions, dict):
+                # Si es dict, conservar estructura
+                final_permissions = user_permissions
+            elif isinstance(user_permissions, list):
+                # Si ambos son listas, combinar sin duplicados
+                final_permissions = list(set(final_permissions + user_permissions))
+        
+        print(f"DEBUG PREPARE_USER_DATA - Usuario '{user.get('username')}' tiene {len(final_permissions) if isinstance(final_permissions, list) else 'dict'} permisos finales")
         
         user_data = {
             'id': user.get('id', 0),
@@ -212,7 +243,7 @@ class UserModel(BaseModel):
             'email': user.get('email', ''),
             'user_type': user.get('user_type', 'user'),
             'role_id': role_id,
-            'permissions': permissions,
+            'permissions': final_permissions,
             'last_login': user.get('last_login'),
             'phone': user.get('phone'),
             'avatar_path': user.get('avatar_path'),
@@ -290,10 +321,38 @@ class UserModel(BaseModel):
             user_data['permissions'] = json.dumps(user_data['permissions'])
         
         try:
-            success = self.update(user_id, user_data)
-            if success:
-                self.log_activity('UPDATE_USER', user_id, f"Usuario actualizado", updated_by_id)
-            return success
+            self.logger.info("UserModel.update_user -> id=%s data=%s", user_id, user_data)
+            update_result = self.update(user_id, user_data)
+            self.logger.info("Resultado de BaseModel.update para usuario %s: %s", user_id, update_result)
+
+            if update_result:
+                self.log_activity('UPDATE_USER', user_id, "Usuario actualizado", updated_by_id)
+                return True
+
+            # Si no hubo filas afectadas, verificar si los datos ya coincidían
+            current = self.get_user_by_id(user_id)
+            if not current:
+                return False
+
+            def _normalize(value):
+                if isinstance(value, bool):
+                    return value
+                if value in (0, 1):
+                    return bool(value)
+                return value
+
+            matches = True
+            for key, value in user_data.items():
+                current_value = current.get(key)
+                if _normalize(current_value) != _normalize(value):
+                    matches = False
+                    break
+
+            if matches:
+                self.logger.debug(f"Usuario {user_id} ya tenía los datos solicitados, sin cambios aplicados")
+                return True
+
+            return False
         except Exception as e:
             self.logger.error(f"Error actualizando usuario: {e}")
             return False

@@ -6,7 +6,10 @@ Permite ajustar el stock de productos de manera rápida
 import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Dict, Any, List
+import unicodedata
 from views.base_view import BaseView
+from utils.responsive_utils import ResponsiveManager
+from services.permission_service import PermissionService
 
 
 class StockControlView(BaseView):
@@ -17,6 +20,12 @@ class StockControlView(BaseView):
         self.user_data = user_data or {}
         self.products = []
         self.filtered_products = []
+        self.all_products_cache = []  # Cache completo para búsqueda incremental
+        self.permission_service = PermissionService()
+        self.can_manage_stock = self.has_permission('inventory.stock')
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(self.root)
         
         # Callbacks
         self.on_refresh_callback = None
@@ -47,6 +56,14 @@ class StockControlView(BaseView):
         
         # Footer
         self.create_footer()
+
+    def has_permission(self, permission: str) -> bool:
+        """Verificar permisos usando el servicio central"""
+        try:
+            return self.permission_service.check_permission(self.user_data, permission)
+        except Exception as exc:  # pragma: no cover - defensivo
+            print(f"Error verificando permiso {permission}: {exc}")
+            return False
     
     def create_header(self):
         """Crear header"""
@@ -115,8 +132,9 @@ class StockControlView(BaseView):
         file_btn.pack(side='left', padx=2)
         file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
         file_btn.config(menu=file_menu)
-        file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
-        file_menu.add_separator()
+        if self.has_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+            file_menu.add_separator()
         file_menu.add_command(label="Volver al Dashboard", command=self._on_back)
         
         # Botón Ventas
@@ -124,8 +142,12 @@ class StockControlView(BaseView):
         sales_btn.pack(side='left', padx=2)
         sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
         sales_btn.config(menu=sales_menu)
-        sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
-        sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        if self.has_permission('sales.create'):
+            sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        if self.has_permission('sales.view'):
+            sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
         
         # Botón Inventario
         inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
@@ -180,9 +202,12 @@ class StockControlView(BaseView):
         ).pack(side='left', padx=(0, 10))
         
         self.search_var = tk.StringVar()
-        self.search_var.trace('w', lambda *args: self.on_search())
-        
-        search_entry = tk.Entry(
+        try:
+            self.search_var.trace_add('write', lambda *args: self.on_search())
+        except Exception:
+            self.search_var.trace('w', lambda *args: self.on_search())
+
+        self.search_entry = tk.Entry(
             left_frame,
             textvariable=self.search_var,
             font=('Segoe UI', 11),
@@ -190,7 +215,8 @@ class StockControlView(BaseView):
             relief='solid',
             bd=1
         )
-        search_entry.pack(side='left')
+        self.search_entry.pack(side='left')
+        self.search_entry.bind('<KeyRelease>', lambda e: self.on_search())
         
         # Frame derecho: Botón refrescar
         right_frame = tk.Frame(toolbar, bg='#ecf0f1')
@@ -579,8 +605,17 @@ class StockControlView(BaseView):
     
     def on_search(self):
         """Buscar productos"""
+        # Leer directo del widget para evitar quedarnos sin texto en algunos entornos
+        if hasattr(self, 'search_entry'):
+            search_term = self.search_entry.get().strip()
+        else:
+            search_term = self.search_var.get().strip()
+
+        # Filtro inmediato local (SKU o Nombre, sin acentos)
+        self._filter_products_local(search_term)
+
+        # Notificar al controlador si hay callback
         if self.on_search_callback:
-            search_term = self.search_var.get()
             self.on_search_callback(search_term)
     
     def on_product_select(self, event):
@@ -613,7 +648,7 @@ class StockControlView(BaseView):
         self.max_stock_var.set(str(max_stock))
         
         # Habilitar botones
-        self.update_button.config(state='normal')
+        self.update_button.config(state='normal' if self.can_manage_stock else 'disabled')
         self.save_limits_button.config(state='normal')
     
     def on_update_stock(self):
@@ -621,6 +656,10 @@ class StockControlView(BaseView):
         print("\n" + "="*60)
         print("🔍 DEBUG: Iniciando actualización de stock")
         print("="*60)
+
+        if not self.can_manage_stock:
+            messagebox.showerror("Permisos", "No tienes permiso para ajustar stock")
+            return
         
         selection = self.tree.selection()
         if not selection:
@@ -831,34 +870,48 @@ class StockControlView(BaseView):
     
     # Métodos públicos
     def load_products(self, products: List[Dict[str, Any]]):
-        """Cargar productos en la tabla"""
+        """Cargar productos; refrescar cache solo si no hay búsqueda activa"""
+        current_term = ''
+        if hasattr(self, 'search_entry'):
+            current_term = self.search_entry.get().strip()
+        elif hasattr(self, 'search_var'):
+            current_term = self.search_var.get().strip()
+
+        if current_term:
+            # No sobrescribir cache completo mientras hay búsqueda activa
+            self._render_products(products)
+        else:
+            self.all_products_cache = list(products) if products else []
+            self._render_products(products)
+
+    def _render_products(self, products: List[Dict[str, Any]]):
+        """Renderizar productos en la tabla"""
         # Limpiar tabla
         for item in self.tree.get_children():
             self.tree.delete(item)
-        
-        self.products = products
-        self.filtered_products = products
-        
+
+        self.products = products or []
+        self.filtered_products = self.products
+
         # Insertar productos
-        for product in products:
-            # Determinar estado del stock
+        for product in self.products:
             stock = product.get('stock_quantity', 0)
             min_stock = product.get('min_stock', 0)
             max_stock = product.get('max_stock', 0)
-            
+
             if stock == 0:
                 status = "🚫 Agotado"
                 tag = 'out_of_stock'
             elif stock <= min_stock:
                 status = "⚠️ Bajo"
                 tag = 'low_stock'
-            elif stock >= max_stock:
+            elif stock >= max_stock and max_stock > 0:
                 status = "📦 Exceso"
                 tag = 'over_stock'
             else:
                 status = "✅ Normal"
                 tag = 'normal'
-            
+
             self.tree.insert('', 'end', values=(
                 product.get('sku', ''),
                 product.get('name', ''),
@@ -868,15 +921,39 @@ class StockControlView(BaseView):
                 max_stock,
                 status
             ), tags=(tag,))
-        
+
         # Configurar colores
         self.tree.tag_configure('out_of_stock', background='#ffebee')
         self.tree.tag_configure('low_stock', background='#fff3cd')
         self.tree.tag_configure('over_stock', background='#e3f2fd')
         self.tree.tag_configure('normal', background='white')
-        
+
         # Actualizar estadísticas
         self.update_statistics()
+
+    def _filter_products_local(self, search_term: str):
+        """Filtrado local por SKU o Nombre, sin acentos"""
+        if not search_term:
+            self.filtered_products = self.all_products_cache
+            self._render_products(self.all_products_cache)
+            return
+
+        term = self._normalize_text(search_term)
+        filtered = [
+            p for p in self.all_products_cache
+            if term in self._normalize_text(str(p.get('sku', '')))
+            or term in self._normalize_text(str(p.get('name', '')))
+        ]
+
+        self.filtered_products = filtered
+        self._render_products(filtered)
+
+    def _normalize_text(self, text: str) -> str:
+        """Normaliza texto a minúsculas y sin acentos"""
+        if not text:
+            return ''
+        normalized = unicodedata.normalize('NFD', text)
+        return ''.join(ch for ch in normalized if unicodedata.category(ch) != 'Mn').lower()
     
     def update_statistics(self):
         """Actualizar estadísticas"""

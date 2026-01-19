@@ -1,0 +1,109 @@
+INSTRUCCIONES DE INSTALACIÓN - SISTEMA POS
+===========================================
+
+REQUISITOS PREVIOS
+------------------
+
+1. Sistema Operativo: Windows 10 o superior (64 bits)
+2. MySQL Server 8.0 o superior
+3. Espacio en disco: Mínimo 500 MB
+4. RAM: Mínimo 4 GB
+
+PASOS DE INSTALACIÓN
+--------------------
+
+1. INSTALAR MYSQL SERVER (si no está instalado)
+   - Descargar desde: https://dev.mysql.com/downloads/mysql/
+   - Ejecutar el instalador
+   - Durante la instalación, anotar:
+     * Usuario root
+     * Contraseña root
+     * Puerto (por defecto: 3306)
+
+2. CREAR BASE DE DATOS
+   - Abrir MySQL Workbench o línea de comandos MySQL
+   - Ejecutar: CREATE DATABASE pos_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   - Crear usuario (opcional):
+     CREATE USER 'pos_user'@'localhost' IDENTIFIED BY 'tu_contraseña';
+     GRANT ALL PRIVILEGES ON pos_db.* TO 'pos_user'@'localhost';
+     FLUSH PRIVILEGES;
+
+3. EJECUTAR SCRIPTS DE BASE DE DATOS
+   Una vez instalado el sistema POS, ir a la carpeta de instalación
+   (por defecto: C:\Program Files\Sistema POS\database\)
+   
+   Ejecutar en orden:
+   a) create_tables.sql (crear tablas)
+   b) add_roles_system.sql (agregar roles)
+   c) add_user_sessions_table.sql (crear tabla de sesiones)
+   
+   Desde MySQL Workbench:
+   - File > Open SQL Script > Seleccionar archivo
+   - Ejecutar (ícono de rayo ⚡)
+   
+   Desde línea de comandos:
+   mysql -u root -p pos_db < "C:\Program Files\Sistema POS\database\create_tables.sql"
+   mysql -u root -p pos_db < "C:\Program Files\Sistema POS\database\add_roles_system.sql"
+   mysql -u root -p pos_db < "C:\Program Files\Sistema POS\database\add_user_sessions_table.sql"
+
+4. CONFIGURAR CONEXIÓN
+   - El instalador le pedirá los datos de conexión
+   - También puede editar manualmente:
+     C:\Program Files\Sistema POS\config\database.json
+   
+   Ejemplo de configuración:
+   {
+       "host": "localhost",
+       "port": 3306,
+       "user": "root",
+       "password": "tu_contraseña",
+       "database": "pos_db",
+       "charset": "utf8mb4"
+   }
+
+5. EJECUTAR LA APLICACIÓN
+   - Doble clic en el icono del escritorio
+   - O desde el menú Inicio > Sistema POS
+   
+   Usuario por defecto:
+   - Usuario: admin
+   - Contraseña: admin123
+   
+   ⚠️ IMPORTANTE: Cambiar la contraseña del admin después del primer inicio
+
+SOLUCIÓN DE PROBLEMAS
+---------------------
+
+❌ Error de conexión a MySQL:
+   - Verificar que MySQL Server esté ejecutándose
+   - Servicios de Windows > MySQL > Iniciar
+   - Verificar credenciales en config\database.json
+
+❌ Error "Base de datos no encontrada":
+   - Verificar que la base de datos 'pos_db' existe
+   - mysql -u root -p -e "SHOW DATABASES;"
+
+❌ Error "Tabla no existe":
+   - Ejecutar los scripts SQL en orden
+   - Verificar que se ejecutaron sin errores
+
+❌ No se puede iniciar sesión:
+   - Verificar que el script add_roles_system.sql se ejecutó
+   - Reiniciar la aplicación
+
+SOPORTE TÉCNICO
+--------------
+
+Para asistencia adicional:
+📧 Email: soporte@pos.com
+📞 Teléfono: +1-800-123-4567
+🌐 Web: www.tuempresa.com/soporte
+
+DESINSTALACIÓN
+-------------
+
+Panel de Control > Programas > Desinstalar un programa > Sistema POS > Desinstalar
+
+NOTA: La desinstalación NO eliminará la base de datos MySQL.
+Para eliminar completamente los datos:
+mysql -u root -p -e "DROP DATABASE pos_db;"

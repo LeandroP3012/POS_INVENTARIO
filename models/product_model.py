@@ -17,13 +17,14 @@ class ProductModel(BaseModel):
         self.logger = logging.getLogger('model.ProductModel')
         self.table_name = 'products'
     
-    def generate_next_sku(self) -> str:
+    def generate_next_code(self) -> str:
         """
-        Generar el siguiente SKU disponible
-        Formato: PROD-XXXXXX (soporta hasta 999,999 productos)
+        Generar el siguiente código de producto disponible
+        Formato: PROD-XXXXXX (ej: PROD-000001, PROD-000002, etc.)
+        Soporta hasta 999,999 productos
         
         Returns:
-            Siguiente SKU disponible
+            Siguiente código disponible (ej: "PROD-000045")
         """
         try:
             connection = self.get_connection()
@@ -32,66 +33,118 @@ class ProductModel(BaseModel):
             
             cursor = connection.cursor()
             
-            # Obtener el último SKU que sigue el patrón PROD-XXXXXX
+            # Obtener el último código que sigue el patrón PROD-XXXXXX
+            # Buscar códigos que empiecen con PROD- y tengan números después
+            # PROD- tiene 5 caracteres, entonces SUBSTRING desde posición 6 toma todo después del guión
             query = """
                 SELECT sku 
                 FROM products 
-                WHERE sku REGEXP '^PROD-[0-9]{6}$'
-                ORDER BY sku DESC 
+                WHERE sku LIKE 'PROD-%'
+                  AND LENGTH(sku) = 11
+                  AND SUBSTRING(sku, 6) REGEXP '^[0-9]+$'
+                ORDER BY CAST(SUBSTRING(sku, 6) AS UNSIGNED) DESC 
                 LIMIT 1
             """
             
+            self.logger.info(f"🔍 Buscando último código PROD-XXXXXX en base de datos...")
             cursor.execute(query)
             result = cursor.fetchone()
             cursor.close()
             
             if result and result[0]:
-                # Extraer el número del último SKU
-                last_number = int(result[0].split('-')[1])
-                next_number = last_number + 1
+                # Extraer el número después de "PROD-"
+                last_code = result[0]
+                # Separar por guión y tomar la parte numérica
+                parts = last_code.split('-')
+                if len(parts) == 2 and parts[1].isdigit():
+                    last_number = int(parts[1])
+                    next_number = last_number + 1
+                    self.logger.info(f"   Último código encontrado: {last_code}")
+                    self.logger.info(f"   Último número: {last_number}")
+                    self.logger.info(f"   ✅ Siguiente número: {next_number}")
+                else:
+                    next_number = 1
+                    self.logger.warning(f"   ⚠️ Código encontrado con formato incorrecto: {last_code}")
             else:
+                # No hay códigos previos, empezar desde 1
                 next_number = 1
+                self.logger.info(f"   No se encontraron códigos previos, iniciando desde 1")
             
             # Formatear con 6 dígitos (padding con ceros)
-            return f"PROD-{next_number:06d}"
+            next_code = f"PROD-{next_number:06d}"
+            self.logger.info(f"   📦 Código generado: {next_code}")
+            return next_code
             
         except Exception as e:
-            self.logger.error(f"Error al generar SKU: {e}")
+            self.logger.error(f"Error al generar código: {e}")
             return "PROD-000001"
     
-    def generate_barcode_from_sku(self, sku: str) -> str:
+    def generate_barcode_from_code(self, code: str) -> str:
         """
-        Generar código de barras basado en el SKU
-        Formato: convierte PROD-XXXXXX a un código numérico de 13 dígitos (EAN-13)
+        Generar código de barras EAN-13 basado en el código del producto
+        
+        Para códigos PROD-XXXXXX:
+        - Solo usa la parte numérica después del guión
+        - Ej: "PROD-000123" → usa "123" para generar el código de barras
+        - Formato final: 775 (país Perú) + número + padding + dígito verificador
         
         Args:
-            sku: SKU del producto
+            code: Código del producto (ej: "PROD-000045")
             
         Returns:
-            Código de barras generado
+            Código de barras EAN-13 de 13 dígitos (ej: "7750000000451")
         """
         try:
-            # Extraer el número del SKU
-            if '-' in sku:
-                number = sku.split('-')[1]
-            else:
-                # Si no tiene el formato esperado, usar hash del SKU
-                number = str(abs(hash(sku)))[:12]
+            self.logger.info(f"📊 Generando código de barras EAN-13 para SKU: {code}")
             
-            # Completar con prefix para EAN-13 (código de país, ej: 775 para Perú)
-            # Formato: 775 + número del SKU (6 dígitos) + padding
-            barcode_base = f"775{number:0>9}"  # 775 + 9 dígitos = 12 dígitos
+            # Extraer solo el número del código
+            if code.startswith('PROD-'):
+                # Separar por guión y tomar la parte numérica
+                parts = code.split('-')
+                if len(parts) == 2 and parts[1].isdigit():
+                    # Mantener el número como string para preservar los ceros
+                    # Ej: "PROD-000002" → "000002"
+                    number_str = parts[1]
+                    # Convertir a entero para usar en el código de barras
+                    number = int(number_str)
+                    self.logger.info(f"   ✓ Formato PROD-XXXXXX detectado")
+                    self.logger.info(f"   ✓ Número extraído: {number_str} (valor numérico: {number})")
+                else:
+                    # Si no tiene el formato esperado, usar hash
+                    number = abs(hash(code)) % 1000000000
+                    self.logger.warning(f"   ⚠️ Formato incorrecto, usando hash: {number}")
+            elif code.startswith('P') and code[1:].isdigit():
+                # Compatibilidad con formato antiguo P###
+                number = int(code[1:])
+                self.logger.info(f"   ✓ Formato antiguo P### detectado, número: {number}")
+            else:
+                # Si no tiene formato reconocido, usar hash del código
+                number = abs(hash(code)) % 1000000000
+                self.logger.warning(f"   ⚠️ Formato no reconocido, usando hash: {number}")
+            
+            # Completar con prefix para EAN-13 (775 = código de país Perú)
+            # Formato: 775 + número del código + padding hasta 12 dígitos
+            barcode_base = f"775{number:09d}"  # 775 + 9 dígitos = 12 dígitos total
+            
+            self.logger.info(f"   Base del código (12 dígitos): {barcode_base}")
             
             # Calcular dígito verificador EAN-13
             check_digit = self._calculate_ean13_check_digit(barcode_base)
             
-            return f"{barcode_base}{check_digit}"
+            final_barcode = f"{barcode_base}{check_digit}"
+            
+            self.logger.info(f"   Dígito verificador calculado: {check_digit}")
+            self.logger.info(f"   ✅ Código de barras EAN-13 final: {final_barcode}")
+            
+            return final_barcode
             
         except Exception as e:
-            self.logger.error(f"Error al generar código de barras: {e}")
+            self.logger.error(f"❌ Error al generar código de barras: {e}", exc_info=True)
             # Fallback: generar código basado en timestamp
             import time
-            return f"775{int(time.time()) % 1000000000:09d}0"
+            fallback = f"775{int(time.time()) % 1000000000:09d}0"
+            self.logger.warning(f"   Usando código de barras fallback: {fallback}")
+            return fallback
     
     def _calculate_ean13_check_digit(self, barcode_12: str) -> int:
         """
@@ -124,20 +177,14 @@ class ProductModel(BaseModel):
     
     def get_connection(self):
         """Obtener conexión a la base de datos"""
-        if not self.db:
-            self.logger.error("DB no disponible")
-            return None
-        
-        if not self.db.connection or not self.db.connection.is_connected():
-            if not self.db.connect():
-                self.logger.error("No se pudo conectar a la base de datos")
-                return None
-        
-        return self.db.connection
+        connection = super().get_connection()
+        if not connection:
+            self.logger.error("No se pudo obtener conexión a la base de datos")
+        return connection
     
     def create_product(self, product_data: Dict[str, Any]) -> Optional[int]:
         """
-        Crear un nuevo producto
+        Crear un nuevo producto - COMPATIBLE con estructura real de la tabla
         
         Args:
             product_data: Diccionario con datos del producto
@@ -154,58 +201,91 @@ class ProductModel(BaseModel):
             cursor = connection.cursor()
             
             # Validar datos requeridos
-            required_fields = ['name', 'sku', 'category_id', 'price', 'cost']
-            for field in required_fields:
-                if field not in product_data or product_data[field] is None:
-                    self.logger.error(f"Campo requerido faltante: {field}")
-                    return None
+            name = product_data.get('name')
+            sku = product_data.get('sku') or product_data.get('code')
+            category_id = product_data.get('category_id')
+            unit_id = product_data.get('unit_id', 1)  # Default: Unidad
+            price = product_data.get('price', 0)
+            cost = product_data.get('cost', 0)
+            
+            if not name or not name.strip():
+                self.logger.error("Campo requerido faltante: name")
+                return None
+            
+            if not sku or not sku.strip():
+                self.logger.error("Campo requerido faltante: sku")
+                return None
             
             query = """
                 INSERT INTO products (
                     sku, name, description, category_id, unit_id,
-                    price, cost, stock_quantity, min_stock, max_stock,
-                    barcode, tax_rate, status, created_by
+                    barcode, price, cost,
+                    stock_quantity, min_stock, max_stock, tax_rate,
+                    status, image_path, created_by
                 ) VALUES (
                     %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s, %s,
-                    %s, %s, %s, %s
+                    %s, %s, %s,
+                    %s, %s, %s, %s,
+                    %s, %s, %s
                 )
             """
             
             values = (
-                product_data['sku'],
-                product_data['name'],
+                sku,
+                name,
                 product_data.get('description', ''),
-                product_data['category_id'],
-                product_data.get('unit_id', 1),
-                product_data['price'],
-                product_data['cost'],
+                category_id,
+                unit_id,
+                product_data.get('barcode', ''),
+                price,
+                cost,
                 product_data.get('stock_quantity', 0),
                 product_data.get('min_stock', 0),
                 product_data.get('max_stock', 0),
-                product_data.get('barcode', ''),
-                product_data.get('tax_rate', 0.0),
+                product_data.get('tax_rate', 18.0),
                 product_data.get('status', 'active'),
+                product_data.get('image_path'),
                 product_data.get('created_by', 1)
             )
+
+            try:
+                self.logger.info(
+                    "[MODEL CREATE_PRODUCT] Ejecutando insert",
+                    extra={
+                        'sku': sku,
+                        'name': name,
+                        'stock_quantity': product_data.get('stock_quantity', 0),
+                        'min_stock': product_data.get('min_stock', 0),
+                        'max_stock': product_data.get('max_stock', 0),
+                        'price': price,
+                        'cost': cost,
+                        'category_id': category_id,
+                        'unit_id': unit_id,
+                    }
+                )
+            except Exception:
+                pass
             
             cursor.execute(query, values)
             connection.commit()
             product_id = cursor.lastrowid
             
-            self.logger.info(f"Producto creado exitosamente: {product_data['name']} (ID: {product_id})")
+            self.logger.info(f"Producto creado exitosamente: {name} (ID: {product_id})")
             cursor.close()
             return product_id
             
         except Exception as e:
             self.logger.error(f"Error al crear producto: {e}")
+            import traceback
+            traceback.print_exc()
             if connection:
                 connection.rollback()
             return None
     
-    def get_all_products(self, include_inactive: bool = False) -> List[Dict[str, Any]]:
+    def get_all_products(self, include_inactive: bool = False, limit: Optional[int] = None, offset: int = 0) -> List[Dict[str, Any]]:
         """
         Obtener todos los productos
+        COMPATIBLE con scriptDB.txt: usa 'code', 'active', 'current_stock', 'sale_price', 'cost_price'
         
         Args:
             include_inactive: Incluir productos inactivos
@@ -219,54 +299,94 @@ class ProductModel(BaseModel):
                 return []
             
             cursor = connection.cursor(dictionary=True)
-            
+
+            # Query compatible con estructura real de la tabla
             query = """
                 SELECT 
-                    p.*,
+                    p.id,
+                    p.sku,
+                    p.barcode,
+                    p.name,
+                    p.description,
+                    p.category_id,
+                    p.cost,
+                    p.price,
+                    p.stock_quantity,
+                    p.min_stock,
+                    p.max_stock,
+                    p.tax_rate,
+                    p.image_path,
+                    p.status,
+                    p.created_at,
+                    p.updated_at,
+                    p.created_by,
+                    p.unit_id,
                     c.name as category_name,
                     u.name as unit_name,
-                    u.symbol as unit_symbol,
-                    (SELECT COUNT(*) FROM product_movements pm WHERE pm.product_id = p.id) as movement_count
+                    u.symbol as unit_symbol
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id
                 LEFT JOIN units u ON p.unit_id = u.id
             """
-            
+
+            params: List[Any] = []
+
             if not include_inactive:
                 query += " WHERE p.status = 'active'"
-            
+
             query += " ORDER BY p.name ASC"
-            
-            cursor.execute(query)
+
+            if limit is not None:
+                query += " LIMIT %s"
+                params.append(int(limit))
+                if offset:
+                    query += " OFFSET %s"
+                    params.append(int(offset))
+
+            cursor.execute(query, tuple(params) if params else None)
             products = cursor.fetchall()
             cursor.close()
             
-            # Calcular margen de ganancia
+            # Calcular margen de ganancia y estado del stock
             for product in products:
-                if product['cost'] and product['cost'] > 0:
-                    product['profit_margin'] = ((product['price'] - product['cost']) / product['cost']) * 100
+                # Calcular margen
+                cost = product.get('cost', 0) or 0
+                price = product.get('price', 0) or 0
+                
+                if cost and cost > 0:
+                    product['profit_margin'] = ((price - cost) / cost) * 100
                 else:
                     product['profit_margin'] = 0
                 
                 # Estado del stock
-                if product['stock_quantity'] <= 0:
+                stock_qty = product.get('stock_quantity', 0) or 0
+                min_stock = product.get('min_stock', 0) or 0
+                max_stock = product.get('max_stock', 0) or 0
+                
+                if stock_qty <= 0:
                     product['stock_status'] = 'out_of_stock'
-                elif product['stock_quantity'] <= product['min_stock']:
+                elif stock_qty <= min_stock:
                     product['stock_status'] = 'low_stock'
-                elif product['stock_quantity'] >= product['max_stock']:
+                elif max_stock > 0 and stock_qty >= max_stock:
                     product['stock_status'] = 'overstock'
                 else:
                     product['stock_status'] = 'normal'
+                
+                # Agregar campos para compatibilidad
+                product['unit_name'] = product.get('unit', 'Unidad')
+                product['unit_symbol'] = product.get('unit', 'un')
             
             self.logger.info(f"Se obtuvieron {len(products)} productos")
             return products
             
         except Exception as e:
             self.logger.error(f"Error al obtener productos: {e}")
+            import traceback
+            traceback.print_exc()
             return []
     
     def get_product_by_id(self, product_id: int) -> Optional[Dict[str, Any]]:
-        """Obtener producto por ID"""
+        """Obtener producto por ID - COMPATIBLE con scriptDB.txt"""
         try:
             connection = self.get_connection()
             if not connection:
@@ -276,7 +396,22 @@ class ProductModel(BaseModel):
             
             query = """
                 SELECT 
-                    p.*,
+                    p.id,
+                    p.sku,
+                    p.barcode,
+                    p.name,
+                    p.description,
+                    p.category_id,
+                    p.cost,
+                    p.price,
+                    p.stock_quantity,
+                    p.min_stock,
+                    p.max_stock,
+                    p.unit_id,
+                    p.tax_rate,
+                    p.status,
+                    p.created_at,
+                    p.updated_at,
                     c.name as category_name,
                     u.name as unit_name,
                     u.symbol as unit_symbol
@@ -292,10 +427,19 @@ class ProductModel(BaseModel):
             
             if product:
                 # Calcular margen
-                if product['cost'] and product['cost'] > 0:
-                    product['profit_margin'] = ((product['price'] - product['cost']) / product['cost']) * 100
+                cost = product.get('cost', 0) or 0
+                price = product.get('price', 0) or 0
+                
+                if cost and cost > 0:
+                    product['profit_margin'] = ((price - cost) / cost) * 100
                 else:
                     product['profit_margin'] = 0
+                
+                # Asegurar que existen los campos necesarios
+                if not product.get('unit_name'):
+                    product['unit_name'] = 'Unidad'
+                if not product.get('unit_symbol'):
+                    product['unit_symbol'] = 'un'
             
             return product
             
@@ -304,7 +448,7 @@ class ProductModel(BaseModel):
             return None
     
     def update_product(self, product_id: int, product_data: Dict[str, Any]) -> bool:
-        """Actualizar producto"""
+        """Actualizar producto - COMPATIBLE con scriptDB.txt"""
         try:
             connection = self.get_connection()
             if not connection:
@@ -316,16 +460,35 @@ class ProductModel(BaseModel):
             fields = []
             values = []
             
-            allowed_fields = [
-                'sku', 'name', 'description', 'category_id', 'unit_id',
-                'price', 'cost', 'stock_quantity', 'min_stock', 'max_stock',
-                'barcode', 'tax_rate', 'status'
-            ]
+            # Mapeo de campos para compatibilidad con estructura real
+            field_mapping = {
+                'sku': 'sku',
+                'code': 'sku',
+                'name': 'name',
+                'description': 'description',
+                'category_id': 'category_id',
+                'unit_id': 'unit_id',
+                'price': 'price',
+                'cost': 'cost',
+                'stock_quantity': 'stock_quantity',
+                'min_stock': 'min_stock',
+                'max_stock': 'max_stock',
+                'barcode': 'barcode',
+                'tax_rate': 'tax_rate',
+                'status': 'status',
+                'image_path': 'image_path'
+            }
             
-            for field in allowed_fields:
-                if field in product_data:
-                    fields.append(f"{field} = %s")
-                    values.append(product_data[field])
+            for key, value in product_data.items():
+                if key in field_mapping:
+                    # Validar que campos críticos no sean None
+                    if key in ['category_id', 'unit_id'] and value is None:
+                        self.logger.warning(f"Campo {key} es None, se omitirá de la actualización")
+                        continue
+                    
+                    db_field = field_mapping[key]
+                    fields.append(f"{db_field} = %s")
+                    values.append(value)
             
             if not fields:
                 self.logger.warning("No hay campos para actualizar")
@@ -355,27 +518,50 @@ class ProductModel(BaseModel):
             
         except Exception as e:
             self.logger.error(f"Error al actualizar producto {product_id}: {e}")
+            import traceback
+            traceback.print_exc()
             if connection:
                 connection.rollback()
             return False
     
     def delete_product(self, product_id: int) -> bool:
-        """Eliminar producto (soft delete)"""
+        """Eliminar producto (soft delete) - COMPATIBLE con scriptDB.txt"""
         try:
             connection = self.get_connection()
             if not connection:
                 return False
             
             cursor = connection.cursor()
-            
-            # Soft delete - cambiar estado a inactive
-            query = """
-                UPDATE products
-                SET status = 'inactive', updated_at = NOW()
-                WHERE id = %s
-            """
-            
-            cursor.execute(query, (product_id,))
+
+            set_clauses: List[str] = []
+            params: List[Any] = []
+
+            # Compatibilidad con diferentes esquemas de productos
+            if self.has_column('active'):
+                set_clauses.append("active = 0")
+
+            if self.has_column('status'):
+                set_clauses.append("status = %s")
+                params.append('inactive')
+
+            if self.has_column('updated_at'):
+                set_clauses.append("updated_at = NOW()")
+
+            if self.has_column('deleted_at'):
+                set_clauses.append("deleted_at = NOW()")
+
+            if not set_clauses:
+                # Sin columnas para soft delete, eliminar registro directamente
+                cursor.execute("DELETE FROM products WHERE id = %s", (product_id,))
+            else:
+                query = f"""
+                    UPDATE products
+                    SET {', '.join(set_clauses)}
+                    WHERE id = %s
+                """
+
+                params.append(product_id)
+                cursor.execute(query, tuple(params))
             connection.commit()
             
             affected_rows = cursor.rowcount
@@ -395,7 +581,7 @@ class ProductModel(BaseModel):
             return False
     
     def search_products(self, search_term: str) -> List[Dict[str, Any]]:
-        """Buscar productos por nombre, SKU o código de barras"""
+        """Buscar productos por nombre, código o código de barras - COMPATIBLE"""
         try:
             connection = self.get_connection()
             if not connection:
@@ -405,7 +591,20 @@ class ProductModel(BaseModel):
             
             query = """
                 SELECT 
-                    p.*,
+                    p.id,
+                    p.sku,
+                    p.barcode,
+                    p.name,
+                    p.description,
+                    p.category_id,
+                    p.cost,
+                    p.price,
+                    p.stock_quantity,
+                    p.min_stock,
+                    p.max_stock,
+                    p.unit_id,
+                    p.tax_rate,
+                    p.status,
                     c.name as category_name,
                     u.name as unit_name,
                     u.symbol as unit_symbol
@@ -433,7 +632,7 @@ class ProductModel(BaseModel):
             return []
     
     def get_by_barcode(self, barcode: str) -> Optional[Dict[str, Any]]:
-        """Buscar producto por código de barras exacto"""
+        """Buscar producto por código de barras exacto - COMPATIBLE"""
         try:
             connection = self.get_connection()
             if not connection:
@@ -443,7 +642,15 @@ class ProductModel(BaseModel):
             
             query = """
                 SELECT 
-                    p.*,
+                    p.id,
+                    p.sku,
+                    p.barcode,
+                    p.name,
+                    p.cost,
+                    p.price,
+                    p.stock_quantity,
+                    p.unit_id,
+                    p.status,
                     c.name as category_name,
                     u.name as unit_name,
                     u.symbol as unit_symbol
@@ -464,9 +671,33 @@ class ProductModel(BaseModel):
         except Exception as e:
             self.logger.error(f"Error al buscar producto por código de barras: {e}")
             return None
+
+    def sku_exists(self, sku: str, exclude_id: Optional[int] = None) -> bool:
+        """Verificar si un SKU ya existe usando consulta directa"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return False
+
+            cursor = connection.cursor()
+
+            if exclude_id is not None:
+                query = "SELECT 1 FROM products WHERE sku = %s AND id <> %s LIMIT 1"
+                cursor.execute(query, (sku, exclude_id))
+            else:
+                query = "SELECT 1 FROM products WHERE sku = %s LIMIT 1"
+                cursor.execute(query, (sku,))
+
+            exists = cursor.fetchone() is not None
+            cursor.close()
+            return exists
+
+        except Exception as exc:
+            self.logger.error(f"Error verificando existencia de SKU '{sku}': {exc}")
+            return False
     
     def get_low_stock_products(self) -> List[Dict[str, Any]]:
-        """Obtener productos con stock bajo"""
+        """Obtener productos con stock bajo - COMPATIBLE"""
         try:
             connection = self.get_connection()
             if not connection:
@@ -476,18 +707,28 @@ class ProductModel(BaseModel):
             
             query = """
                 SELECT 
-                    p.*,
-                    c.name as category_name
+                    p.id,
+                    p.code,
+                    p.name,
+                    p.current_stock as stock_quantity,
+                    p.min_stock,
+                    p.max_stock,
+                    p.active,
+                    c.name as category_name,
+                    CASE WHEN p.active = 1 THEN 'active' ELSE 'inactive' END as status
                 FROM products p
                 LEFT JOIN categories c ON p.category_id = c.id
-                WHERE p.status = 'active'
-                AND p.stock_quantity <= p.min_stock
-                ORDER BY p.stock_quantity ASC
+                WHERE p.active = 1
+                AND p.current_stock <= p.min_stock
+                ORDER BY p.current_stock ASC
             """
             
             cursor.execute(query)
             products = cursor.fetchall()
             cursor.close()
+            
+            for product in products:
+                product['sku'] = product['code']
             
             return products
             
@@ -498,7 +739,8 @@ class ProductModel(BaseModel):
     def update_stock(self, product_id: int, quantity: int, movement_type: str, 
                      notes: str = '', user_id: int = 1) -> bool:
         """
-        Actualizar stock de producto y registrar movimiento
+        Actualizar stock de producto y registrar movimiento - COMPATIBLE con scriptDB.txt
+        Usa 'stock_movements' y 'current_stock'
         
         Args:
             product_id: ID del producto
@@ -522,7 +764,7 @@ class ProductModel(BaseModel):
                 self.logger.error(f"Producto {product_id} no encontrado")
                 return False
             
-            current_stock = result['stock_quantity']
+            current_stock = result['stock_quantity'] or 0
             new_stock = current_stock + quantity
             
             if new_stock < 0:
@@ -535,13 +777,24 @@ class ProductModel(BaseModel):
                 (new_stock, product_id)
             )
             
-            # Registrar movimiento
+            # Registrar movimiento en stock_movements
+            # Mapear tipos de movimiento a los que espera la BD
+            movement_type_map = {
+                'purchase': 'in',
+                'sale': 'out',
+                'adjustment': 'adjustment',
+                'return': 'in'
+            }
+            
+            movement_direction = movement_type_map.get(movement_type, 'adjustment')
+            
             cursor.execute("""
-                INSERT INTO product_movements (
-                    product_id, movement_type, quantity, 
-                    previous_stock, new_stock, notes, created_by
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (product_id, movement_type, quantity, current_stock, new_stock, notes, user_id))
+                INSERT INTO stock_movements (
+                    product_id, movement_type, movement_reason, reference_type,
+                    quantity, previous_stock, new_stock, unit_cost, user_id, notes
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (product_id, movement_direction, movement_type, 'manual',
+                  quantity, current_stock, new_stock, 0, user_id, notes))
             
             connection.commit()
             cursor.close()
@@ -551,6 +804,8 @@ class ProductModel(BaseModel):
             
         except Exception as e:
             self.logger.error(f"Error al actualizar stock: {e}")
+            import traceback
+            traceback.print_exc()
             if connection:
                 connection.rollback()
             return False
@@ -560,6 +815,7 @@ class ProductModel(BaseModel):
                           min_stock: float = 0, max_stock: float = 0) -> bool:
         """
         Actualizar stock directamente a un valor específico y registrar movimiento
+        COMPATIBLE con scriptDB.txt: usa 'current_stock' y 'stock_movements'
         
         Args:
             product_id: ID del producto
@@ -586,7 +842,7 @@ class ProductModel(BaseModel):
                 return False
             
             # Convertir Decimal a float para evitar errores de tipo
-            current_stock = float(result['stock_quantity'])
+            current_stock = float(result['stock_quantity'] or 0)
             quantity = new_stock - current_stock  # Diferencia para el movimiento
             
             # Actualizar stock, min_stock y max_stock
@@ -599,13 +855,25 @@ class ProductModel(BaseModel):
                 WHERE id = %s
             """, (new_stock, min_stock, max_stock, product_id))
             
-            # Registrar movimiento
+            # Registrar movimiento en stock_movements
+            movement_type_map = {
+                'purchase': 'in',
+                'sale': 'out',
+                'adjustment': 'adjustment',
+                'entrada': 'in',
+                'salida': 'out',
+                'ajuste': 'adjustment'
+            }
+            
+            movement_direction = movement_type_map.get(movement_type, 'adjustment')
+            
             cursor.execute("""
-                INSERT INTO product_movements (
-                    product_id, movement_type, quantity, 
-                    previous_stock, new_stock, notes, created_by
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (product_id, movement_type, quantity, current_stock, new_stock, notes, user_id))
+                INSERT INTO stock_movements (
+                    product_id, movement_type, movement_reason, reference_type,
+                    quantity, previous_stock, new_stock, unit_cost, user_id, notes
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (product_id, movement_direction, movement_type, 'manual',
+                  quantity, current_stock, new_stock, 0, user_id, notes))
             
             connection.commit()
             cursor.close()
@@ -615,6 +883,8 @@ class ProductModel(BaseModel):
             
         except Exception as e:
             self.logger.error(f"Error al actualizar stock directamente: {e}")
+            import traceback
+            traceback.print_exc()
             if connection:
                 connection.rollback()
             return False
@@ -667,7 +937,7 @@ class ProductModel(BaseModel):
             return False
     
     def get_categories(self) -> List[Dict[str, Any]]:
-        """Obtener todas las categorías activas"""
+        """Obtener todas las categorías activas - COMPATIBLE con estructura real"""
         try:
             connection = self.get_connection()
             if not connection:
@@ -677,12 +947,18 @@ class ProductModel(BaseModel):
             
             query = """
                 SELECT 
-                    c.*,
+                    c.id,
+                    c.name,
+                    c.description,
+                    c.parent_id,
+                    c.status,
+                    c.created_at,
+                    c.updated_at,
                     COUNT(p.id) as product_count
                 FROM categories c
                 LEFT JOIN products p ON c.id = p.category_id AND p.status = 'active'
                 WHERE c.status = 'active'
-                GROUP BY c.id
+                GROUP BY c.id, c.name, c.description, c.parent_id, c.status, c.created_at, c.updated_at
                 ORDER BY c.name ASC
             """
             
@@ -697,22 +973,40 @@ class ProductModel(BaseModel):
             return []
     
     def get_units(self) -> List[Dict[str, Any]]:
-        """Obtener todas las unidades de medida"""
+        """
+        Obtener unidades de medida simuladas
+        NOTA: La tabla 'units' NO existe en scriptDB.txt
+        Retorna lista predefinida de unidades comunes
+        """
+        # Lista predefinida de unidades ya que la tabla no existe
+        predefined_units = [
+            {'id': 1, 'name': 'Unidad', 'symbol': 'un', 'type': 'unit', 'status': 'active'},
+            {'id': 2, 'name': 'Kilogramo', 'symbol': 'kg', 'type': 'weight', 'status': 'active'},
+            {'id': 3, 'name': 'Gramo', 'symbol': 'g', 'type': 'weight', 'status': 'active'},
+            {'id': 4, 'name': 'Litro', 'symbol': 'L', 'type': 'volume', 'status': 'active'},
+            {'id': 5, 'name': 'Mililitro', 'symbol': 'ml', 'type': 'volume', 'status': 'active'},
+            {'id': 6, 'name': 'Metro', 'symbol': 'm', 'type': 'length', 'status': 'active'},
+            {'id': 7, 'name': 'Paquete', 'symbol': 'paq', 'type': 'unit', 'status': 'active'},
+            {'id': 8, 'name': 'Caja', 'symbol': 'cja', 'type': 'unit', 'status': 'active'},
+            {'id': 9, 'name': 'Docena', 'symbol': 'doc', 'type': 'unit', 'status': 'active'}
+        ]
+        
         try:
+            # Intentar obtener de la BD si existe la tabla
             connection = self.get_connection()
-            if not connection:
-                return []
-            
-            cursor = connection.cursor(dictionary=True)
-            
-            query = "SELECT * FROM units WHERE status = 'active' ORDER BY name ASC"
-            
-            cursor.execute(query)
-            units = cursor.fetchall()
-            cursor.close()
-            
-            return units
-            
-        except Exception as e:
-            self.logger.error(f"Error al obtener unidades: {e}")
-            return []
+            if connection:
+                cursor = connection.cursor(dictionary=True)
+                cursor.execute("SHOW TABLES LIKE 'units'")
+                if cursor.fetchone():
+                    # La tabla existe, obtener datos
+                    query = "SELECT * FROM units WHERE status = 'active' ORDER BY name ASC"
+                    cursor.execute(query)
+                    units = cursor.fetchall()
+                    cursor.close()
+                    return units if units else predefined_units
+                cursor.close()
+        except:
+            pass
+        
+        # Si la tabla no existe o hay error, retornar lista predefinida
+        return predefined_units

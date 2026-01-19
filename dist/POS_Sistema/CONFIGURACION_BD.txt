@@ -1,0 +1,16 @@
+CONFIGURACION DEL SISTEMA POS
+=============================
+
+Los archivos editables se guardan en:
+    %APPDATA%\SistemaPOS\config
+
+Pasos recomendados:
+1. Importe los scripts SQL que estan en database_scripts.
+2. Ejecute POS_Sistema.exe una vez para generar los archivos config.
+3. Edite los archivos generados en %APPDATA%\SistemaPOS\config segun su entorno:
+   - database.json: parametros de MySQL.
+   - system_config.json: datos de la empresa y preferencias.
+   - ticket_config.json: opciones de impresion.
+
+Si prefiere configurarlos antes, copie el contenido de config_templates hacia la
+ruta anterior y edite los valores antes del primer inicio.

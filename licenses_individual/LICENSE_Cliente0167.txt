@@ -1,0 +1,40 @@
+╔════════════════════════════════════════════════════════════════╗
+║                  LICENCIA DE SOFTWARE - SISTEMA POS            ║
+╚════════════════════════════════════════════════════════════════╝
+
+INFORMACIÓN DE LA LICENCIA:
+──────────────────────────────────────────────────────────────────
+Cliente:            Cliente0167
+Número de Licencia: 0167
+Tipo de Licencia:   STANDARD
+
+CLAVE DE LICENCIA:
+──────────────────────────────────────────────────────────────────
+0FD8-31F9-577A-EE40
+
+CÓDIGO DE ACTIVACIÓN:
+──────────────────────────────────────────────────────────────────
+4B2C-2927-B0B1-4E38-B0B1-4E39-B0B1-4E3A
+
+VALIDEZ:
+──────────────────────────────────────────────────────────────────
+Fecha de Emisión:   2025-11-02
+Fecha de Expiración: PERMANENTE
+Vigencia:           LIFETIME
+
+INSTRUCCIONES DE INSTALACIÓN:
+──────────────────────────────────────────────────────────────────
+1. Ejecutar el instalador POS_Setup.exe
+2. Cuando se solicite, ingresar la CLAVE DE LICENCIA
+3. Durante la activación, ingresar el CÓDIGO DE ACTIVACIÓN
+4. Completar el proceso de instalación
+
+IMPORTANTE:
+──────────────────────────────────────────────────────────────────
+• Esta licencia es válida para UNA instalación
+• Mantener este archivo en un lugar seguro
+• Para soporte técnico: soporte@tuempresa.com
+
+╔════════════════════════════════════════════════════════════════╗
+║  © 2025 Tu Empresa. Todos los derechos reservados.             ║
+╚════════════════════════════════════════════════════════════════╝

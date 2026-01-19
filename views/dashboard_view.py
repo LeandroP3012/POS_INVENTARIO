@@ -9,6 +9,7 @@ from typing import Dict, Any, Callable
 from views.base_view import BaseView
 from models.role_model import RoleModel
 from services.permission_service import PermissionService
+from utils.responsive_utils import ResponsiveManager
 import os
 import json
 from PIL import Image, ImageTk
@@ -23,6 +24,11 @@ class DashboardView(BaseView):
         self.module_callbacks = {}
         self.permission_service = PermissionService()
         self.logo_image = None  # Guardar referencia de la imagen
+        self._function_key_bindings = []  # Mantener atajos activos
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(self.root)
+        
         self.setup_dashboard()
     
     def setup_dashboard(self):
@@ -36,23 +42,31 @@ class DashboardView(BaseView):
     def setup_main_window(self):
         """Configurar ventana principal"""
         self.root.title("Sistema POS - Dashboard Principal")
-        self.root.geometry("1200x800")
-        self.root.state('zoomed')
+        
+        # Hacer ventana responsiva
+        self.responsive.make_window_responsive(self.root)
+        
         self.root.configure(bg='#f1f5f9')
     
     def create_header(self):
-        """Crear header moderno con gradientes y efectos visuales"""
-        header_frame = tk.Frame(self.root, bg='#ffffff', height=80)
+        """Crear header moderno con gradientes y efectos visuales auto-escalados"""
+        # Tamaños escalados
+        header_height = self.scaler.scale_value(80)
+        gradient_height = max(2, self.scaler.scale_value(3))
+        content_padx = self.scaler.scale_padding(20)
+        content_pady = self.scaler.scale_padding(8)
+        
+        header_frame = tk.Frame(self.root, bg='#ffffff', height=header_height)
         header_frame.pack(fill='x', side='top', pady=0, padx=0)
         header_frame.pack_propagate(False)
         
         # Gradiente superior más sutil
-        gradient_frame = tk.Frame(header_frame, bg='#1e3a8a', height=3)
+        gradient_frame = tk.Frame(header_frame, bg='#1e3a8a', height=gradient_height)
         gradient_frame.pack(fill='x')
         
         # Contenedor principal con fondo más elegante
         main_content = tk.Frame(header_frame, bg='#ffffff')
-        main_content.pack(expand=True, fill='both', padx=20, pady=8)
+        main_content.pack(expand=True, fill='both', padx=content_padx, pady=content_pady)
         
         # Frame izquierdo con logo animado
         left_frame = tk.Frame(main_content, bg='#ffffff')
@@ -61,9 +75,12 @@ class DashboardView(BaseView):
         # Cargar configuración de la empresa
         company_name, logo_path = self.load_company_config()
         
-        # Contenedor del logo
-        self.logo_container = tk.Frame(left_frame, bg='#ffffff', width=50, height=50)
-        self.logo_container.pack(side='left', padx=(0, 18), pady=0)
+        # Contenedor del logo (escalado)
+        logo_size = self.scaler.scale_value(50)
+        logo_padx = self.scaler.scale_padding(18)
+        
+        self.logo_container = tk.Frame(left_frame, bg='#ffffff', width=logo_size, height=logo_size)
+        self.logo_container.pack(side='left', padx=(0, logo_padx), pady=0)
         self.logo_container.pack_propagate(False)
         
         # Intentar cargar logo desde configuración
@@ -77,11 +94,14 @@ class DashboardView(BaseView):
         title_frame = tk.Frame(left_frame, bg='#ffffff')
         title_frame.pack(side='left', fill='y', pady=0)
         
-        # Título principal con nombre de la empresa
+        # Título principal con nombre de la empresa (escalado)
+        title_font_size = self.scaler.scale_font(20)
+        subtitle_font_size = self.scaler.scale_font(10)
+        
         main_title = tk.Label(
             title_frame,
             text=company_name.upper(),
-            font=('Segoe UI', 20, 'bold'),
+            font=('Segoe UI', title_font_size, 'bold'),
             fg='#1e293b',
             bg='#ffffff',
             relief='flat'
@@ -91,8 +111,8 @@ class DashboardView(BaseView):
         # Subtítulo con color degradado
         subtitle = tk.Label(
             title_frame,
-            text="Sistema de Gestión Empresarial",
-            font=('Segoe UI', 10),
+            text="ManagementPro POS v1.0",
+            font=('Segoe UI', subtitle_font_size),
             fg='#64748b',
             bg='#ffffff'
         )
@@ -102,16 +122,21 @@ class DashboardView(BaseView):
         user_container = tk.Frame(main_content, bg='#ffffff')
         user_container.pack(side='right', pady=0)
         
-        # Contenido del user card
+        # Contenido del user card (escalado)
+        user_padx = self.scaler.scale_padding(15)
+        user_pady = self.scaler.scale_padding(8)
+        user_font_size = self.scaler.scale_font(11)
+        role_font_size = self.scaler.scale_font(9)
+        
         user_content = tk.Frame(user_container, bg='#ffffff')
-        user_content.pack(padx=15, pady=8)
+        user_content.pack(padx=user_padx, pady=user_pady)
         
         # Información del usuario con iconos modernos
-        welcome_text = f"� {self.user_data.get('full_name', self.user_data.get('username', 'Usuario'))}"
+        welcome_text = f"👤 {self.user_data.get('full_name', self.user_data.get('username', 'Usuario'))}"
         user_label = tk.Label(
             user_content,
             text=welcome_text,
-            font=('Segoe UI', 11, 'bold'),
+            font=('Segoe UI', user_font_size, 'bold'),
             fg='#1e293b',
             bg='#ffffff'
         )
@@ -122,7 +147,7 @@ class DashboardView(BaseView):
         role_label = tk.Label(
             user_content,
             text=role_text,
-            font=('Segoe UI', 9),
+            font=('Segoe UI', role_font_size),
             fg='#64748b',
             bg='#ffffff'
         )
@@ -150,6 +175,9 @@ class DashboardView(BaseView):
         
         # Obtener módulos disponibles
         modules = self.get_available_modules()
+
+        # Asignar atajos de teclado (F1-F12) a los primeros módulos
+        self._assign_function_key_shortcuts(modules)
         
         # Crear layout dinámico con efectos visuales
         self.create_colorful_modules_grid(modules_frame, modules)
@@ -160,148 +188,116 @@ class DashboardView(BaseView):
         """Obtener módulos disponibles según permisos del usuario"""
         base_modules = [
             {
+                'id': 'sales_register',
+                'title': 'Nueva Venta',
+                'icon_path': 'assets/images/cart.png',
+                'color': '#ea580c',
+                'description': 'Registrar una venta en el POS',
+                'permission': 'sales.create'
+            },
+            {
+                'id': 'sales_history',
+                'title': 'Historial de Ventas',
+                'icon_path': 'assets/images/history.png',
+                'color': '#be123c',
+                'description': 'Revisar ventas realizadas',
+                'permission': 'sales.view'
+            },
+            {
+                'id': 'credit_notes',
+                'title': 'Notas de Crédito',
+                'icon_path': 'assets/images/clipboard.png',
+                'color': '#0ea5e9',
+                'description': 'Consultar y generar notas de crédito',
+                'permission': 'sales.view'
+            },
+            {
                 'id': 'products',
-                'title': 'Registro de Productos',
-                'icon': '📦',
+                'title': 'Gestión de Productos',
+                'icon_path': 'assets/images/box.png',
                 'color': '#2563eb',
-                'description': 'Invoices',
+                'description': 'Administrar catálogo de productos',
                 'permission': 'inventory.view'
             },
             {
-                'id': 'clients',
-                'title': 'Registro de Clientes',
-                'icon': '👤',
-                'color': '#7c3aed',
-                'description': 'Clients',
-                'permission': 'users.view'
-            },
-            {
-                'id': 'suppliers',
-                'title': 'Registro de Proveedores',
-                'icon': '👥',
-                'color': '#0891b2',
-                'description': 'Application',
-                'permission': 'suppliers.view'
-            },
-            {
                 'id': 'categories',
-                'title': 'Registro de Categorías',
-                'icon': '📁',
+                'title': 'Categorías de Producto',
+                'icon_path': 'assets/images/folder.png',
                 'color': '#dc2626',
-                'description': 'Reports',
-                'permission': 'categories.view'
+                'description': 'Organizar categorías',
+                'permission': 'inventory.view'
             },
             {
                 'id': 'stock_control',
                 'title': 'Control de Stock',
-                'icon': '📊',
+                'icon_path': 'assets/images/chart.png',
                 'color': '#f59e0b',
-                'description': 'Actualizar inventario',
+                'description': 'Ajustar inventario y mínimos',
                 'permission': 'inventory.edit'
             },
             {
-                'id': 'expenses',
-                'title': 'Registro de Egresos',
-                'icon': '💰',
-                'color': '#9333ea',
-                'description': 'Reports',
-                'permission': 'expenses.view'
+                'id': 'user_management',
+                'title': 'Gestión de Usuarios',
+                'icon_path': 'assets/images/users.png',
+                'color': '#8b5cf6',
+                'description': 'Crear y administrar usuarios',
+                'permission': 'users.view'
             },
             {
-                'id': 'cash_register',
-                'title': 'Registro de Caja',
-                'icon': '💵',
-                'color': '#059669',
-                'description': 'Help',
-                'permission': 'cash.view'
-            },
-            {
-                'id': 'sales_register',
-                'title': 'Ventas - Registrar Ventas',
-                'icon': '🛍️',
-                'color': '#ea580c',
-                'description': 'Reports',
-                'permission': 'sales.create'
-            },
-            {
-                'id': 'purchases',
-                'title': 'Compras - Registrar Compras',
-                'icon': '⚙️',
-                'color': '#7c2d12',
-                'description': 'DevComponents',
-                'permission': 'inventory.create'
+                'id': 'role_management',
+                'title': 'Gestión de Roles y Permisos',
+                'icon_path': 'assets/images/lock.png',
+                'color': '#6366f1',
+                'description': 'Configurar roles y permisos',
+                'permission': 'roles.view'
             },
             {
                 'id': 'income_report',
-                'title': 'Informe de Ingresos a Caja',
-                'icon': '📊',
-                'color': '#c026d3',
-                'description': 'Invoices',
-                'permission': 'sales.reports'
+                'title': 'Reporte Diario',
+                'icon_path': 'assets/images/trending.png',
+                'color': '#0ea5e9',
+                'description': 'Consultar ventas del día',
+                'permission': 'reports.basic'
             },
             {
-                'id': 'sales_history',
-                'title': 'Ventas Realizadas',
-                'icon': '📋',
-                'color': '#be123c',
-                'description': 'Reports',
-                'permission': 'sales.view'
-            },
-            {
-                'id': 'purchase_history',
-                'title': 'Compras Realizadas',
-                'icon': '📋',
-                'color': '#65a30d',
-                'description': 'Invoices',
-                'permission': 'purchases.view'
-            },
-            {
-                'id': 'monthly_sales',
-                'title': 'Ventas Mensuales',
-                'icon': '📈',
-                'color': '#0369a1',
-                'description': 'Reports',
-                'permission': 'sales.reports'
+                'id': 'reports',
+                'title': 'Reportes Avanzados',
+                'icon_path': 'assets/images/clipboard.png',
+                'color': '#475569',
+                'description': 'Generar reportes detallados',
+                'permission': 'reports.full'
             },
             {
                 'id': 'business',
-                'title': 'Mi negocio',
-                'icon': '🏢',
+                'title': 'Configuración del Sistema',
+                'icon_path': 'assets/images/building.png',
                 'color': '#0d9488',
-                'description': 'Configuración general',
+                'description': 'Datos de la empresa y ajustes',
                 'permission': 'system.config'
             },
             {
                 'id': 'ticket_config',
                 'title': 'Configuración de Boletas',
-                'icon': '🎫',
+                'icon_path': 'assets/images/ticket.png',
                 'color': '#9b59b6',
-                'description': 'Personalizar tickets',
-                'permission': None
+                'description': 'Personalizar formatos de ticket',
+                'permission': 'system.config'
             },
             {
                 'id': 'support',
-                'title': 'Chat de soporte',
-                'icon': '💬',
+                'title': 'Soporte Técnico',
+                'icon_path': 'assets/images/message.png',
                 'color': '#15803d',
-                'description': 'Ayuda y soporte',
+                'description': 'Información de contacto',
                 'permission': None
             },
             {
                 'id': 'help',
                 'title': 'Ayuda',
-                'icon': '❓',
+                'icon_path': 'assets/images/help.png',
                 'color': '#b91c1c',
-                'description': 'Manual y guías',
+                'description': 'Manual y guías del sistema',
                 'permission': None
-            },
-            {
-                'id': 'reports',
-                'title': 'Reportes',
-                'icon': '📋',
-                'color': '#475569',
-                'description': 'Informes detallados',
-                'permission': 'reports.sales'
             }
         ]
         
@@ -320,6 +316,24 @@ class DashboardView(BaseView):
                 available_modules.append(module)
         
         return available_modules
+
+    def _assign_function_key_shortcuts(self, modules):
+        """Asignar F1-F12 a los primeros módulos disponibles"""
+        # Limpiar atajos previos para evitar duplicados
+        for key_event in self._function_key_bindings:
+            self.root.unbind(key_event)
+        self._function_key_bindings = []
+
+        for index, module in enumerate(modules[:12]):
+            shortcut = f"F{index + 1}"
+            module['shortcut'] = shortcut
+            key_event = f"<{shortcut}>"
+
+            def _handler(event, module_id=module['id']):
+                self.on_module_click(module_id)
+
+            self.root.bind(key_event, _handler)
+            self._function_key_bindings.append(key_event)
     
     def create_colorful_modules_grid(self, parent, modules):
         """Crear grid centrado con scroll para muchos módulos"""
@@ -606,11 +620,16 @@ class DashboardView(BaseView):
         ).pack(anchor='w')
     
     def create_fullscreen_module_card(self, parent, module, row, col):
-        """Crear tarjeta moderna con diseño limpio"""
+        """Crear tarjeta moderna con diseño limpio y auto-escalado"""
         
-        # Contenedor principal con sombra - tamaño fijo para mejor distribución
-        shadow_container = tk.Frame(parent, bg='#e2e8f0', width=220, height=140)
-        shadow_container.grid(row=row, column=col, padx=12, pady=12)
+        # Obtener tamaños escalados automáticamente - AUMENTADOS
+        card_width = self.scaler.scale_value(320)  # Era 220
+        card_height = self.scaler.scale_value(250)  # Era 140
+        card_padding = self.scaler.scale_padding(15)  # Era 12
+        
+        # Contenedor principal con sombra - tamaño escalado
+        shadow_container = tk.Frame(parent, bg='#e2e8f0', width=card_width, height=card_height)
+        shadow_container.grid(row=row, column=col, padx=card_padding, pady=card_padding)
         shadow_container.grid_propagate(False)
         
         # Frame de la tarjeta con elevación
@@ -623,66 +642,90 @@ class DashboardView(BaseView):
             bg=module['color'],
             highlightthickness=0,
             relief='flat',
-            bd=0
+            bd=0,
+            width=card_width,
+            height=card_height
         )
         canvas.pack(fill='both', expand=True)
         
-        # Función para crear contenido con efectos visuales
-        def on_canvas_configure(event):
-            canvas_width = event.width if hasattr(event, 'width') else 220
-            canvas_height = event.height if hasattr(event, 'height') else 140
-            
-            # Evitar tamaños muy pequeños
-            if canvas_width < 50 or canvas_height < 50:
-                return
-            
-            # Limpiar canvas
-            canvas.delete("all")
-            
-            # Crear fondo del módulo
-            canvas.create_rectangle(0, 0, canvas_width, canvas_height, fill=module['color'], outline='')
-            
-            # Calcular posiciones centradas
-            center_x = canvas_width // 2
-            icon_y = canvas_height * 0.35
-            title_y = canvas_height * 0.72
-            
-            # Tamaños de fuente
-            icon_size = 36
-            title_size = 11
-            
-            # Círculo blanco de fondo para el icono
-            icon_radius = 28
+        # Calcular posiciones centradas
+        center_x = card_width // 2
+        icon_y = int(card_height * 0.35)
+        title_y = int(card_height * 0.72)
+        
+        # Tamaños de fuente e iconos escalados - AUMENTADOS
+        title_size = self.scaler.scale_font(13)  # Era 11
+        icon_radius = self.scaler.scale_value(35)  # Era 28
+        icon_display_size = self.scaler.scale_value(60)  # Era 50
+        
+        # Crear fondo del módulo
+        canvas.create_rectangle(0, 0, card_width, card_height, fill=module['color'], outline='')
+        
+        # Círculo blanco de fondo para el icono
+        canvas.create_oval(
+            center_x - icon_radius, icon_y - icon_radius,
+            center_x + icon_radius, icon_y + icon_radius,
+            fill='white', outline='', width=0
+        )
+        
+        # Cargar y mostrar imagen del ícono DIRECTAMENTE (sin callback)
+        if 'icon_path' in module:
+            try:
+                # Construir ruta absoluta
+                base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                icon_path = os.path.join(base_dir, module['icon_path'])
+                
+                if os.path.exists(icon_path):
+                    icon_img = Image.open(icon_path)
+                    icon_img = icon_img.resize((icon_display_size, icon_display_size), Image.Resampling.LANCZOS)
+                    # Crear PhotoImage y guardar referencia en el canvas
+                    icon_photo = ImageTk.PhotoImage(icon_img, master=self.root)
+                    canvas.image = icon_photo  # Guardar referencia para evitar GC
+                    canvas.create_image(center_x, icon_y, image=icon_photo, anchor='center')
+                else:
+                    # Fallback: círculo de color
+                    canvas.create_oval(
+                        center_x - 18, icon_y - 18,
+                        center_x + 18, icon_y + 18,
+                        fill=module['color'], outline='white', width=3
+                    )
+            except Exception as e:
+                print(f"✗ Error: {e}")
+                # Fallback: círculo de color
+                canvas.create_oval(
+                    center_x - 18, icon_y - 18,
+                    center_x + 18, icon_y + 18,
+                    fill=module['color'], outline='white', width=3
+                )
+        else:
+            # No hay icon_path: círculo de color
             canvas.create_oval(
-                center_x - icon_radius, icon_y - icon_radius,
-                center_x + icon_radius, icon_y + icon_radius,
-                fill='white', outline='', width=0
+                center_x - 18, icon_y - 18,
+                center_x + 18, icon_y + 18,
+                fill=module['color'], outline='white', width=3
             )
-            
-            # Icono principal
+        
+        # Título principal con buen contraste
+        canvas.create_text(
+            center_x, title_y,
+            text=module['title'],
+            font=('Segoe UI', title_size, 'bold'),
+            fill='white',
+            anchor='center',
+            width=card_width - 20
+        )
+
+        # Etiqueta de atajo de teclado (F1-F12) en la esquina superior derecha
+        shortcut = module.get('shortcut')
+        if shortcut:
             canvas.create_text(
-                center_x, icon_y,
-                text=module['icon'],
-                font=('Segoe UI Emoji', icon_size),
-                fill=module['color'],
-                anchor='center'
-            )
-            
-            # Título principal con buen contraste
-            canvas.create_text(
-                center_x, title_y,
-                text=module['title'],
-                font=('Segoe UI', title_size, 'bold'),
+                card_width - 12,
+                12,
+                text=shortcut,
+                font=('Segoe UI', 10, 'bold'),
                 fill='white',
-                anchor='center',
-                width=canvas_width - 20
+                anchor='ne'
             )
-        
-        # Bind para redimensionamiento
-        canvas.bind('<Configure>', on_canvas_configure)
-        
-        # Dibujar contenido inicial inmediatamente
-        canvas.after(1, lambda: on_canvas_configure(type('Event', (), {'width': 220, 'height': 140})()))
         
         # Sistema de eventos con efectos mejorados
         self.setup_enhanced_card_events(canvas, module, card_container)
@@ -1118,19 +1161,17 @@ class DashboardView(BaseView):
     def load_company_config(self):
         """Cargar configuración de la empresa desde system_config.json"""
         try:
-            config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'system_config.json')
+            # Usar PathManager para obtener la ruta correcta
+            from utils.path_manager import load_config
+            config = load_config('system_config.json')
             
-            if os.path.exists(config_path):
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                    
+            if config:
                 company_name = config.get('company_name', 'MANAGEMENTPRO POS')
                 logo_path = config.get('logo_path', '')
-                
                 return company_name, logo_path
         except Exception as e:
             # Error silencioso, usar valores por defecto
-            pass
+            print(f"⚠️ Error cargando configuración: {e}")
         
         return 'MANAGEMENTPRO POS', ''
     

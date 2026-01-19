@@ -7,6 +7,7 @@ Fecha: 2025
 from models.base_model import BaseModel
 from datetime import datetime
 from decimal import Decimal
+from typing import Dict, Any
 
 class SaleModel(BaseModel):
     """Modelo para operaciones de ventas"""
@@ -49,13 +50,13 @@ class SaleModel(BaseModel):
             sale_query = """
                 INSERT INTO sales (
                     sale_number, user_id, customer_id, 
-                    subtotal, tax_rate, tax_amount, 
+                    subtotal, tax_rate, include_tax, tax_amount, 
                     discount_amount, total_amount,
                     payment_method, paid_amount, change_amount,
                     status, notes
                 ) VALUES (
                     %(sale_number)s, %(user_id)s, %(customer_id)s,
-                    %(subtotal)s, %(tax_rate)s, %(tax_amount)s,
+                    %(subtotal)s, %(tax_rate)s, %(include_tax)s, %(tax_amount)s,
                     %(discount_amount)s, %(total_amount)s,
                     %(payment_method)s, %(paid_amount)s, %(change_amount)s,
                     %(status)s, %(notes)s
@@ -170,13 +171,18 @@ class SaleModel(BaseModel):
     
     def _create_inventory_movement(self, cursor, movement):
         """Registra un movimiento de inventario"""
+        from decimal import Decimal
+        
         # Obtener stock actual
         cursor.execute("SELECT stock_quantity FROM products WHERE id = %s", (movement['product_id'],))
         result = cursor.fetchone()
-        current_stock = result[0] if result else 0
+        current_stock = result[0] if result else Decimal('0')
+        
+        # Convertir quantity a Decimal para evitar errores de tipo
+        quantity = Decimal(str(movement['quantity']))
         
         movement['previous_stock'] = current_stock
-        movement['new_stock'] = current_stock + movement['quantity']
+        movement['new_stock'] = current_stock + quantity
         
         query = """
             INSERT INTO inventory_movements (
@@ -222,6 +228,44 @@ class SaleModel(BaseModel):
                     query += " AND s.status = %s"
                     params.append(filters['status'])
                 
+                if filters.get('sale_number'):
+                    like_value = f"%{filters['sale_number'].lower()}%"
+                    query += " AND (LOWER(COALESCE(s.sale_number, '')) LIKE %s"
+                    params.append(like_value)
+
+                    sanitized = filters.get('sale_number_sanitized')
+                    if sanitized:
+                        query += " OR REGEXP_REPLACE(LOWER(COALESCE(s.sale_number, '')), '[^a-z0-9]', '') LIKE %s"
+                        params.append(f"%{sanitized}%")
+
+                    digits = filters.get('sale_number_digits')
+                    if digits:
+                        query += " OR CAST(s.id AS CHAR) LIKE %s"
+                        params.append(f"%{digits}%")
+
+                    query += ")"
+
+                if filters.get('customer_text'):
+                    like_value = f"%{filters['customer_text']}%"
+                    query += " AND (COALESCE(c.name, '') LIKE %s OR COALESCE(c.document_number, '') LIKE %s)"
+                    params.extend([like_value, like_value])
+
+                if filters.get('cashier_text'):
+                    like_cashier = f"%{filters['cashier_text']}%"
+                    query += " AND (u.username LIKE %s OR u.full_name LIKE %s)"
+                    params.extend([like_cashier, like_cashier])
+
+                if filters.get('search_text'):
+                    keyword = f"%{filters['search_text']}%"
+                    query += " AND ("
+                    query += " s.sale_number LIKE %s OR"
+                    query += " COALESCE(c.name, '') LIKE %s OR"
+                    query += " COALESCE(c.document_number, '') LIKE %s OR"
+                    query += " u.username LIKE %s OR"
+                    query += " u.full_name LIKE %s"
+                    query += " )"
+                    params.extend([keyword, keyword, keyword, keyword, keyword])
+
                 if filters.get('date_from'):
                     query += " AND DATE(s.sale_date) >= %s"
                     params.append(filters['date_from'])
@@ -233,8 +277,17 @@ class SaleModel(BaseModel):
                 if filters.get('cashier_id'):
                     query += " AND s.user_id = %s"
                     params.append(filters['cashier_id'])
+
+                if filters.get('exclude_credit_notes'):
+                    query += " AND s.credit_note_id IS NULL"
+            
+            limit = filters.get('limit') if filters else None
             
             query += " ORDER BY s.sale_date DESC"
+
+            if limit:
+                query += " LIMIT %s"
+                params.append(int(limit))
             
             cursor.execute(query, params)
             sales = cursor.fetchall()
@@ -299,47 +352,80 @@ class SaleModel(BaseModel):
             return None
     
     def cancel_sale(self, sale_id, user_id, reason):
-        """Cancela una venta y revierte el inventario"""
+        """Cancela una venta, revierte inventario y retorna detalle del proceso"""
         connection = None
         cursor = None
+        reason = (reason or '').strip()
         
         try:
             connection = self.get_connection()
             cursor = connection.cursor(dictionary=True)
-            
             connection.start_transaction()
-            
-            # Verificar que la venta existe y está completada
-            cursor.execute(
-                "SELECT * FROM sales WHERE id = %s AND status = 'completed'",
-                (sale_id,)
-            )
+
+            cursor.execute("SELECT * FROM sales WHERE id = %s", (sale_id,))
             sale = cursor.fetchone()
-            
+
             if not sale:
-                print("❌ Venta no encontrada o ya está cancelada")
-                return False
-            
-            # Obtener items de la venta
+                if connection:
+                    connection.rollback()
+                return {
+                    'success': False,
+                    'message': 'La venta solicitada no existe o ya fue removida.'
+                }
+
+            current_status = (sale.get('status') or '').lower()
+            if current_status in {'cancelled', 'canceled', 'annulled', 'void'}:
+                if connection:
+                    connection.rollback()
+                return {
+                    'success': False,
+                    'message': 'La venta ya estaba cancelada previamente.'
+                }
+
+            allowed_status = {'completed', 'finalized', 'paid'}
+            if current_status not in allowed_status:
+                if connection:
+                    connection.rollback()
+                return {
+                    'success': False,
+                    'message': f"No se puede cancelar una venta con estado '{sale.get('status', 'desconocido')}'."
+                }
+
             cursor.execute("SELECT * FROM sale_items WHERE sale_id = %s", (sale_id,))
-            items = cursor.fetchall()
-            
-            # Revertir stock de cada producto
+            items = cursor.fetchall() or []
+
+            if not items:
+                if connection:
+                    connection.rollback()
+                return {
+                    'success': False,
+                    'message': 'La venta no tiene productos registrados para revertir.'
+                }
+
+            restored_items = []
+
             for item in items:
-                self._update_product_stock(cursor, item['product_id'], item['quantity'])
-                
-                # Registrar movimiento de devolución
+                quantity = Decimal(str(item.get('quantity', 0) or 0))
+                if quantity <= 0:
+                    continue
+
+                self._update_product_stock(cursor, item['product_id'], quantity)
                 self._create_inventory_movement(cursor, {
                     'product_id': item['product_id'],
                     'movement_type': 'return',
-                    'quantity': item['quantity'],
+                    'quantity': quantity,
                     'reference_type': 'sale',
                     'reference_id': sale_id,
                     'user_id': user_id,
-                    'notes': f"Cancelación de venta {sale['sale_number']}"
+                    'notes': f"Cancelación de venta {sale.get('sale_number', sale_id)}"
                 })
-            
-            # Actualizar estado de la venta
+
+                restored_items.append({
+                    'product_id': item['product_id'],
+                    'product_name': item.get('product_name'),
+                    'quantity': float(quantity)
+                })
+
             update_query = """
                 UPDATE sales 
                 SET status = 'cancelled',
@@ -348,23 +434,45 @@ class SaleModel(BaseModel):
                     cancellation_reason = %s
                 WHERE id = %s
             """
-            cursor.execute(update_query, (user_id, reason, sale_id))
-            
+            cursor.execute(update_query, (user_id, reason or 'Cancelado desde historial de ventas', sale_id))
+
             connection.commit()
-            
-            print(f"✅ Venta {sale['sale_number']} cancelada exitosamente")
-            return True
-            
+
+            return {
+                'success': True,
+                'message': f"Venta {sale.get('sale_number', sale_id)} cancelada y stock restaurado.",
+                'restored_items': restored_items
+            }
+
         except Exception as e:
             if connection:
                 connection.rollback()
             print(f"❌ Error al cancelar venta: {e}")
-            return False
+            return {
+                'success': False,
+                'message': f"Error al cancelar la venta: {e}"
+            }
         finally:
             if cursor:
                 cursor.close()
             if connection:
                 connection.close()
+
+    # ==========================================
+    # NOTAS DE CRÉDITO (delegado)
+    # ==========================================
+
+    def create_credit_note(self, sale_id: int, user_id: int, reason: str = "", items=None) -> Dict[str, Any]:
+        """Wrapper para generar una nota de crédito desde el modelo de ventas"""
+        try:
+            from models.credit_note_model import CreditNoteModel
+            model = CreditNoteModel()
+            return model.create_credit_note(sale_id, user_id, reason, items)
+        except Exception as e:
+            return {
+                'success': False,
+                'message': f"No se pudo crear la nota de crédito: {e}"
+            }
     
     # ==========================================
     # REPORTES Y ESTADÍSTICAS

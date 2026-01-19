@@ -1,0 +1,99 @@
+2025-10-31 19:52:29 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 19:52:29 - INFO - \U0001f50d Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 19:52:29 - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 19:52:29 - INFO - \U0001f50d Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 19:52:29 - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 19:52:29 - INFO - \U0001f50d Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 19:52:29 - ERROR - Error al generar código: 1054 (42S22): Unknown column 'code' in 'field list'
+2025-10-31 19:52:29 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-000001
+2025-10-31 19:52:29 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 19:52:29 - INFO -    \u2713 Número extraído: 000001 (valor numérico: 1)
+2025-10-31 19:52:29 - INFO -    Base del código (12 dígitos): 775000000001
+2025-10-31 19:52:29 - INFO -    Dígito verificador calculado: 4
+2025-10-31 19:52:29 - INFO -    \u2705 Código de barras EAN-13 final: 7750000000014
+2025-10-31 19:52:29 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-000002
+2025-10-31 19:52:29 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 19:52:29 - INFO -    \u2713 Número extraído: 000002 (valor numérico: 2)
+2025-10-31 19:52:29 - INFO -    Base del código (12 dígitos): 775000000002
+2025-10-31 19:52:29 - INFO -    Dígito verificador calculado: 1
+2025-10-31 19:52:29 - INFO -    \u2705 Código de barras EAN-13 final: 7750000000021
+2025-10-31 19:52:29 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-000010
+2025-10-31 19:52:29 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 19:52:29 - INFO -    \u2713 Número extraído: 000010 (valor numérico: 10)
+2025-10-31 19:52:29 - INFO -    Base del código (12 dígitos): 775000000010
+2025-10-31 19:52:29 - INFO -    Dígito verificador calculado: 6
+2025-10-31 19:52:29 - INFO -    \u2705 Código de barras EAN-13 final: 7750000000106
+2025-10-31 19:52:29 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-000100
+2025-10-31 19:52:29 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 19:52:29 - INFO -    \u2713 Número extraído: 000100 (valor numérico: 100)
+2025-10-31 19:52:29 - INFO -    Base del código (12 dígitos): 775000000100
+2025-10-31 19:52:29 - INFO -    Dígito verificador calculado: 4
+2025-10-31 19:52:29 - INFO -    \u2705 Código de barras EAN-13 final: 7750000001004
+2025-10-31 19:52:29 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-001000
+2025-10-31 19:52:29 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 19:52:29 - INFO -    \u2713 Número extraído: 001000 (valor numérico: 1000)
+2025-10-31 19:52:29 - INFO -    Base del código (12 dígitos): 775000001000
+2025-10-31 19:52:29 - INFO -    Dígito verificador calculado: 6
+2025-10-31 19:52:29 - INFO -    \u2705 Código de barras EAN-13 final: 7750000010006
+2025-10-31 19:52:29 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-123456
+2025-10-31 19:52:29 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 19:52:29 - INFO -    \u2713 Número extraído: 123456 (valor numérico: 123456)
+2025-10-31 19:52:29 - INFO -    Base del código (12 dígitos): 775000123456
+2025-10-31 19:52:29 - INFO -    Dígito verificador calculado: 2
+2025-10-31 19:52:29 - INFO -    \u2705 Código de barras EAN-13 final: 7750001234562
+2025-10-31 19:54:50 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:34:40 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:36:14 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:37:43 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:37:54 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-31 21:37:54 - INFO - \U0001f50d Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 21:37:54 - INFO -    Último código encontrado: PROD-000003
+2025-10-31 21:37:54 - INFO -    Último número: 3
+2025-10-31 21:37:54 - INFO -    \u2705 Siguiente número: 4
+2025-10-31 21:37:54 - INFO -    \U0001f4e6 Código generado: PROD-000004
+2025-10-31 21:37:54 - INFO - \U0001f50d Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 21:37:54 - INFO -    Último código encontrado: PROD-000003
+2025-10-31 21:37:54 - INFO -    Último número: 3
+2025-10-31 21:37:54 - INFO -    \u2705 Siguiente número: 4
+2025-10-31 21:37:54 - INFO -    \U0001f4e6 Código generado: PROD-000004
+2025-10-31 21:37:54 - INFO - \U0001f50d Buscando último código PROD-XXXXXX en base de datos...
+2025-10-31 21:37:54 - INFO -    Último código encontrado: PROD-000003
+2025-10-31 21:37:54 - INFO -    Último número: 3
+2025-10-31 21:37:54 - INFO -    \u2705 Siguiente número: 4
+2025-10-31 21:37:54 - INFO -    \U0001f4e6 Código generado: PROD-000004
+2025-10-31 21:37:54 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-000001
+2025-10-31 21:37:54 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 21:37:54 - INFO -    \u2713 Número extraído: 000001 (valor numérico: 1)
+2025-10-31 21:37:54 - INFO -    Base del código (12 dígitos): 775000000001
+2025-10-31 21:37:54 - INFO -    Dígito verificador calculado: 4
+2025-10-31 21:37:54 - INFO -    \u2705 Código de barras EAN-13 final: 7750000000014
+2025-10-31 21:37:54 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-000002
+2025-10-31 21:37:54 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 21:37:54 - INFO -    \u2713 Número extraído: 000002 (valor numérico: 2)
+2025-10-31 21:37:54 - INFO -    Base del código (12 dígitos): 775000000002
+2025-10-31 21:37:54 - INFO -    Dígito verificador calculado: 1
+2025-10-31 21:37:54 - INFO -    \u2705 Código de barras EAN-13 final: 7750000000021
+2025-10-31 21:37:54 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-000010
+2025-10-31 21:37:54 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 21:37:54 - INFO -    \u2713 Número extraído: 000010 (valor numérico: 10)
+2025-10-31 21:37:54 - INFO -    Base del código (12 dígitos): 775000000010
+2025-10-31 21:37:54 - INFO -    Dígito verificador calculado: 6
+2025-10-31 21:37:54 - INFO -    \u2705 Código de barras EAN-13 final: 7750000000106
+2025-10-31 21:37:54 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-000100
+2025-10-31 21:37:54 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 21:37:54 - INFO -    \u2713 Número extraído: 000100 (valor numérico: 100)
+2025-10-31 21:37:54 - INFO -    Base del código (12 dígitos): 775000000100
+2025-10-31 21:37:54 - INFO -    Dígito verificador calculado: 4
+2025-10-31 21:37:54 - INFO -    \u2705 Código de barras EAN-13 final: 7750000001004
+2025-10-31 21:37:54 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-001000
+2025-10-31 21:37:54 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 21:37:54 - INFO -    \u2713 Número extraído: 001000 (valor numérico: 1000)
+2025-10-31 21:37:54 - INFO -    Base del código (12 dígitos): 775000001000
+2025-10-31 21:37:54 - INFO -    Dígito verificador calculado: 6
+2025-10-31 21:37:54 - INFO -    \u2705 Código de barras EAN-13 final: 7750000010006
+2025-10-31 21:37:54 - INFO - \U0001f4ca Generando código de barras EAN-13 para SKU: PROD-123456
+2025-10-31 21:37:54 - INFO -    \u2713 Formato PROD-XXXXXX detectado
+2025-10-31 21:37:54 - INFO -    \u2713 Número extraído: 123456 (valor numérico: 123456)
+2025-10-31 21:37:54 - INFO -    Base del código (12 dígitos): 775000123456
+2025-10-31 21:37:54 - INFO -    Dígito verificador calculado: 2
+2025-10-31 21:37:54 - INFO -    \u2705 Código de barras EAN-13 final: 7750001234562

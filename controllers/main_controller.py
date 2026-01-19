@@ -13,6 +13,8 @@ from controllers.auth_controller import AuthController
 from views.login_view import LoginView
 from config.settings import SystemSettings
 from models.role_model import RoleModel
+from services.permission_service import PermissionService
+from utils.responsive_utils import ResponsiveManager
 
 class MainController:
     """Controlador principal de la aplicación"""
@@ -25,11 +27,25 @@ class MainController:
         self.is_running = False
         self.current_user = None
         
-        # Controladores
+        # Controladores y servicios
         self.auth_controller = AuthController()
+        self.permission_service = PermissionService()
+        self.credit_note_controller = None
+        self.sale_controller = None
+        self.is_on_dashboard = False  # Estado para navegación con ESC
         
         # Ventana principal (se crea después del login)
         self.main_window = None
+        
+        # Gestor responsivo (se inicializa al crear ventana principal)
+        self.responsive = None
+        
+        # Guardar geometría de ventana para mantenerla al cambiar de módulo
+        self.saved_window_geometry = None
+
+        # Ventanas flotantes auxiliares
+        self.category_window = None
+        self.stock_window = None
         
         # Configurar logging
         self._setup_logging()
@@ -137,8 +153,12 @@ class MainController:
             # Crear ventana principal
             self.main_window = tk.Tk()
             self.main_window.title("Sistema POS - Panel Principal")
-            self.main_window.geometry("1200x800")
-            self.main_window.state('zoomed')  # Maximizar en Windows
+            
+            # Inicializar gestor responsivo
+            self.responsive = ResponsiveManager(self.main_window)
+            
+            # Aplicar configuración responsiva
+            self.responsive.make_window_responsive(self.main_window)
             
             # Configurar protocolo de cierre
             self.main_window.protocol("WM_DELETE_WINDOW", self._on_main_window_close)
@@ -147,13 +167,23 @@ class MainController:
             colors = self.settings.get_colors()
             self.main_window.configure(bg=colors['background'])
             
+            # Configurar grid weights para responsividad
+            self.responsive.apply_grid_weights(self.main_window, 'default')
+            
             # Crear interfaz principal
             self._create_main_interface()
+
+            # Atajos globales
+            self._bind_global_shortcuts()
             
             # Mostrar ventana
             self.main_window.deiconify()
             self.main_window.lift()
             self.main_window.focus_force()
+
+            # Maximizar al iniciar (se reintenta brevemente para asegurar)
+            self._maximize_main_window()
+            self.main_window.after(150, self._maximize_main_window)
             
             # Iniciar loop principal
             self.main_window.mainloop()
@@ -176,10 +206,60 @@ class MainController:
             
             # Crear barra de estado
             self._create_status_bar()
+
+            # Marcar que estamos en el dashboard principal
+            self.is_on_dashboard = True
             
         except Exception as e:
             self.logger.error(f"Error creando interfaz principal: {e}")
             raise
+
+    def _bind_global_shortcuts(self):
+        """Configurar atajos globales de teclado (ESC)"""
+        try:
+            if not self.main_window:
+                return
+
+            # Limpiar binding previo para evitar duplicados
+            self.main_window.unbind_all("<Escape>")
+            self.main_window.bind_all("<Escape>", self._handle_escape)
+        except Exception as exc:
+            self.logger.warning(f"No se pudieron enlazar atajos globales: {exc}")
+
+    def _maximize_main_window(self):
+        """Intentar maximizar la ventana principal de forma segura"""
+        if not self.main_window:
+            return
+        try:
+            self.main_window.state('zoomed')
+        except Exception:
+            try:
+                self.main_window.attributes('-zoomed', True)
+            except Exception:
+                pass
+
+    def _handle_escape(self, event=None):
+        """Manejar pulsación de ESC según contexto"""
+        try:
+            # Si hay ventanas flotantes prioritarias, cerrarlas primero
+            if self.category_window and self.category_window.winfo_exists():
+                self._close_category_window()
+                return
+
+            if self.stock_window and self.stock_window.winfo_exists():
+                self._close_stock_window()
+                return
+
+            # Si estamos en un módulo, regresar al dashboard
+            if not self.is_on_dashboard:
+                self._back_to_dashboard()
+                return
+
+            # En el dashboard, ESC cierra sesión
+            self._logout()
+
+        except Exception as exc:
+            self.logger.error(f"Error manejando ESC: {exc}")
     
     def _create_menu_bar(self):
         """Crear barra de menú"""
@@ -203,7 +283,8 @@ class MainController:
         # Menú Archivo
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Archivo", menu=file_menu, font=('Segoe UI', 13, 'bold'))
-        file_menu.add_command(label="Nueva Venta", command=self._new_sale)
+        if self._check_user_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=self._new_sale)
         file_menu.add_separator()
         file_menu.add_command(label="Cerrar Sesión", command=self._logout)
         file_menu.add_command(label="Salir", command=self._exit_application)
@@ -211,31 +292,35 @@ class MainController:
         # Menú Ventas
         sales_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Ventas", menu=sales_menu, font=('Segoe UI', 13, 'bold'))
-        sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
-        sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
+        if self._check_user_permission('sales.create'):
+            sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
+        if self._check_user_permission('sales.view'):
+            sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
         
         # Menú Inventario (solo si tiene permisos)
-        if self.auth_controller.has_permission('inventory_view'):
+        if self.auth_controller.has_permission('inventory.view'):
             inventory_menu = tk.Menu(menubar, tearoff=0)
             menubar.add_cascade(label="Inventario", menu=inventory_menu, font=('Segoe UI', 13, 'bold'))
             inventory_menu.add_command(label="Ver Productos", command=self._view_products)
             inventory_menu.add_command(label="Gestionar Categorías", command=self._view_categories)
             
-            if self.auth_controller.has_permission('inventory_manage'):
+            if self.auth_controller.has_permission('inventory.edit'):
                 inventory_menu.add_command(label="Agregar Producto", command=self._add_product)
                 inventory_menu.add_command(label="Gestionar Inventario", command=self._manage_inventory)
         
         # Menú Reportes (solo supervisores y admins)
-        if self.auth_controller.has_permission('reports_basic'):
+        if self.auth_controller.has_permission('reports.basic'):
             reports_menu = tk.Menu(menubar, tearoff=0)
             menubar.add_cascade(label="Reportes", menu=reports_menu, font=('Segoe UI', 13, 'bold'))
             reports_menu.add_command(label="Ventas del Día", command=self._daily_sales_report)
             
-            if self.auth_controller.has_permission('reports_full'):
+            if self.auth_controller.has_permission('reports.full'):
                 reports_menu.add_command(label="Reporte Completo", command=self._full_report)
         
         # Menú Administración (solo admins)
-        if self.auth_controller.has_permission('users_manage'):
+        if self.auth_controller.has_permission('users.view'):
             admin_menu = tk.Menu(menubar, tearoff=0)
             menubar.add_cascade(label="Administración", menu=admin_menu, font=('Segoe UI', 13, 'bold'))
             admin_menu.add_command(label="Gestionar Usuarios", command=self._manage_users)
@@ -278,8 +363,9 @@ class MainController:
         file_btn.pack(side='left', padx=2)
         file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
         file_btn.config(menu=file_menu)
-        file_menu.add_command(label="Nueva Venta", command=self._new_sale)
-        file_menu.add_separator()
+        if self._check_user_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=self._new_sale)
+            file_menu.add_separator()
         file_menu.add_command(label="Cerrar Sesión", command=self._logout)
         file_menu.add_command(label="Salir", command=self._exit_application)
         
@@ -288,11 +374,18 @@ class MainController:
         sales_btn.pack(side='left', padx=2)
         sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
         sales_btn.config(menu=sales_menu)
-        sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
-        sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
+        can_create_sales = self._check_user_permission('sales.create')
+        can_view_sales = self._check_user_permission('sales.view')
+        if can_create_sales:
+            sales_menu.add_command(label="Nueva Venta", command=self._new_sale)
+        if can_view_sales:
+            sales_menu.add_command(label="Historial de Ventas", command=self._sales_history)
+            sales_menu.add_command(label="Notas de Crédito", command=self._credit_notes_module)
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
         
         # Botón Inventario
-        if self.auth_controller.has_permission('inventory_view'):
+        if self.auth_controller.has_permission('inventory.view'):
             inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
             inv_btn.pack(side='left', padx=2)
             inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
@@ -301,32 +394,44 @@ class MainController:
             inv_menu.add_command(label="Gestionar Categorías", command=self._view_categories)
             inv_menu.add_command(label="Control de Stock", command=self._view_stock_control)
             
-            if self.auth_controller.has_permission('inventory_manage'):
+            if self.auth_controller.has_permission('inventory.edit'):
                 inv_menu.add_separator()
                 inv_menu.add_command(label="Agregar Producto", command=self._add_product)
                 inv_menu.add_command(label="Gestionar Inventario", command=self._manage_inventory)
         
         # Botón Reportes
-        if self.auth_controller.has_permission('reports_basic'):
+        if self.auth_controller.has_permission('reports.basic'):
             rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
             rep_btn.pack(side='left', padx=2)
             rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
             rep_btn.config(menu=rep_menu)
             rep_menu.add_command(label="Ventas del Día", command=self._daily_sales_report)
             
-            if self.auth_controller.has_permission('reports_full'):
+            if self.auth_controller.has_permission('reports.full'):
                 rep_menu.add_command(label="Reporte Completo", command=self._full_report)
         
         # Botón Administración
-        if self.auth_controller.has_permission('users_manage'):
+        if self.permission_service.check_permission(self.current_user, 'users.view') or \
+           self.permission_service.check_permission(self.current_user, 'roles.view') or \
+           self.permission_service.check_permission(self.current_user, 'system.config'):
             admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
             admin_btn.pack(side='left', padx=2)
             admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
             admin_btn.config(menu=admin_menu)
-            admin_menu.add_command(label="Gestionar Usuarios", command=self._manage_users)
-            admin_menu.add_command(label="Gestionar Roles", command=self._manage_roles)
-            admin_menu.add_separator()
-            admin_menu.add_command(label="Configuración", command=self._system_config)
+            
+            # Gestionar Usuarios - solo si tiene permiso users.view
+            if self.permission_service.check_permission(self.current_user, 'users.view'):
+                admin_menu.add_command(label="Gestionar Usuarios", command=self._manage_users)
+            
+            # Gestionar Roles - solo si tiene permiso roles.view
+            if self.permission_service.check_permission(self.current_user, 'roles.view'):
+                admin_menu.add_command(label="Gestionar Roles", command=self._manage_roles)
+            
+            # Configuración del sistema - solo si tiene permiso system.config
+            if self.permission_service.check_permission(self.current_user, 'system.config'):
+                if admin_menu.index('end') is not None:  # Si hay items previos, agregar separador
+                    admin_menu.add_separator()
+                admin_menu.add_command(label="Configuración", command=self._system_config)
         
         # Botón Ayuda
         help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
@@ -358,18 +463,19 @@ class MainController:
         quick_buttons_frame = tk.Frame(toolbar_frame, bg=self.settings.get_colors()['surface'])
         quick_buttons_frame.pack(side='right', padx=10)
         
-        # Botón Nueva Venta
-        new_sale_btn = tk.Button(
-            quick_buttons_frame,
-            text="Nueva Venta",
-            command=self._new_sale,
-            bg=self.settings.get_colors()['primary'],
-            fg='white',
-            font=('Segoe UI', 10, 'bold'),
-            padx=20,
-            pady=5
-        )
-        new_sale_btn.pack(side='left', padx=5)
+        can_create_sales = self._check_user_permission('sales.create')
+        if can_create_sales:
+            new_sale_btn = tk.Button(
+                quick_buttons_frame,
+                text="Nueva Venta",
+                command=self._new_sale,
+                bg=self.settings.get_colors()['primary'],
+                fg='white',
+                font=('Segoe UI', 10, 'bold'),
+                padx=20,
+                pady=5
+            )
+            new_sale_btn.pack(side='left', padx=5)
         
         # Botón Configuración de Boletas
         config_btn = tk.Button(
@@ -422,19 +528,21 @@ class MainController:
         
         self.dashboard_view = DashboardView(self.main_window, self.current_user)
         
-        # Registrar callbacks para los módulos
-        self.dashboard_view.bind_module_callback('clients', lambda: self._manage_clients())
+        # Registrar callbacks para los módulos realmente disponibles
         self.dashboard_view.bind_module_callback('products', lambda: self._view_products())
         self.dashboard_view.bind_module_callback('categories', lambda: self._view_categories())
         self.dashboard_view.bind_module_callback('stock_control', lambda: self._view_stock_control())
-        self.dashboard_view.bind_module_callback('purchases', lambda: self._manage_purchases())
-        self.dashboard_view.bind_module_callback('quick_sale', lambda: self._new_sale())
-        self.dashboard_view.bind_module_callback('results', lambda: self._daily_sales_report())
+        self.dashboard_view.bind_module_callback('sales_register', lambda: self._new_sale())
+        self.dashboard_view.bind_module_callback('sales_history', lambda: self._sales_history())
+        self.dashboard_view.bind_module_callback('credit_notes', lambda: self._credit_notes_module())
+        self.dashboard_view.bind_module_callback('user_management', lambda: self._manage_users())
+        self.dashboard_view.bind_module_callback('role_management', lambda: self._manage_roles())
+        self.dashboard_view.bind_module_callback('income_report', lambda: self._daily_sales_report())
+        self.dashboard_view.bind_module_callback('reports', lambda: self._full_report())
         self.dashboard_view.bind_module_callback('business', lambda: self._system_config())
         self.dashboard_view.bind_module_callback('ticket_config', lambda: self._config_tickets())
         self.dashboard_view.bind_module_callback('support', lambda: self._show_support())
         self.dashboard_view.bind_module_callback('help', lambda: self._show_manual())
-        self.dashboard_view.bind_module_callback('reports', lambda: self._full_report())
     
     def _create_stats_dashboard(self, parent):
         """Crear dashboard con estadísticas"""
@@ -642,33 +750,42 @@ class MainController:
                 'permission': None  # Todos
             }
         ]
+
+        if self._check_user_permission('sales.view'):
+            modules.append({
+                'title': 'Notas Crédito',
+                'icon': '🧾',
+                'color': '#1abc9c',
+                'command': self._credit_notes_module,
+                'permission': 'sales.view'
+            })
         
         # Módulos según permisos
-        if self.auth_controller.has_permission('inventory_view'):
+        if self.auth_controller.has_permission('inventory.view'):
             modules.append({
                 'title': 'Productos',
                 'icon': '📦',
                 'color': '#e74c3c',
                 'command': self._view_products,
-                'permission': 'inventory_view'
+                'permission': 'inventory.view'
             })
-        
-        if self.auth_controller.has_permission('reports_basic'):
+
+        if self.auth_controller.has_permission('reports.basic'):
             modules.append({
                 'title': 'Reportes',
                 'icon': '📊',
                 'color': '#9b59b6',
                 'command': self._daily_sales_report,
-                'permission': 'reports_basic'
+                'permission': 'reports.basic'
             })
         
-        if self.auth_controller.has_permission('users_manage'):
+        if self.auth_controller.has_permission('users.view'):
             modules.append({
                 'title': 'Usuarios',
                 'icon': '👥',
                 'color': '#f39c12',
                 'command': self._manage_users,
-                'permission': 'users_manage'
+                'permission': 'users.view'
             })
         
         modules.extend([
@@ -783,8 +900,52 @@ class MainController:
         # Convertir de vuelta a hex
         return '#{:02x}{:02x}{:02x}'.format(*darker_rgb)
     
+    def _save_window_geometry(self):
+        """Guardar geometría actual de la ventana"""
+        try:
+            if self.main_window:
+                self.saved_window_geometry = self.main_window.geometry()
+                # También guardar estado de maximizado
+                self.saved_window_state = self.main_window.state()
+        except Exception as e:
+            self.logger.error(f"Error guardando geometría: {e}")
+    
+    def _restore_window_geometry(self):
+        """Restaurar geometría guardada de la ventana"""
+        try:
+            if self.main_window and self.saved_window_geometry:
+                self.main_window.geometry(self.saved_window_geometry)
+                # Restaurar estado de maximizado si corresponde
+                if hasattr(self, 'saved_window_state') and self.saved_window_state == 'zoomed':
+                    self.main_window.state('zoomed')
+        except Exception as e:
+            self.logger.error(f"Error restaurando geometría: {e}")
+    
+    def _center_window(self, window: tk.Toplevel, width: Optional[int] = None, height: Optional[int] = None):
+        """Centrar ventana secundaria en la pantalla"""
+        try:
+            window.update_idletasks()
+            win_width = width or window.winfo_width()
+            win_height = height or window.winfo_height()
+
+            screen_width = window.winfo_screenwidth()
+            screen_height = window.winfo_screenheight()
+
+            x = max(0, (screen_width - win_width) // 2)
+            y = max(0, (screen_height - win_height) // 2)
+
+            window.geometry(f"{win_width}x{win_height}+{x}+{y}")
+        except Exception as exc:
+            self.logger.warning(f"No se pudo centrar la ventana: {exc}")
+
     def _clear_main_content(self):
         """Limpiar contenido principal de la ventana"""
+        # PRIMERO: Guardar geometría actual ANTES de limpiar
+        self._save_window_geometry()
+
+        # Al limpiar contenido asumimos que salimos del dashboard
+        self.is_on_dashboard = False
+        
         # Destruir todos los widgets hijos excepto la barra de menú
         for widget in self.main_window.winfo_children():
             if not isinstance(widget, tk.Menu):
@@ -796,26 +957,111 @@ class MainController:
             if not self.current_user:
                 return False
             
-            # Verificar primero si el usuario tiene permisos específicos
-            user_permissions = self.current_user.get('permissions', {})
-            if user_permissions.get(permission):
-                return True
+            # Obtener permisos del usuario
+            user_permissions = self.current_user.get('permissions')
             
-            # Usar el servicio de permisos centralizado
+            # Si no hay permisos, denegar
+            if not user_permissions:
+                print(f"   ⚠️ Usuario sin permisos asignados")
+                return False
+            
+            # Si es una lista (sistema nuevo de roles)
+            if isinstance(user_permissions, list):
+                # Verificar si tiene el permiso o si tiene '*' (todos)
+                has_perm = permission in user_permissions or '*' in user_permissions
+                print(f"   🔍 Verificando permiso '{permission}': {has_perm}")
+                return has_perm
+            
+            # Si es un dict (sistema antiguo de permisos individuales)
+            elif isinstance(user_permissions, dict):
+                # Verificar permisos especiales de super admin
+                if user_permissions.get('all_modules', False) or user_permissions.get('super_admin', False):
+                    print(f"   🔍 Verificando permiso '{permission}' (dict): True [SUPER ADMIN]")
+                    return True
+                
+                # Verificar permiso específico
+                has_perm = user_permissions.get(permission, False)
+                print(f"   🔍 Verificando permiso '{permission}' (dict): {has_perm}")
+                return has_perm
+            
+            # Fallback: usar servicio de permisos centralizado
             return self.auth_controller.has_permission(permission)
+            
         except Exception as e:
             print(f"   ❌ Error verificando permisos: {e}")
+            import traceback
+            traceback.print_exc()
             self.logger.error(f"Error verificando permisos: {e}")
+            return False
+    
+    def reload_current_user_permissions(self):
+        """Recargar permisos del usuario actual desde la base de datos"""
+        try:
+            if not self.current_user:
+                return False
+            
+            user_id = self.current_user.get('id')
+            if not user_id:
+                return False
+            
+            print(f"\n🔄 Recargando permisos para usuario ID={user_id}...")
+            
+            # Importar UserModel aquí para evitar circular imports
+            from models.user_model import UserModel
+            user_model = UserModel()
+            
+            # Obtener datos frescos del usuario desde la BD
+            fresh_user = user_model.get_user_by_id(user_id)
+            if not fresh_user:
+                print(f"❌ Usuario no encontrado")
+                return False
+            
+            # Preparar datos de usuario con permisos actualizados
+            updated_user_data = user_model.prepare_user_data(fresh_user)
+            
+            # Actualizar current_user con los nuevos permisos
+            old_permissions = self.current_user.get('permissions')
+            self.current_user['permissions'] = updated_user_data.get('permissions')
+            
+            print(f"✅ Permisos actualizados!")
+            print(f"   Permisos anteriores: {old_permissions}")
+            print(f"   Permisos nuevos: {self.current_user.get('permissions')}")
+            
+            # Limpiar caché de permisos
+            from services.permission_service import PermissionService
+            permission_service = PermissionService()
+            permission_service.clear_user_cache(user_id)
+            print(f"🧹 Caché de permisos limpiado")
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error recargando permisos: {e}")
+            import traceback
+            traceback.print_exc()
+            self.logger.error(f"Error recargando permisos: {e}")
             return False
     
     def _back_to_dashboard(self):
         """Volver al dashboard principal"""
         try:
-            # Limpiar contenido actual
+            # Limpiar contenido actual (guarda geometría automáticamente)
             self._clear_main_content()
             
             # Recrear interfaz principal
             self._create_main_interface()
+
+            # Reaplicar atajos globales
+            self._bind_global_shortcuts()
+            
+            # IMPORTANTE: Restaurar geometría después de recrear
+
+            # Maximizar al iniciar (solo si el SO/gestor lo permite)
+            try:
+                self.main_window.state('zoomed')
+            except Exception:
+                pass
+            self._restore_window_geometry()
             
         except Exception as e:
             self.logger.error(f"Error volviendo al dashboard: {e}")
@@ -863,9 +1109,16 @@ class MainController:
             'command': self._sales_history,
             'color': self.settings.get_colors()['secondary']
         })
+
+        if self.auth_controller.has_permission('sales.view'):
+            buttons.append({
+                'text': '🧾\nNotas Crédito',
+                'command': self._credit_notes_module,
+                'color': '#1abc9c'
+            })
         
         # Botón Productos (si tiene permisos)
-        if self.auth_controller.has_permission('inventory_view'):
+        if self.auth_controller.has_permission('inventory.view'):
             buttons.append({
                 'text': '📦\nProductos',
                 'command': self._view_products,
@@ -880,7 +1133,7 @@ class MainController:
         })
         
         # Botón Reportes (si tiene permisos)
-        if self.auth_controller.has_permission('reports_basic'):
+        if self.auth_controller.has_permission('reports.basic'):
             buttons.append({
                 'text': '📊\nReportes',
                 'command': self._daily_sales_report,
@@ -888,7 +1141,7 @@ class MainController:
             })
         
         # Botón Administración (solo admins)
-        if self.auth_controller.has_permission('users_manage'):
+        if self.auth_controller.has_permission('users.view'):
             buttons.append({
                 'text': '⚙️\nAdministración',
                 'command': self._manage_users,
@@ -958,11 +1211,15 @@ class MainController:
     def _new_sale(self):
         """Iniciar nueva venta - Abrir POS"""
         try:
+            if not self._check_user_permission('sales.create'):
+                messagebox.showerror("Acceso Denegado", "No tienes permisos para registrar nuevas ventas")
+                return
+
             print("🛒 DEBUG: Abriendo Punto de Venta desde main_controller")
             print(f"   - main_window tipo: {type(self.main_window)}")
             print(f"   - current_user: {self.current_user}")
             
-            # Limpiar la ventana principal
+            # Limpiar la ventana principal (guarda geometría automáticamente)
             self._clear_main_content()
             print("   ✅ Ventana principal limpiada")
             
@@ -987,6 +1244,9 @@ class MainController:
             self.pos_view.show()
             print("   📺 Vista POS mostrada")
             
+            # IMPORTANTE: Restaurar geometría después de cargar vista
+            self._restore_window_geometry()
+            
         except Exception as e:
             self.logger.error(f"Error al abrir módulo de ventas: {e}")
             import traceback
@@ -995,7 +1255,250 @@ class MainController:
     
     def _sales_history(self):
         """Mostrar historial de ventas"""
-        messagebox.showinfo("Historial", "Módulo de historial en desarrollo")
+        try:
+            if not self._check_user_permission('sales.view'):
+                messagebox.showerror("Acceso Denegado", "No tienes permisos para ver el historial de ventas")
+                return
+
+            print("💰 DEBUG: Abriendo historial de ventas desde main_controller")
+            self._clear_main_content()
+
+            from views.sales_history_view import SalesHistoryView
+            from controllers.sale_controller import SaleController
+
+            if not hasattr(self, 'sale_controller') or self.sale_controller is None:
+                self.sale_controller = SaleController()
+
+            self.sales_history_view = SalesHistoryView(self.main_window, self.current_user)
+
+            # Navegación principal
+            self.sales_history_view.bind_callback('back_to_dashboard', self._show_dashboard)
+            self.sales_history_view.bind_callback('new_sale', self._new_sale)
+            self.sales_history_view.bind_callback('sales_history', self._sales_history)
+            self.sales_history_view.bind_callback('view_products', self._view_products)
+            self.sales_history_view.bind_callback('view_categories', self._view_categories)
+            self.sales_history_view.bind_callback('stock_control', self._show_inventory_management)
+            self.sales_history_view.bind_callback('daily_report', self._daily_sales_report)
+            self.sales_history_view.bind_callback('full_report', self._full_report)
+            self.sales_history_view.bind_callback('manage_users', self._manage_users)
+            self.sales_history_view.bind_callback('manage_roles', self._manage_roles)
+            self.sales_history_view.bind_callback('system_config', self._system_config)
+            self.sales_history_view.bind_callback('show_manual', self._show_manual)
+            self.sales_history_view.bind_callback('show_about', self._show_about)
+
+            # Eventos específicos del módulo
+            self.sales_history_view.bind_callback('refresh', lambda: self._load_sales_history(self.sales_filters))
+            self.sales_history_view.bind_callback('apply_filters', self._apply_sales_filters)
+            self.sales_history_view.bind_callback('reset_filters', self._reset_sales_filters)
+            self.sales_history_view.bind_callback('get_sale_detail', self._load_sale_detail)
+            self.sales_history_view.bind_callback('delete_sale', self._delete_sale_from_history)
+
+            # Estado inicial de filtros y carga
+            default_sales_limit = getattr(self.sale_controller, 'default_sales_limit', 500)
+            self.sales_filters = {'status': 'completed', 'limit': default_sales_limit}
+            self._load_sales_history(self.sales_filters)
+
+            self._restore_window_geometry()
+
+        except Exception as e:
+            self.logger.error(f"Error al abrir historial de ventas: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Error", f"No se pudo abrir el historial de ventas:\n{str(e)}")
+
+    def _load_sales_history(self, filters: dict | None = None):
+        """Cargar ventas hacia la vista de historial"""
+        try:
+            if not hasattr(self, 'sale_controller') or self.sale_controller is None:
+                from controllers.sale_controller import SaleController
+                self.sale_controller = SaleController()
+
+            filters = filters or {}
+            filters.setdefault('limit', getattr(self.sale_controller, 'default_sales_limit', 500))
+            result = self.sale_controller.get_sales_list(filters)
+
+            if result.get('success'):
+                sales = result.get('sales', [])
+                if hasattr(self, 'sales_history_view') and self.sales_history_view:
+                    self.sales_history_view.load_sales(sales)
+            else:
+                message = result.get('message', 'No se pudieron obtener las ventas')
+                messagebox.showerror("Historial de ventas", message)
+
+        except Exception as e:
+            self.logger.error(f"Error cargando historial de ventas: {e}")
+            messagebox.showerror("Error", f"Error cargando historial de ventas: {str(e)}")
+
+    def _apply_sales_filters(self, filters: dict):
+        """Aplicar filtros recibidos desde la vista"""
+        self.sales_filters = filters.copy() if filters else {}
+        self._load_sales_history(self.sales_filters)
+
+    def _reset_sales_filters(self):
+        """Restablecer filtros a los valores por defecto"""
+        self.sales_filters = {
+            'status': 'completed',
+            'limit': getattr(self.sale_controller, 'default_sales_limit', 500)
+        }
+        self._load_sales_history(self.sales_filters)
+
+    def _load_sale_detail(self, sale_id: int):
+        """Cargar detalle específico de una venta"""
+        if sale_id is None:
+            return
+
+        try:
+            result = self.sale_controller.get_sale_detail(sale_id)
+            if result.get('success'):
+                sale = result.get('sale')
+                if sale and hasattr(self, 'sales_history_view'):
+                    self.sales_history_view.show_sale_detail(sale)
+            else:
+                if hasattr(self, 'sales_history_view'):
+                    self.sales_history_view.show_sale_detail(None)
+                messagebox.showerror("Detalle de venta", result.get('message', 'No se pudo obtener el detalle'))
+
+        except Exception as e:
+            self.logger.error(f"Error obteniendo detalle de venta {sale_id}: {e}")
+            messagebox.showerror("Error", f"Error al cargar el detalle de la venta: {str(e)}")
+
+    def _delete_sale_from_history(self, sale_id: int, reason: str | None = None):
+        """Eliminar (cancelar) una venta desde el historial"""
+        if sale_id is None:
+            return
+
+        if not self._check_user_permission('sales.delete'):
+            messagebox.showerror("Acceso Denegado", "No tienes permisos para eliminar ventas")
+            return
+
+        try:
+            user_id = self.current_user.get('id') if self.current_user else None
+            reason_text = reason or 'Eliminada desde historial de ventas'
+            result = self.sale_controller.cancel_sale(sale_id, user_id, reason_text)
+
+            if result.get('success'):
+                if hasattr(self, 'sales_history_view'):
+                    message = result.get('message', 'Venta eliminada exitosamente')
+                    restored_items = result.get('restored_items') or []
+                    if restored_items:
+                        total_items = sum(item.get('quantity', 0) for item in restored_items)
+                        message += f"\nStock restaurado para {len(restored_items)} producto(s), total devuelto: {total_items:.2f} unidades."
+                    self.sales_history_view.show_success("Venta eliminada", message)
+                    self.sales_history_view.clear_sale_detail()
+                self._load_sales_history(self.sales_filters)
+            else:
+                if hasattr(self, 'sales_history_view'):
+                    self.sales_history_view.show_error("Error", result.get('message', 'No se pudo eliminar la venta'))
+
+        except Exception as e:
+            self.logger.error(f"Error eliminando venta {sale_id}: {e}")
+            messagebox.showerror("Error", f"No se pudo eliminar la venta: {str(e)}")
+
+    # ==========================================
+    # Notas de crédito
+    # ==========================================
+
+    def _credit_notes_module(self):
+        """Abrir módulo de notas de crédito"""
+        try:
+            if not self._check_user_permission('sales.view'):
+                messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder a notas de crédito")
+                return
+
+            self._clear_main_content()
+
+            from views.credit_notes_view import CreditNotesView
+            from controllers.credit_note_controller import CreditNoteController
+
+            if not self.credit_note_controller:
+                self.credit_note_controller = CreditNoteController()
+
+            self.credit_notes_view = CreditNotesView(self.main_window, self.current_user)
+            self.credit_notes_view.bind_callback('back_to_dashboard', self._show_dashboard)
+            self.credit_notes_view.bind_callback('refresh', self._load_credit_notes)
+            self.credit_notes_view.bind_callback('generate_credit_note', self._generate_credit_note)
+            self.credit_notes_view.bind_callback('show_credit_note_report', self._show_credit_note_report)
+            self.credit_notes_view.bind_callback('fetch_credit_note_sales', self._fetch_sales_for_credit_notes)
+
+            self._load_credit_notes()
+            self._restore_window_geometry()
+
+        except Exception as e:
+            self.logger.error(f"Error al abrir notas de crédito: {e}")
+            messagebox.showerror("Error", f"No se pudo abrir el módulo de notas de crédito:\n{str(e)}")
+
+    def _ensure_credit_note_controller(self):
+        if not self.credit_note_controller:
+            from controllers.credit_note_controller import CreditNoteController
+            self.credit_note_controller = CreditNoteController()
+
+    def _ensure_sale_controller(self):
+        if not self.sale_controller:
+            from controllers.sale_controller import SaleController
+            self.sale_controller = SaleController()
+
+    def _load_credit_notes(self):
+        try:
+            self._ensure_credit_note_controller()
+            result = self.credit_note_controller.list_credit_notes()
+            if result.get('success'):
+                if hasattr(self, 'credit_notes_view') and self.credit_notes_view:
+                    self.credit_notes_view.load_notes(result.get('notes', []))
+            else:
+                messagebox.showerror("Notas de crédito", result.get('message', 'No se pudo cargar el listado'))
+        except Exception as e:
+            self.logger.error(f"Error cargando notas de crédito: {e}")
+            messagebox.showerror("Notas de crédito", f"Error cargando notas de crédito: {str(e)}")
+
+    def _fetch_sales_for_credit_notes(self, search_text: str | None = None):
+        try:
+            print(f"🔍 [DEBUG MAIN] _fetch_sales_for_credit_notes - Recibido: '{search_text}'")
+            self._ensure_sale_controller()
+            sale_code = (search_text or '').strip()
+            print(f"🔍 [DEBUG MAIN] Llamando a get_recent_sales_for_credit_notes con: '{sale_code}'")
+            return self.sale_controller.get_recent_sales_for_credit_notes(sale_code or None)
+        except Exception as e:
+            self.logger.error(f"Error obteniendo ventas para notas de crédito: {e}")
+            return {'success': False, 'message': f'No se pudieron obtener las ventas: {str(e)}'}
+
+    def _generate_credit_note(self, sale_id: int, reason: str = ""):
+        try:
+            self._ensure_credit_note_controller()
+            user_id = self.current_user.get('id') if self.current_user else None
+            if not user_id:
+                messagebox.showerror("Sesión", "No se pudo identificar al usuario actual")
+                return
+
+            result = self.credit_note_controller.create_credit_note(sale_id, user_id, reason)
+            if result.get('success'):
+                if hasattr(self, 'credit_notes_view'):
+                    self.credit_notes_view.show_success("Nota creada", result.get('message', 'Nota de crédito generada.'))
+                self._load_credit_notes()
+            else:
+                messagebox.showerror("Notas de crédito", result.get('message', 'No se pudo generar la nota.'))
+        except Exception as e:
+            self.logger.error(f"Error generando nota de crédito: {e}")
+            messagebox.showerror("Notas de crédito", f"No se pudo generar la nota: {str(e)}")
+
+    def _show_credit_note_report(self):
+        try:
+            self._ensure_credit_note_controller()
+            result = self.credit_note_controller.report()
+            if result.get('success'):
+                data = result.get('data', {})
+                summary = data.get('summary', {})
+                if hasattr(self, 'credit_notes_view'):
+                    self.credit_notes_view.show_report_summary(summary)
+                else:
+                    messagebox.showinfo(
+                        "Reporte de notas",
+                        f"Total de notas: {summary.get('total_notes', 0)}\nMonto total acreditado: S/ {summary.get('total_amount', 0.0):.2f}"
+                    )
+            else:
+                messagebox.showerror("Notas de crédito", result.get('message', 'No se pudo obtener el reporte.'))
+        except Exception as e:
+            self.logger.error(f"Error obteniendo reporte de notas: {e}")
+            messagebox.showerror("Notas de crédito", f"No se pudo obtener el reporte: {str(e)}")
     
     def _view_products(self):
         """Ver productos - Abrir módulo de inventario"""
@@ -1009,7 +1512,7 @@ class MainController:
                 messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder al módulo de inventario")
                 return
             
-            # Limpiar la ventana principal
+            # Limpiar la ventana principal (guarda geometría automáticamente)
             self._clear_main_content()
             print("   ✅ Ventana principal limpiada")
             
@@ -1040,6 +1543,8 @@ class MainController:
             self.product_view.bind_callback('view_products', self._view_products)
             self.product_view.bind_callback('view_categories', self._view_categories)
             self.product_view.bind_callback('go_to_inventory', self._show_inventory_management)
+            self.product_view.bind_callback('open_categories_window', self._open_categories_window)
+            self.product_view.bind_callback('open_stock_window', self._open_stock_window)
             self.product_view.bind_callback('daily_report', self._daily_sales_report)
             self.product_view.bind_callback('full_report', self._full_report)
             self.product_view.bind_callback('manage_users', self._manage_users)
@@ -1054,6 +1559,9 @@ class MainController:
             self._load_product_categories()
             self._load_product_units()
             
+            # IMPORTANTE: Restaurar geometría después de cargar todo
+            self._restore_window_geometry()
+            
         except Exception as e:
             import traceback
             print(f"   ❌ ERROR: {e}")
@@ -1063,7 +1571,11 @@ class MainController:
     def _load_products(self):
         """Cargar lista de productos"""
         try:
-            products = self.product_controller.get_all_products(self.current_user, include_inactive=False)
+            products = self.product_controller.get_all_products(
+                self.current_user,
+                include_inactive=False,
+                limit=getattr(self.product_controller, 'default_limit', 500)
+            )
             self.product_view.load_products(products)
         except Exception as e:
             self.logger.error(f"Error cargando productos: {e}")
@@ -1091,7 +1603,11 @@ class MainController:
             if search_term.strip():
                 products = self.product_controller.search_products(search_term, self.current_user)
             else:
-                products = self.product_controller.get_all_products(self.current_user)
+                products = self.product_controller.get_all_products(
+                    self.current_user,
+                    include_inactive=False,
+                    limit=getattr(self.product_controller, 'default_limit', 500)
+                )
             
             self.product_view.load_products(products)
         except Exception as e:
@@ -1104,16 +1620,24 @@ class MainController:
             from views.product_form_dialog import ProductFormDialog
             
             # Abrir diálogo
+            next_sku = self.product_controller.generate_next_sku()
             dialog = ProductFormDialog(
                 self.main_window,
                 product=None,
                 categories=self.product_view.categories,
-                units=self.product_view.units
+                units=self.product_view.units,
+                next_sku=next_sku
             )
             
             product_data = dialog.show()
             
             if product_data:
+                try:
+                    print("🔍 [DEBUG MAIN] Datos recibidos de diálogo de producto:")
+                    for k, v in product_data.items():
+                        print(f"   {k}: {v}")
+                except Exception as _:
+                    pass
                 # Crear producto
                 success, message, product_id = self.product_controller.create_product(
                     product_data, self.current_user
@@ -1339,6 +1863,172 @@ class MainController:
             self.logger.error(f"Error exportando productos: {e}")
             messagebox.showerror("Error", f"Error al exportar: {str(e)}")
     
+    def _open_categories_window(self):
+        """Mostrar gestión de categorías como ventana flotante"""
+        try:
+            if not self._check_user_permission('products.categories'):
+                messagebox.showerror(
+                    "Acceso denegado",
+                    "No tienes permisos para gestionar categorías",
+                    parent=self.main_window
+                )
+                return
+
+            if self.category_window and self.category_window.winfo_exists():
+                self.category_window.deiconify()
+                self.category_window.lift()
+                self.category_window.focus_force()
+                return
+
+            from views.category_management_view import CategoryManagementView
+            from controllers.category_controller import CategoryController
+
+            self.category_window = tk.Toplevel(self.main_window)
+            self.category_window.title("Gestión de Categorías")
+            self.category_window.geometry("1080x700")
+            self._center_window(self.category_window, 1080, 700)
+            self.category_window.transient(self.main_window)
+            self.category_window.focus_force()
+
+            # Cerrar correctamente
+            self.category_window.protocol("WM_DELETE_WINDOW", self._close_category_window)
+
+            category_controller = CategoryController()
+            category_view = CategoryManagementView(self.category_window, self.current_user)
+
+            def nav_callback(callback):
+                def wrapper():
+                    self._close_category_window()
+                    if callable(callback):
+                        callback()
+                return wrapper
+
+            category_view.register_callbacks(
+                refresh=lambda: self._load_categories(category_view, category_controller),
+                search=lambda term: self._search_categories(category_view, category_controller, term),
+                create=lambda: self._create_category(
+                    category_view,
+                    category_controller,
+                    parent_window=self.category_window
+                ),
+                edit=lambda cat_id: self._edit_category(
+                    category_view,
+                    category_controller,
+                    cat_id,
+                    parent_window=self.category_window
+                ),
+                delete=lambda cat_id: self._delete_category(
+                    category_view,
+                    category_controller,
+                    cat_id,
+                    parent_window=self.category_window
+                ),
+                back=self._close_category_window,
+                new_sale=nav_callback(self._new_sale),
+                sales_history=nav_callback(self._sales_history),
+                view_products=nav_callback(self._view_products),
+                view_categories=nav_callback(self._view_categories),
+                stock_control=nav_callback(self._open_stock_window),
+                daily_report=nav_callback(self._daily_sales_report),
+                full_report=nav_callback(self._full_report),
+                manage_users=nav_callback(self._manage_users),
+                manage_roles=nav_callback(self._manage_roles),
+                system_config=nav_callback(self._system_config),
+                show_manual=nav_callback(self._show_manual),
+                show_about=nav_callback(self._show_about)
+            )
+
+            self._load_categories(category_view, category_controller)
+
+        except Exception as exc:
+            self.logger.error(f"Error abriendo ventana de categorías: {exc}")
+            import traceback
+            traceback.print_exc()
+            self._close_category_window()
+            messagebox.showerror(
+                "Error",
+                f"No se pudo abrir la ventana de categorías: {exc}",
+                parent=self.main_window
+            )
+
+    def _close_category_window(self):
+        """Cerrar ventana flotante de categorías"""
+        if self.category_window and self.category_window.winfo_exists():
+            self.category_window.destroy()
+        self.category_window = None
+        if self.main_window:
+            self.main_window.focus_force()
+
+    def _open_stock_window(self):
+        """Mostrar control de stock como ventana flotante"""
+        try:
+            if not self._check_user_permission('inventory.stock'):
+                messagebox.showerror(
+                    "Acceso denegado",
+                    "No tienes permisos para controlar el stock",
+                    parent=self.main_window
+                )
+                return
+
+            if self.stock_window and self.stock_window.winfo_exists():
+                self.stock_window.deiconify()
+                self.stock_window.lift()
+                self.stock_window.focus_force()
+                return
+
+            from views.stock_control_view import StockControlView
+            from controllers.product_controller import ProductController
+
+            self.stock_window = tk.Toplevel(self.main_window)
+            self.stock_window.title("Control de Stock")
+            self.stock_window.geometry("1200x720")
+            self._center_window(self.stock_window, 1200, 720)
+            self.stock_window.transient(self.main_window)
+            self.stock_window.focus_force()
+            self.stock_window.protocol("WM_DELETE_WINDOW", self._close_stock_window)
+
+            stock_controller = ProductController()
+            stock_view = StockControlView(self.stock_window, self.current_user)
+
+            stock_view.register_callbacks(
+                refresh=lambda: self._load_stock_products(stock_view, stock_controller),
+                search=lambda term: self._search_stock_products(stock_view, stock_controller, term),
+                update_stock=lambda data: self._update_product_stock(
+                    stock_view,
+                    stock_controller,
+                    data,
+                    parent_window=self.stock_window
+                ),
+                save_limits=lambda data: self._save_product_limits(
+                    stock_view,
+                    stock_controller,
+                    data,
+                    parent_window=self.stock_window
+                ),
+                back=self._close_stock_window
+            )
+
+            self._load_stock_products(stock_view, stock_controller)
+
+        except Exception as exc:
+            self.logger.error(f"Error abriendo ventana de stock: {exc}")
+            import traceback
+            traceback.print_exc()
+            self._close_stock_window()
+            messagebox.showerror(
+                "Error",
+                f"No se pudo abrir el control de stock: {exc}",
+                parent=self.main_window
+            )
+
+    def _close_stock_window(self):
+        """Cerrar ventana flotante de control de stock"""
+        if self.stock_window and self.stock_window.winfo_exists():
+            self.stock_window.destroy()
+        self.stock_window = None
+        if self.main_window:
+            self.main_window.focus_force()
+
     def _view_categories(self):
         """Ver y gestionar categorías de productos"""
         try:
@@ -1346,10 +2036,8 @@ class MainController:
             print(f"   - main_window tipo: {type(self.main_window)}")
             print(f"   - current_user: {self.current_user}")
             
-            # Limpiar ventana
-            for widget in self.main_window.winfo_children():
-                widget.destroy()
-            print("   ✅ Ventana principal limpiada")
+            # Limpiar ventana y marcar salida del dashboard
+            self._clear_main_content()
             
             # Importar vista y controlador
             from views.category_management_view import CategoryManagementView
@@ -1370,12 +2058,28 @@ class MainController:
                 create=lambda: self._create_category(category_view, category_controller),
                 edit=lambda cat_id: self._edit_category(category_view, category_controller, cat_id),
                 delete=lambda cat_id: self._delete_category(category_view, category_controller, cat_id),
-                back=self._back_to_dashboard  # Agregar callback de volver
+                back=self._back_to_dashboard,
+                # Callbacks de navegación del navbar
+                new_sale=self._new_sale,
+                sales_history=self._sales_history,
+                view_products=self._view_products,
+                view_categories=self._view_categories,
+                stock_control=self._view_stock_control,
+                daily_report=self._daily_sales_report,
+                full_report=self._full_report,
+                manage_users=self._manage_users,
+                manage_roles=self._manage_roles,
+                system_config=self._system_config,
+                show_manual=self._show_manual,
+                show_about=self._show_about
             )
             print("   ✅ Callbacks registrados")
             
             # Cargar categorías
             self._load_categories(category_view, category_controller)
+            
+            # IMPORTANTE: Restaurar geometría después de cargar todo
+            self._restore_window_geometry()
             
         except Exception as e:
             self.logger.error(f"Error abriendo gestión de categorías: {e}")
@@ -1401,7 +2105,7 @@ class MainController:
             self.logger.error(f"Error buscando categorías: {e}")
             messagebox.showerror("Error", f"Error al buscar: {str(e)}")
     
-    def _create_category(self, view, controller):
+    def _create_category(self, view, controller, parent_window=None):
         """Crear nueva categoría"""
         try:
             from views.category_form_dialog import CategoryFormDialog
@@ -1410,23 +2114,28 @@ class MainController:
             categories = controller.get_all_categories(self.current_user)
             
             # Mostrar diálogo
-            dialog = CategoryFormDialog(self.main_window, categories=categories)
+            parent = parent_window or self.main_window
+            dialog = CategoryFormDialog(parent, categories=categories)
             category_data = dialog.show()
             
             if category_data:
                 success, message, category_id = controller.create_category(category_data, self.current_user)
                 
                 if success:
-                    messagebox.showinfo("Éxito", message)
+                    messagebox.showinfo("Éxito", message, parent=parent)
                     self._load_categories(view, controller)
+                    if hasattr(self, 'product_controller') and self.product_controller:
+                        self.product_controller.invalidate_category_cache()
+                    if getattr(self, 'product_view', None) and getattr(self, 'product_controller', None):
+                        self._load_product_categories()
                 else:
-                    messagebox.showerror("Error", message)
+                    messagebox.showerror("Error", message, parent=parent)
                     
         except Exception as e:
             self.logger.error(f"Error creando categoría: {e}")
-            messagebox.showerror("Error", f"Error al crear categoría: {str(e)}")
+            messagebox.showerror("Error", f"Error al crear categoría: {str(e)}", parent=parent_window or self.main_window)
     
-    def _edit_category(self, view, controller, category_id):
+    def _edit_category(self, view, controller, category_id, parent_window=None):
         """Editar categoría"""
         try:
             from views.category_form_dialog import CategoryFormDialog
@@ -1434,53 +2143,77 @@ class MainController:
             # Obtener categoría actual
             category = controller.get_category_by_id(category_id, self.current_user)
             if not category:
-                messagebox.showerror("Error", "Categoría no encontrada")
+                messagebox.showerror("Error", "Categoría no encontrada", parent=parent_window or self.main_window)
                 return
             
             # Obtener todas las categorías para el selector de padre
             categories = controller.get_all_categories(self.current_user, include_inactive=True)
             
             # Mostrar diálogo
-            dialog = CategoryFormDialog(self.main_window, category=category, categories=categories)
+            can_delete = self.permission_service.check_permission(self.current_user, 'inventory.delete')
+            parent = parent_window or self.main_window
+            dialog = CategoryFormDialog(
+                parent,
+                category=category,
+                categories=categories,
+                allow_delete=can_delete
+            )
             category_data = dialog.show()
             
             if category_data:
-                success, message = controller.update_category(category_id, category_data, self.current_user)
+                if category_data.get('__action__') == 'delete':
+                    success, message = controller.delete_category(category_id, self.current_user)
+                else:
+                    success, message = controller.update_category(category_id, category_data, self.current_user)
                 
                 if success:
-                    messagebox.showinfo("Éxito", message)
+                    messagebox.showinfo("Éxito", message, parent=parent)
                     self._load_categories(view, controller)
+                    if hasattr(self, 'product_controller') and self.product_controller:
+                        self.product_controller.invalidate_category_cache()
+                    if getattr(self, 'product_view', None) and getattr(self, 'product_controller', None):
+                        self._load_product_categories()
                 else:
-                    messagebox.showerror("Error", message)
+                    messagebox.showerror("Error", message, parent=parent)
                     
         except Exception as e:
             self.logger.error(f"Error editando categoría: {e}")
-            messagebox.showerror("Error", f"Error al editar categoría: {str(e)}")
+            messagebox.showerror("Error", f"Error al editar categoría: {str(e)}", parent=parent_window or self.main_window)
     
-    def _delete_category(self, view, controller, category_id):
+    def _delete_category(self, view, controller, category_id, parent_window=None):
         """Eliminar categoría"""
         try:
             success, message = controller.delete_category(category_id, self.current_user)
             
             if success:
-                messagebox.showinfo("Éxito", message)
+                messagebox.showinfo("Éxito", message, parent=parent_window or self.main_window)
                 self._load_categories(view, controller)
+                if hasattr(self, 'product_controller') and self.product_controller:
+                    self.product_controller.invalidate_category_cache()
+                if getattr(self, 'product_view', None) and getattr(self, 'product_controller', None):
+                    self._load_product_categories()
             else:
-                messagebox.showerror("Error", message)
+                messagebox.showerror("Error", message, parent=parent_window or self.main_window)
                 
         except Exception as e:
             self.logger.error(f"Error eliminando categoría: {e}")
-            messagebox.showerror("Error", f"Error al eliminar: {str(e)}")
+            messagebox.showerror("Error", f"Error al eliminar: {str(e)}", parent=parent_window or self.main_window)
     
     def _view_stock_control(self):
         """Ver y controlar stock de productos"""
         try:
             print(f"📊 DEBUG: Abriendo control de stock desde main_controller")
+
+            if not self._check_user_permission('inventory.stock'):
+                messagebox.showerror(
+                    "Acceso denegado",
+                    "No tienes permisos para controlar el stock",
+                    parent=self.main_window
+                )
+                return
             
-            # Limpiar ventana
-            for widget in self.main_window.winfo_children():
-                widget.destroy()
-            print("   ✅ Ventana principal limpiada")
+            # Limpiar ventana y marcar salida del dashboard
+            self._clear_main_content()
             
             # Importar vista y controlador
             from views.stock_control_view import StockControlView
@@ -1494,30 +2227,21 @@ class MainController:
             stock_view = StockControlView(self.main_window, self.current_user)
             print("   ✅ StockControlView creada exitosamente")
             
-            # Registrar callbacks - NAVBAR COMPLETO
+            # Registrar callbacks - Solo los que acepta el método
             stock_view.register_callbacks(
                 refresh=lambda: self._load_stock_products(stock_view, product_controller),
                 search=lambda term: self._search_stock_products(stock_view, product_controller, term),
                 update_stock=lambda data: self._update_product_stock(stock_view, product_controller, data),
                 save_limits=lambda data: self._save_product_limits(stock_view, product_controller, data),
-                back=self._back_to_dashboard,
-                # Navegación principal
-                new_sale=self._new_sale,
-                sales_history=self._sales_history,
-                view_products=self._view_products,
-                view_categories=self._view_categories,
-                daily_report=self._daily_sales_report,
-                full_report=self._full_report,
-                manage_users=self._manage_users,
-                manage_roles=self._manage_roles,
-                system_config=self._system_config,
-                show_manual=self._show_manual,
-                show_about=self._show_about
+                back=self._back_to_dashboard
             )
             print("   ✅ Callbacks registrados")
             
             # Cargar productos
             self._load_stock_products(stock_view, product_controller)
+            
+            # IMPORTANTE: Restaurar geometría después de cargar todo
+            self._restore_window_geometry()
             
         except Exception as e:
             self.logger.error(f"Error abriendo control de stock: {e}")
@@ -1528,7 +2252,11 @@ class MainController:
     def _load_stock_products(self, view, controller):
         """Cargar productos para control de stock"""
         try:
-            products = controller.get_all_products(self.current_user, include_inactive=False)
+            products = controller.get_all_products(
+                self.current_user,
+                include_inactive=False,
+                limit=getattr(controller, 'default_limit', 500)
+            )
             if products:
                 view.load_products(products)
                 print(f"   ✅ {len(products)} productos cargados")
@@ -1545,7 +2273,7 @@ class MainController:
         except Exception as e:
             self.logger.error(f"Error buscando productos: {e}")
     
-    def _update_product_stock(self, view, controller, update_data):
+    def _update_product_stock(self, view, controller, update_data, parent_window=None):
         """Actualizar stock de un producto"""
         try:
             sku = update_data['sku']
@@ -1557,7 +2285,7 @@ class MainController:
             
             # Confirmar acción
             message = f"¿Confirmar {movement_type} de {quantity} unidades?"
-            if not messagebox.askyesno("Confirmar", message):
+            if not messagebox.askyesno("Confirmar", message, parent=parent_window or self.main_window):
                 return
             
             # Actualizar stock según el tipo de movimiento
@@ -1572,17 +2300,23 @@ class MainController:
             )
             
             if success:
-                messagebox.showinfo("Éxito", message)
+                messagebox.showinfo("Éxito", message, parent=parent_window or self.main_window)
                 view.clear_form()
                 self._load_stock_products(view, controller)
+                if getattr(self, 'product_view', None) and getattr(self, 'product_controller', None):
+                    self._load_products()
             else:
-                messagebox.showerror("Error", message)
+                messagebox.showerror("Error", message, parent=parent_window or self.main_window)
                 
         except Exception as e:
             self.logger.error(f"Error actualizando stock: {e}")
-            messagebox.showerror("Error", f"Error al actualizar stock: {str(e)}")
+            messagebox.showerror(
+                "Error",
+                f"Error al actualizar stock: {str(e)}",
+                parent=parent_window or self.main_window
+            )
     
-    def _save_product_limits(self, view, controller, limits_data):
+    def _save_product_limits(self, view, controller, limits_data, parent_window=None):
         """Guardar solo los límites de stock (min/max) sin afectar el stock actual"""
         try:
             print("\n" + "="*60)
@@ -1598,7 +2332,7 @@ class MainController:
             
             # Confirmar acción
             message = f"¿Guardar límites de stock?\nMínimo: {min_stock}\nMáximo: {max_stock}"
-            if not messagebox.askyesno("Confirmar", message):
+            if not messagebox.askyesno("Confirmar", message, parent=parent_window or self.main_window):
                 print("❌ Usuario canceló")
                 return
             
@@ -1615,11 +2349,13 @@ class MainController:
             print(f"📊 Resultado: success={success}, message={message}")
             
             if success:
-                messagebox.showinfo("Éxito", message)
+                messagebox.showinfo("Éxito", message, parent=parent_window or self.main_window)
                 self._load_stock_products(view, controller)
+                if getattr(self, 'product_view', None) and getattr(self, 'product_controller', None):
+                    self._load_products()
                 print("✅ Límites guardados y tabla recargada")
             else:
-                messagebox.showerror("Error", message)
+                messagebox.showerror("Error", message, parent=parent_window or self.main_window)
                 print(f"❌ Error: {message}")
             
             print("="*60 + "\n")
@@ -1628,7 +2364,11 @@ class MainController:
             self.logger.error(f"Error guardando límites: {e}")
             import traceback
             traceback.print_exc()
-            messagebox.showerror("Error", f"Error al guardar límites: {str(e)}")
+            messagebox.showerror(
+                "Error",
+                f"Error al guardar límites: {str(e)}",
+                parent=parent_window or self.main_window
+            )
     
     def _add_product(self):
         """Agregar producto"""
@@ -1639,8 +2379,87 @@ class MainController:
         messagebox.showinfo("Inventario", "Módulo de inventario en desarrollo")
     
     def _daily_sales_report(self):
-        """Reporte de ventas diarias"""
-        messagebox.showinfo("Reporte Diario", "Módulo de reportes en desarrollo")
+        """Reporte de ventas diarias - Muestra el reporte del día actual"""
+        try:
+            print("📊 DEBUG: Abriendo reporte diario de ventas")
+            print(f"   - main_window tipo: {type(self.main_window)}")
+            print(f"   - current_user: {self.current_user.get('username')}")
+            
+            # Limpiar ventana principal
+            self._clear_main_content()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Importar vista de reporte diario
+            from views.daily_sales_report_view import DailySalesReportView
+            from controllers.report_controller import ReportController
+            print("   🔄 Creando DailySalesReportView...")
+            
+            # Crear controlador de reportes
+            report_controller = ReportController()
+            
+            # Crear vista de reporte diario
+            daily_report_view = DailySalesReportView(
+                self.main_window,
+                report_controller,
+                self.current_user,
+                on_back=self._show_dashboard
+            )
+            
+            print("   ✅ DailySalesReportView creada exitosamente")
+            
+        except Exception as e:
+            print(f"❌ ERROR en _daily_sales_report: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror(
+                "Error",
+                f"No se pudo abrir el reporte diario:\n{str(e)}"
+            )
+    
+    def _full_report(self):
+        """Reporte completo"""
+        self._open_reports_module()
+    
+    def _open_reports_module(self):
+        """Abrir módulo de reportes"""
+        try:
+            print("📊 DEBUG: Abriendo módulo de reportes")
+            print(f"   - main_window tipo: {type(self.main_window)}")
+            print(f"   - current_user: {self.current_user.get('username')}")
+            
+            # Limpiar ventana principal
+            self._clear_main_content()
+            print("   ✅ Ventana principal limpiada")
+            
+            # Importar vista y controlador de reportes
+            from views.reports_view import ReportsView
+            from controllers.report_controller import ReportController
+            print("   🔄 Creando ReportsView...")
+            
+            # Crear controlador de reportes
+            self.report_controller = ReportController()
+            
+            # Crear vista de reportes
+            self.reports_view = ReportsView(
+                parent=self.main_window,
+                controller=self.report_controller,
+                user_data=self.current_user,
+                on_back=self._show_dashboard
+            )
+            print("   ✅ ReportsView creada exitosamente")
+            
+            # Mostrar vista
+            self.reports_view.show()
+            print("   📺 Vista de reportes mostrada")
+            
+            # Restaurar geometría
+            self._restore_window_geometry()
+            
+        except Exception as e:
+            self.logger.error(f"Error abriendo módulo de reportes: {e}")
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Error", f"No se pudo abrir el módulo de reportes:\n{str(e)}")
     
     def _config_tickets(self):
         """Configurar boletas"""
@@ -1667,10 +2486,6 @@ class MainController:
             traceback.print_exc()
             messagebox.showerror("Error", f"No se pudo abrir configuración de boletas:\n{str(e)}")
     
-    def _full_report(self):
-        """Reporte completo"""
-        messagebox.showinfo("Reporte Completo", "Función en desarrollo")
-    
     def _manage_users(self):
         """Gestionar usuarios"""
         try:
@@ -1679,11 +2494,11 @@ class MainController:
             print(f"   - current_user: {self.current_user}")
             
             # Verificar permisos del usuario
-            if not self._check_user_permission('users_manage'):
+            if not self._check_user_permission('users.view'):
                 messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder a la gestión de usuarios")
                 return
             
-            # Limpiar la ventana principal
+            # Limpiar la ventana principal (guarda geometría automáticamente)
             self._clear_main_content()
             print("   ✅ Ventana principal limpiada")
             
@@ -1704,9 +2519,23 @@ class MainController:
             self.users_view = UserManagementView(self.main_window, user_data, embedded=True)
             print("   ✅ UserManagementView creada exitosamente")
             
-            # Registrar callbacks
+            # Registrar callbacks - NAVBAR COMPLETO
             self.users_view.bind_callback('back_to_dashboard', self._back_to_dashboard)
+            self.users_view.bind_callback('new_sale', self._new_sale)
+            self.users_view.bind_callback('sales_history', self._sales_history)
+            self.users_view.bind_callback('view_products', self._view_products)
+            self.users_view.bind_callback('view_categories', self._view_categories)
+            self.users_view.bind_callback('stock_control', self._view_stock_control)
+            self.users_view.bind_callback('daily_report', self._daily_sales_report)
+            self.users_view.bind_callback('full_report', self._full_report)
+            self.users_view.bind_callback('manage_roles', self._manage_roles)
+            self.users_view.bind_callback('system_config', self._system_config)
+            self.users_view.bind_callback('show_manual', self._show_manual)
+            self.users_view.bind_callback('show_about', self._show_about)
             print("   ✅ Callbacks registrados")
+            
+            # IMPORTANTE: Restaurar geometría después de cargar vista
+            self._restore_window_geometry()
             
         except Exception as e:
             print(f"   ❌ Error en _manage_users: {e}")
@@ -1723,11 +2552,11 @@ class MainController:
             print(f"   - current_user: {self.current_user}")
             
             # Verificar permisos del usuario
-            if not self._check_user_permission('roles_manage'):
+            if not self._check_user_permission('roles.view'):
                 messagebox.showerror("Acceso Denegado", "No tienes permisos para acceder a la gestión de roles")
                 return
             
-            # Limpiar la ventana principal
+            # Limpiar la ventana principal (guarda geometría automáticamente)
             self._clear_main_content()
             print("   ✅ Ventana principal limpiada")
             
@@ -1748,9 +2577,27 @@ class MainController:
             self.roles_view = RoleManagementView(self.main_window, user_data, embedded=True)
             print("   ✅ RoleManagementView creada exitosamente")
             
-            # Registrar callbacks
+            # Registrar callbacks - NAVBAR COMPLETO
             self.roles_view.bind_callback('back_to_dashboard', self._back_to_dashboard)
+            self.roles_view.bind_callback('new_sale', self._new_sale)
+            self.roles_view.bind_callback('sales_history', self._sales_history)
+            self.roles_view.bind_callback('view_products', self._view_products)
+            self.roles_view.bind_callback('view_categories', self._view_categories)
+            self.roles_view.bind_callback('stock_control', self._view_stock_control)
+            self.roles_view.bind_callback('daily_report', self._daily_sales_report)
+            self.roles_view.bind_callback('full_report', self._full_report)
+            self.roles_view.bind_callback('manage_users', self._manage_users)
+            self.roles_view.bind_callback('system_config', self._system_config)
+            self.roles_view.bind_callback('show_manual', self._show_manual)
+            self.roles_view.bind_callback('show_about', self._show_about)
+            
+            # Callback especial para recargar permisos
+            self.roles_view.bind_callback('reload_permissions', self.reload_current_user_permissions)
+            
             print("   ✅ Callbacks registrados")
+            
+            # IMPORTANTE: Restaurar geometría después de cargar vista
+            self._restore_window_geometry()
             
         except Exception as e:
             print(f"   ❌ Error en _manage_roles: {e}")
@@ -1769,7 +2616,7 @@ class MainController:
     
     def _show_support(self):
         """Mostrar soporte"""
-        messagebox.showinfo("Soporte Técnico", "Chat de soporte en desarrollo\n\nPara asistencia inmediata:\n📧 soporte@pos.com\n📞 +1-800-123-4567")
+        messagebox.showinfo("Soporte Técnico", "Chat de Soporte\n\nPara asistencia inmediata comunicate con:\n📧 lmqpando@gmail.com\n📞 +51 960724886")
     
     def _system_config(self):
         """Configuración del sistema"""
@@ -1778,7 +2625,7 @@ class MainController:
             print(f"   - main_window tipo: {type(self.main_window)}")
             print(f"   - current_user: {self.current_user}")
             
-            # Limpiar la ventana principal
+            # Limpiar la ventana principal (guarda geometría automáticamente)
             self._clear_main_content()
             print("   ✅ Ventana principal limpiada")
             
@@ -1789,10 +2636,24 @@ class MainController:
             self.config_view = ConfigurationView(self.main_window, self.current_user, embedded=True)
             print("   ✅ ConfigurationView creada exitosamente")
             
-            # Registrar callbacks
+            # Registrar callbacks - NAVBAR COMPLETO
             self.config_view.bind_callback('back_to_dashboard', self._back_to_dashboard)
             self.config_view.bind_callback('configuration_saved', self._on_configuration_saved)
+            self.config_view.bind_callback('new_sale', self._new_sale)
+            self.config_view.bind_callback('sales_history', self._sales_history)
+            self.config_view.bind_callback('view_products', self._view_products)
+            self.config_view.bind_callback('view_categories', self._view_categories)
+            self.config_view.bind_callback('stock_control', self._view_stock_control)
+            self.config_view.bind_callback('daily_report', self._daily_sales_report)
+            self.config_view.bind_callback('full_report', self._full_report)
+            self.config_view.bind_callback('manage_users', self._manage_users)
+            self.config_view.bind_callback('manage_roles', self._manage_roles)
+            self.config_view.bind_callback('show_manual', self._show_manual)
+            self.config_view.bind_callback('show_about', self._show_about)
             print("   ✅ Callbacks registrados")
+            
+            # IMPORTANTE: Restaurar geometría después de cargar vista
+            self._restore_window_geometry()
             
         except Exception as e:
             print(f"   ❌ Error en _system_config: {e}")

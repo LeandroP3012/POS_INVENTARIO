@@ -11,16 +11,24 @@ import os
 # Agregar el directorio raíz al path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from views.base_view import BaseView
 from controllers.role_controller import RoleController
+from services.permission_service import PermissionService
+from utils.responsive_utils import ResponsiveManager
 
-class RoleManagementView:
+class RoleManagementView(BaseView):
     """Vista para gestión de roles y permisos"""
     
     def __init__(self, parent, current_user: Dict[str, Any], embedded: bool = False):
         self.parent = parent
         self.current_user = current_user
         self.embedded = embedded
+        super().__init__(parent)
         self.role_controller = RoleController()
+        self.permission_service = PermissionService()
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(self.root)
         
         # Variables de la vista
         self.search_var = tk.StringVar()
@@ -29,10 +37,7 @@ class RoleManagementView:
         
         # Callbacks
         self.callbacks = {}
-        
-        # Configurar tamaño de ventana si no está embebido
-        if not self.embedded and hasattr(parent, 'geometry'):
-            parent.geometry("1500x1000")
+        self.navbar_built = False
         
         # Crear interfaz
         self.create_interface()
@@ -40,187 +45,504 @@ class RoleManagementView:
         # Cargar datos iniciales
         self.refresh_roles()
     
+    def has_permission(self, permission: str) -> bool:
+        """Verificar si el usuario actual tiene un permiso específico"""
+        try:
+            return self.permission_service.check_permission(self.current_user, permission)
+        except Exception as e:
+            print(f"Error verificando permiso {permission}: {e}")
+            return False
+    
     def create_interface(self):
         """Crear la interfaz de usuario"""
-        # Marco principal
+        # Configurar fondo principal
         if self.embedded:
-            self.main_frame = ttk.Frame(self.parent)
-            self.main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        else:
-            self.main_frame = self.parent
+            self.root.configure(bg='#f8f9fa')
         
-        # Título
-        title_frame = ttk.Frame(self.main_frame)
-        title_frame.pack(fill=tk.X, pady=(0, 30))
+        # Header
+        self.create_header()
         
-        ttk.Label(title_frame, text="🔐 GESTIÓN DE ROLES Y PERMISOS", 
-                 font=('Arial', 26, 'bold')).pack(side=tk.LEFT)
+        # El navbar se creará después de registrar callbacks
+        # en build_navbar()
         
-        if self.embedded:
-            ttk.Button(title_frame, text="← Volver al Dashboard", 
-                      command=self._back_to_dashboard).pack(side=tk.RIGHT)
+        # Toolbar con búsqueda y botones
+        self.create_toolbar()
         
-        # Marco de estadísticas
-        self.create_stats_frame()
+        # Panel principal con tabla
+        self.create_main_panel()
         
-        # Marco de búsqueda y filtros
-        self.create_search_frame()
-        
-        # Marco de botones de acción
-        self.create_action_buttons_frame()
-        
-        # Marco de tabla de roles
-        self.create_roles_table_frame()
+        # Footer con estadísticas
+        self.create_footer()
     
-    def create_stats_frame(self):
-        """Crear marco de estadísticas"""
-        stats_frame = ttk.LabelFrame(self.main_frame, text="📊 ESTADÍSTICAS", padding=20)
-        stats_frame.pack(fill=tk.X, pady=(0, 20))
+    def create_header(self):
+        """Crear header de gestión de roles"""
+        header_frame = tk.Frame(self.root, bg='#2c3e50', height=100)
+        header_frame.pack(fill='x')
+        header_frame.pack_propagate(False)
         
-        # Contenedor de estadísticas
-        stats_container = ttk.Frame(stats_frame)
-        stats_container.pack(fill=tk.X)
+        content_frame = tk.Frame(header_frame, bg='#2c3e50')
+        content_frame.pack(expand=True, fill='both', padx=30, pady=15)
+        
+        # Título (izquierda)
+        title_label = tk.Label(
+            content_frame,
+            text="🔐 Gestión de Roles y Permisos",
+            font=('Segoe UI', 24, 'bold'),
+            fg='white',
+            bg='#2c3e50'
+        )
+        title_label.pack(side='left')
+        
+        # Botón de volver (derecha) - solo en modo embebido
+        if self.embedded:
+            back_button = tk.Button(
+                content_frame,
+                text="⬅️ Volver al Dashboard",
+                command=self._back_to_dashboard,
+                bg='#34495e',
+                fg='white',
+                font=('Segoe UI', 10, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=8
+            )
+            back_button.pack(side='right', padx=10)
+        
+        # Usuario actual (derecha, antes del botón)
+        user_text = f"Usuario: {self.current_user.get('full_name', self.current_user.get('username', 'Admin'))}"
+        user_label = tk.Label(
+            content_frame,
+            text=user_text,
+            font=('Segoe UI', 14),
+            fg='#bdc3c7',
+            bg='#2c3e50'
+        )
+        user_label.pack(side='right')
+    
+    def create_navbar(self, after_widget=None):
+        """Crear navbar personalizado - GLOBAL para todos los módulos"""
+        navbar_frame = tk.Frame(self.root, bg='#2c3e50', height=50)
+        if after_widget:
+            navbar_frame.pack(fill='x', after=after_widget)
+        else:
+            navbar_frame.pack(fill='x')
+        navbar_frame.pack_propagate(False)
+        
+        # Estilo de botones
+        btn_style = {
+            'font': ('Segoe UI', 12, 'bold'),
+            'bg': '#2c3e50',
+            'fg': 'white',
+            'activebackground': '#34495e',
+            'activeforeground': 'white',
+            'relief': 'flat',
+            'bd': 0,
+            'padx': 20,
+            'pady': 10,
+            'cursor': 'hand2'
+        }
+        
+        # Contenedor de botones
+        buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
+        buttons_container.pack(side='left', padx=10, pady=5)
+        
+        # Helper para ejecutar callbacks de forma segura
+        def safe_call(callback_name):
+            def wrapper():
+                print(f"🔄 Navbar (roles): Intentando ejecutar '{callback_name}'")
+                callback = self.callbacks.get(callback_name)
+                if callback:
+                    print(f"   ✓ Callback encontrado, ejecutando...")
+                    callback()
+                else:
+                    print(f"   ✗ Callback no encontrado o es None")
+            return wrapper
+        
+        # Botón Archivo
+        file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
+        file_btn.pack(side='left', padx=2)
+        file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
+        file_btn.config(menu=file_menu)
+        if self.has_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+            file_menu.add_separator()
+        file_menu.add_command(label="Volver al Dashboard", command=safe_call('back_to_dashboard'))
+        
+        # Botón Ventas
+        sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
+        sales_btn.pack(side='left', padx=2)
+        sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
+        sales_btn.config(menu=sales_menu)
+        if self.has_permission('sales.create'):
+            sales_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+        if self.has_permission('sales.view'):
+            sales_menu.add_command(label="Historial de Ventas", command=safe_call('sales_history'))
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
+        
+        # Botón Inventario
+        inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
+        inv_btn.pack(side='left', padx=2)
+        inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
+        inv_btn.config(menu=inv_menu)
+        inv_menu.add_command(label="Ver Productos", command=safe_call('view_products'))
+        inv_menu.add_command(label="Gestionar Categorías", command=safe_call('view_categories'))
+        inv_menu.add_command(label="Control de Stock", command=safe_call('stock_control'))
+        
+        # Botón Reportes
+        rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
+        rep_btn.pack(side='left', padx=2)
+        rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
+        rep_btn.config(menu=rep_menu)
+        rep_menu.add_command(label="Ventas del Día", command=safe_call('daily_report'))
+        rep_menu.add_command(label="Reporte Completo", command=safe_call('full_report'))
+        
+        # Botón Administración (ACTIVO)
+        admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
+        admin_btn.config(bg='#34495e')  # Resaltar activo
+        admin_btn.pack(side='left', padx=2)
+        admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
+        admin_btn.config(menu=admin_menu)
+        admin_menu.add_command(label="Gestionar Usuarios", command=safe_call('manage_users'))
+        admin_menu.add_command(label="Gestionar Roles ✓", command=lambda: None)  # Actual
+        admin_menu.add_separator()
+        admin_menu.add_command(label="Configuración", command=safe_call('system_config'))
+        
+        # Botón Ayuda
+        help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
+        help_btn.pack(side='left', padx=2)
+        help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 11))
+        help_btn.config(menu=help_menu)
+        help_menu.add_command(label="Manual de Usuario", command=safe_call('show_manual'))
+        help_menu.add_command(label="Acerca de", command=safe_call('show_about'))
+    
+    def create_toolbar(self):
+        """Crear toolbar con búsqueda y botones de acción"""
+        toolbar_frame = tk.Frame(self.root, bg='white')
+        toolbar_frame.pack(fill='x', padx=20, pady=(20, 0))
+        
+        # Frame interno con padding
+        inner_frame = tk.Frame(toolbar_frame, bg='white')
+        inner_frame.pack(fill='both', expand=True, padx=20, pady=15)
+        
+        # Frame izquierdo - Búsqueda
+        search_frame = tk.Frame(inner_frame, bg='white')
+        search_frame.pack(fill='x')
+        
+        tk.Label(
+            search_frame,
+            text="� Buscar rol:",
+            font=('Segoe UI', 13, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(side='left', padx=(0, 10))
+        
+        self.search_var.trace_add('write', lambda *args: self.search_roles())
+        search_entry = tk.Entry(
+            search_frame,
+            textvariable=self.search_var,
+            font=('Segoe UI', 13),
+            width=28,
+            relief='solid',
+            bd=1
+        )
+        search_entry.pack(side='left', padx=(0, 15), ipady=8)
+        
+        # Filtro por estado
+        tk.Label(
+            search_frame,
+            text="Estado:",
+            font=('Segoe UI', 13, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(side='left', padx=(25, 8))
+        
+        status_combo = ttk.Combobox(
+            search_frame,
+            textvariable=self.filter_active_var,
+            values=['todos', 'activos', 'inactivos'],
+            state='readonly',
+            width=18,
+            font=('Segoe UI', 12)
+        )
+        status_combo.pack(side='left', padx=(0, 15))
+        status_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters())
+        
+        # Filtro por tipo
+        tk.Label(
+            search_frame,
+            text="Tipo:",
+            font=('Segoe UI', 13, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(side='left', padx=(15, 8))
+        
+        type_combo = ttk.Combobox(
+            search_frame,
+            textvariable=self.filter_type_var,
+            values=['todos', 'sistema', 'personalizados'],
+            state='readonly',
+            width=18,
+            font=('Segoe UI', 12)
+        )
+        type_combo.pack(side='left', padx=(0, 15))
+        type_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters())
+        
+        # Frame derecho - Botones de acción
+        buttons_frame = tk.Frame(inner_frame, bg='white')
+        buttons_frame.pack(fill='x', pady=(15, 0))
+        
+        # Botón nuevo rol - Solo si tiene permiso roles.create
+        if self.has_permission('roles.create'):
+            new_role_btn = tk.Button(
+                buttons_frame,
+                text="➕ Nuevo Rol",
+                command=self.create_role,
+                bg='#27ae60',
+                fg='white',
+                font=('Segoe UI', 12, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=10
+            )
+            new_role_btn.pack(side='left', padx=(0, 10), pady=5)
+            # Atajo: Ctrl+N para nuevo rol
+            self.root.bind_all('<Control-n>', lambda e: self.create_role())
+            self.root.bind_all('<Control-N>', lambda e: self.create_role())
+        
+        # Botón editar - Solo si tiene permiso roles.edit
+        if self.has_permission('roles.edit'):
+            self.edit_role_btn = tk.Button(
+                buttons_frame,
+                text="✏️ Editar",
+                command=self.edit_role,
+                bg='#3498db',
+                fg='white',
+                font=('Segoe UI', 12, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=10,
+                state='disabled'
+            )
+            self.edit_role_btn.pack(side='left', padx=(0, 10), pady=5)
+        else:
+            self.edit_role_btn = None
+        
+        # Botón eliminar - Solo si tiene permiso roles.delete
+        if self.has_permission('roles.delete'):
+            self.delete_role_btn = tk.Button(
+                buttons_frame,
+                text="🗑️ Eliminar",
+                command=self.delete_role,
+                bg='#e74c3c',
+                fg='white',
+                font=('Segoe UI', 12, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=10,
+                state='disabled'
+            )
+            self.delete_role_btn.pack(side='left', padx=(0, 10), pady=5)
+        else:
+            self.delete_role_btn = None
+        
+        # Botón permisos - Solo si tiene permiso roles.permissions
+        if self.has_permission('roles.permissions'):
+            self.permissions_btn = tk.Button(
+                buttons_frame,
+                text="🔓 Permisos",
+                command=self.manage_permissions,
+                bg='#9b59b6',
+                fg='white',
+                font=('Segoe UI', 12, 'bold'),
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=10,
+                state='disabled'
+            )
+            self.permissions_btn.pack(side='left', pady=5)
+        else:
+            self.permissions_btn = None
+    
+    def create_main_panel(self):
+        """Crear panel principal con tabla de roles"""
+        main_frame = tk.Frame(self.root, bg='#f8f9fa')
+        main_frame.pack(fill='both', expand=True, padx=25, pady=25)
+        
+        # Frame para la tabla
+        table_frame = tk.Frame(main_frame, bg='white', relief='solid', bd=1)
+        table_frame.pack(fill='both', expand=True)
+        
+        # Título de la tabla
+        table_header = tk.Frame(table_frame, bg='#34495e', height=50)
+        table_header.pack(fill='x')
+        table_header.pack_propagate(False)
+        
+        tk.Label(
+            table_header,
+            text="📋 Lista de Roles del Sistema",
+            font=('Segoe UI', 16, 'bold'),
+            fg='white',
+            bg='#34495e'
+        ).pack(side='left', padx=25, pady=15)
+        
+        # Contador de roles
+        self.role_count_label = tk.Label(
+            table_header,
+            text="0 roles",
+            font=('Segoe UI', 13),
+            fg='#bdc3c7',
+            bg='#34495e'
+        )
+        self.role_count_label.pack(side='right', padx=25, pady=15)
+        
+        # Crear Treeview para la tabla
+        self.create_roles_table(table_frame)
+    
+    def create_roles_table(self, parent):
+        """Crear tabla de roles con Treeview"""
+        # Frame para tabla y scrollbars
+        tree_frame = tk.Frame(parent, bg='white')
+        tree_frame.pack(fill='both', expand=True, padx=15, pady=15)
+        
+        # Configurar columnas
+        columns = ('id', 'name', 'code', 'description', 'type', 'status', 'users_count', 'permissions_count')
+        column_names = {
+            'id': 'ID',
+            'name': 'Nombre',
+            'code': 'Código',
+            'description': 'Descripción',
+            'type': 'Tipo',
+            'status': 'Estado',
+            'users_count': 'Usuarios',
+            'permissions_count': 'Permisos'
+        }
+        
+        # Crear Treeview
+        self.roles_tree = ttk.Treeview(
+            tree_frame,
+            columns=columns,
+            show='tree headings',
+            height=18
+        )
+        
+        # Configurar columnas
+        self.roles_tree.column('#0', width=0, stretch=False)  # Ocultar primera columna
+        self.roles_tree.column('id', width=60, anchor='center')
+        self.roles_tree.column('name', width=180, anchor='w')
+        self.roles_tree.column('code', width=140, anchor='w')
+        self.roles_tree.column('description', width=300, anchor='w')
+        self.roles_tree.column('type', width=120, anchor='center')
+        self.roles_tree.column('status', width=100, anchor='center')
+        self.roles_tree.column('users_count', width=100, anchor='center')
+        self.roles_tree.column('permissions_count', width=100, anchor='center')
+        
+        # Configurar headers
+        for col in columns:
+            self.roles_tree.heading(col, text=column_names[col], anchor='center')
+        
+        # Scrollbars
+        v_scrollbar = ttk.Scrollbar(tree_frame, orient='vertical', command=self.roles_tree.yview)
+        h_scrollbar = ttk.Scrollbar(tree_frame, orient='horizontal', command=self.roles_tree.xview)
+        
+        self.roles_tree.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+        
+        # Pack scrollbars y tree
+        self.roles_tree.pack(side='left', fill='both', expand=True)
+        v_scrollbar.pack(side='right', fill='y')
+        h_scrollbar.pack(side='bottom', fill='x')
+        
+        # Bind eventos
+        self.roles_tree.bind('<<TreeviewSelect>>', self.on_role_select)
+        self.roles_tree.bind('<Double-Button-1>', lambda e: self.edit_role())
+        
+        # Configurar estilo para filas alternadas
+        style = ttk.Style()
+        style.configure('Treeview', rowheight=30, font=('Segoe UI', 11))
+        style.configure('Treeview.Heading', font=('Segoe UI', 12, 'bold'))
+    
+    def create_footer(self):
+        """Crear footer con estadísticas"""
+        footer_frame = tk.Frame(self.root, bg='#ecf0f1', height=60)
+        footer_frame.pack(fill='x', side='bottom')
+        footer_frame.pack_propagate(False)
+        
+        # Contenedor interno
+        content_frame = tk.Frame(footer_frame, bg='#ecf0f1')
+        content_frame.pack(fill='both', expand=True, padx=30, pady=15)
         
         # Estadísticas
         self.stats_labels = {}
         
         stats_data = [
-            ("total_roles", "Total de Roles", "#3498db"),
-            ("active_roles", "Roles Activos", "#27ae60"),
-            ("system_roles", "Roles del Sistema", "#9b59b6"),
-            ("custom_roles", "Roles Personalizados", "#e67e22")
+            ('total_roles', 'Total de Roles', '#3498db'),
+            ('active_roles', 'Activos', '#27ae60'),
+            ('system_roles', 'Sistema', '#9b59b6'),
+            ('custom_roles', 'Personalizados', '#e67e22')
         ]
         
-        for i, (key, label, color) in enumerate(stats_data):
-            stat_frame = ttk.Frame(stats_container)
-            stat_frame.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        for key, label_text, color in stats_data:
+            stat_frame = tk.Frame(content_frame, bg='#ecf0f1')
+            stat_frame.pack(side='left', padx=20)
             
-            value_label = ttk.Label(stat_frame, text="0", font=('Arial', 32, 'bold'), 
-                                   foreground=color)
-            value_label.pack(pady=5)
+            value_label = tk.Label(
+                stat_frame,
+                text='0',
+                font=('Segoe UI', 18, 'bold'),
+                fg=color,
+                bg='#ecf0f1'
+            )
+            value_label.pack(side='left', padx=(0, 8))
             
-            desc_label = ttk.Label(stat_frame, text=label, font=('Arial', 14, 'bold'))
-            desc_label.pack()
+            desc_label = tk.Label(
+                stat_frame,
+                text=label_text,
+                font=('Segoe UI', 13),
+                fg='#7f8c8d',
+                bg='#ecf0f1'
+            )
+            desc_label.pack(side='left')
             
             self.stats_labels[key] = value_label
     
-    def create_search_frame(self):
-        """Crear marco de búsqueda y filtros"""
-        search_frame = ttk.LabelFrame(self.main_frame, text="🔍 BÚSQUEDA Y FILTROS", padding=15)
-        search_frame.pack(fill=tk.X, pady=(0, 20))
-        
-        # Primera fila: búsqueda
-        search_row = ttk.Frame(search_frame)
-        search_row.pack(fill=tk.X, pady=(0, 15))
-        
-        ttk.Label(search_row, text="Buscar:", font=('Arial', 14, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
-        
-        search_entry = ttk.Entry(search_row, textvariable=self.search_var, width=40, font=('Arial', 14))
-        search_entry.pack(side=tk.LEFT, padx=(0, 15))
-        search_entry.bind('<KeyRelease>', lambda e: self.search_roles())
-        
-        ttk.Button(search_row, text="🔍 BUSCAR", 
-                  command=self.search_roles).pack(side=tk.LEFT, padx=(0, 10))
-        
-        ttk.Button(search_row, text="🔄 LIMPIAR", 
-                  command=self.clear_search).pack(side=tk.LEFT)
-        
-        # Segunda fila: filtros
-        filter_row = ttk.Frame(search_frame)
-        filter_row.pack(fill=tk.X)
-        
-        # Filtro por estado
-        ttk.Label(filter_row, text="Estado:", font=('Arial', 14, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
-        
-        active_combo = ttk.Combobox(filter_row, textvariable=self.filter_active_var, 
-                                   values=["todos", "activos", "inactivos"], 
-                                   state="readonly", width=18, font=('Arial', 14))
-        active_combo.pack(side=tk.LEFT, padx=(0, 30))
-        active_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters())
-        
-        # Filtro por tipo
-        ttk.Label(filter_row, text="Tipo:", font=('Arial', 14, 'bold')).pack(side=tk.LEFT, padx=(0, 10))
-        
-        type_combo = ttk.Combobox(filter_row, textvariable=self.filter_type_var, 
-                                 values=["todos", "sistema", "personalizados"], 
-                                 state="readonly", width=22, font=('Arial', 14))
-        type_combo.pack(side=tk.LEFT, padx=(0, 15))
-        type_combo.bind('<<ComboboxSelected>>', lambda e: self.apply_filters())
+    def on_role_select(self, event):
+        """Manejar selección de rol"""
+        selection = self.roles_tree.selection()
+        if selection:
+            self.selected_role = selection[0]
+            # Habilitar botones de acción solo si existen (depende de permisos)
+            if self.edit_role_btn is not None:
+                self.edit_role_btn.config(state='normal')
+            if self.delete_role_btn is not None:
+                self.delete_role_btn.config(state='normal')
+            if self.permissions_btn is not None:
+                self.permissions_btn.config(state='normal')
+        else:
+            self.selected_role = None
+            # Deshabilitar botones de acción solo si existen
+            if self.edit_role_btn is not None:
+                self.edit_role_btn.config(state='disabled')
+            if self.delete_role_btn is not None:
+                self.delete_role_btn.config(state='disabled')
+            if self.permissions_btn is not None:
+                self.permissions_btn.config(state='disabled')
     
-    def create_action_buttons_frame(self):
-        """Crear marco de botones de acción"""
-        buttons_frame = ttk.Frame(self.main_frame)
-        buttons_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        # Botones principales
-        ttk.Button(buttons_frame, text="➕ Crear Rol", 
-                  command=self.create_role, style="Accent.TButton").pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(buttons_frame, text="✏️ Editar Rol", 
-                  command=self.edit_role).pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(buttons_frame, text="🗑️ Eliminar Rol", 
-                  command=self.delete_role).pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(buttons_frame, text="🔓 Gestionar Permisos", 
-                  command=self.manage_permissions).pack(side=tk.LEFT, padx=(0, 20))
-        
-        # Botones de estado
-        ttk.Button(buttons_frame, text="✅ Activar", 
-                  command=self.activate_role).pack(side=tk.LEFT, padx=(0, 5))
-        
-        ttk.Button(buttons_frame, text="❌ Desactivar", 
-                  command=self.deactivate_role).pack(side=tk.LEFT, padx=(0, 10))
-        
-        # Botón de actualizar
-        ttk.Button(buttons_frame, text="🔄 Actualizar", 
-                  command=self.refresh_roles).pack(side=tk.RIGHT)
+    def create_search_frame(self, parent):
+        """Este método ya no se usa - la búsqueda está en el toolbar"""
+        pass
     
-    def create_roles_table_frame(self):
-        """Crear marco de tabla de roles"""
-        table_frame = ttk.LabelFrame(self.main_frame, text="📋 Lista de Roles", padding=10)
-        table_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Crear Treeview con scrollbars
-        tree_frame = ttk.Frame(table_frame)
-        tree_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Definir columnas
-        columns = ('ID', 'Nombre', 'Código', 'Descripción', 'Tipo', 'Estado', 'Usuarios', 'Permisos')
-        
-        self.roles_tree = ttk.Treeview(tree_frame, columns=columns, show='headings', height=18)
-        
-        # Configurar columnas
-        column_configs = {
-            'ID': (60, tk.CENTER),
-            'Nombre': (180, tk.W),
-            'Código': (140, tk.W),
-            'Descripción': (300, tk.W),
-            'Tipo': (120, tk.CENTER),
-            'Estado': (100, tk.CENTER),
-            'Usuarios': (100, tk.CENTER),
-            'Permisos': (100, tk.CENTER)
-        }
-        
-        for col in columns:
-            width, anchor = column_configs[col]
-            self.roles_tree.heading(col, text=col)
-            self.roles_tree.column(col, width=width, anchor=anchor)
-        
-        # Scrollbars
-        v_scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=self.roles_tree.yview)
-        h_scrollbar = ttk.Scrollbar(tree_frame, orient=tk.HORIZONTAL, command=self.roles_tree.xview)
-        
-        self.roles_tree.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
-        
-        # Empaquetar componentes
-        self.roles_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        v_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        h_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
-        
-        # Bind eventos
-        self.roles_tree.bind('<Double-1>', lambda e: self.edit_role())
-        self.roles_tree.bind('<Button-3>', self.show_context_menu)
+    def create_action_buttons_frame(self, parent):
+        """Este método ya no se usa - los botones están en el toolbar"""
+        pass
+    
+    def create_roles_table_frame(self, parent):
+        """Este método ya no se usa - la tabla está en create_main_panel"""
+        pass
     
     def refresh_roles(self):
         """Actualizar lista de roles"""
@@ -240,22 +562,20 @@ class RoleManagementView:
                 code = role.get('code', '')
                 description = role.get('description', '')[:50] + '...' if len(role.get('description', '')) > 50 else role.get('description', '')
                 role_type = "Sistema" if role.get('system_role', False) else "Personalizado"
-                status = "Activo" if role.get('active', True) else "Inactivo"
+                status = "✅ Activo" if role.get('active', True) else "❌ Inactivo"
                 users_count = role.get('users_count', 0)
                 permissions_count = len(role.get('permissions', []))
                 
                 # Insertar en tabla
-                item_id = self.roles_tree.insert('', tk.END, values=(
+                self.roles_tree.insert('', tk.END, values=(
                     role_id, name, code, description, role_type, status, users_count, permissions_count
                 ))
-                
-                # Colorear según estado
-                if not role.get('active', True):
-                    self.roles_tree.set(item_id, 'Estado', '❌ Inactivo')
-                else:
-                    self.roles_tree.set(item_id, 'Estado', '✅ Activo')
             
-            # Actualizar estadísticas
+            # Actualizar contador de roles
+            total_count = len(roles)
+            self.role_count_label.config(text=f"{total_count} rol{'es' if total_count != 1 else ''}")
+            
+            # Actualizar estadísticas del footer
             self.update_stats()
             
         except Exception as e:
@@ -338,13 +658,22 @@ class RoleManagementView:
     
     def create_role(self):
         """Crear nuevo rol"""
+        # Validar permiso primero
+        if not self.has_permission('roles.create'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para crear roles.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         try:
             print("DEBUG CREATE_ROLE VIEW - Abriendo diálogo...")
-            dialog = RoleDialog(self.main_frame, title="Crear Nuevo Rol", 
+            dialog = RoleDialog(self.root, title="Crear Nuevo Rol", 
                                role_controller=self.role_controller)
             
             # Esperar a que el diálogo termine completamente
-            self.main_frame.wait_window(dialog.dialog)
+            self.root.wait_window(dialog.dialog)
             
             print(f"DEBUG CREATE_ROLE VIEW - Diálogo cerrado, result: {dialog.result}")
             
@@ -372,6 +701,15 @@ class RoleManagementView:
     
     def edit_role(self):
         """Editar rol seleccionado"""
+        # Validar permiso primero
+        if not self.has_permission('roles.edit'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para editar roles.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         try:
             selected = self.roles_tree.selection()
             if not selected:
@@ -394,7 +732,7 @@ class RoleManagementView:
                 return
             
             # Mostrar diálogo de edición
-            dialog = RoleDialog(self.main_frame, title="Editar Rol", 
+            dialog = RoleDialog(self.root, title="Editar Rol", 
                                role_controller=self.role_controller, role_data=role)
             
             if dialog.result:
@@ -403,7 +741,13 @@ class RoleManagementView:
                 )
                 
                 if success:
-                    messagebox.showinfo("Éxito", message)
+                    messagebox.showinfo(
+                        "Éxito", 
+                        f"{message}\n\n"
+                        "⚠️ IMPORTANTE: Los usuarios con este rol deben\n"
+                        "cerrar sesión y volver a iniciar sesión para que\n"
+                        "los cambios surtan efecto."
+                    )
                     self.refresh_roles()
                 else:
                     messagebox.showerror("Error", message)
@@ -413,6 +757,15 @@ class RoleManagementView:
     
     def delete_role(self):
         """Eliminar rol seleccionado"""
+        # Validar permiso primero
+        if not self.has_permission('roles.delete'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para eliminar roles.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         try:
             selected = self.roles_tree.selection()
             if not selected:
@@ -497,6 +850,15 @@ class RoleManagementView:
     
     def manage_permissions(self):
         """Gestionar permisos del rol seleccionado"""
+        # Validar permiso primero
+        if not self.has_permission('roles.permissions'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para gestionar permisos de roles.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         try:
             print("DEBUG MANAGE_PERMISOS - Iniciando gestión de permisos...")
             
@@ -519,30 +881,88 @@ class RoleManagementView:
             
             # Mostrar diálogo de permisos
             print("DEBUG MANAGE_PERMISOS - Abriendo diálogo de permisos...")
-            dialog = PermissionsDialog(self.main_frame, role, self.role_controller)
+            dialog = PermissionsDialog(self.root, role, self.role_controller)
             
             # Esperar a que el diálogo se cierre
-            self.main_frame.wait_window(dialog.dialog)
+            self.root.wait_window(dialog.dialog)
             
-            print(f"DEBUG MANAGE_PERMISOS - Diálogo cerrado, result: {dialog.result}")
+            print(f"\n{'='*80}")
+            print(f"📥 DIÁLOGO CERRADO - PROCESANDO RESULTADO")
+            print(f"{'='*80}")
+            print(f"🔍 Tipo de dialog.result: {type(dialog.result)}")
+            print(f"📊 Valor de dialog.result: {dialog.result}")
+            
+            if dialog.result is not None:
+                print(f"✅ dialog.result NO es None")
+                print(f"📏 Longitud: {len(dialog.result) if isinstance(dialog.result, list) else 'N/A'}")
+            else:
+                print(f"❌ dialog.result ES None")
             
             if dialog.result:
-                print(f"DEBUG MANAGE_PERMISOS - Actualizando permisos del rol {role_id} con: {dialog.result}")
+                print(f"\n✅ ENTRANDO AL BLOQUE DE ACTUALIZACIÓN")
+                print(f"📝 Permisos a guardar: {dialog.result[:5]}... (primeros 5)")
+                print(f"📌 Actualizando permisos del rol {role_id}")
                 
                 # Actualizar permisos del rol
                 success, message = self.role_controller.update_role(
                     role_id, {'permissions': dialog.result}, self.current_user
                 )
                 
-                print(f"DEBUG MANAGE_PERMISOS - Resultado update_role: success={success}, message={message}")
+                print(f"\n📊 RESULTADO DE UPDATE_ROLE:")
+                print(f"   Success: {success}")
+                print(f"   Message: {message}")
+                print(f"{'='*80}\n")
                 
                 if success:
-                    messagebox.showinfo("Éxito", "Permisos actualizados exitosamente")
+                    # Verificar si el usuario actual tiene este rol
+                    current_role_id = self.current_user.get('role_id')
+                    if current_role_id == role_id:
+                        # El usuario modificó sus propios permisos
+                        response = messagebox.askyesno(
+                            "Permisos Actualizados",
+                            "Permisos actualizados exitosamente.\n\n"
+                            "Has modificado los permisos de tu propio rol.\n"
+                            "¿Deseas recargar tus permisos ahora?\n\n"
+                            "Si seleccionas 'No', deberás cerrar sesión\n"
+                            "y volver a iniciar sesión para ver los cambios."
+                        )
+                        
+                        if response:  # Usuario eligió recargar permisos
+                            # Llamar callback para recargar permisos
+                            if hasattr(self, 'callbacks') and 'reload_permissions' in self.callbacks:
+                                reload_success = self.callbacks['reload_permissions']()
+                                if reload_success:
+                                    messagebox.showinfo(
+                                        "Éxito",
+                                        "Tus permisos han sido recargados exitosamente.\n"
+                                        "Los cambios ya están activos."
+                                    )
+                                else:
+                                    messagebox.showwarning(
+                                        "Advertencia",
+                                        "No se pudieron recargar los permisos automáticamente.\n"
+                                        "Por favor, cierra sesión y vuelve a iniciar sesión."
+                                    )
+                    else:
+                        # Modificó permisos de otro rol
+                        messagebox.showinfo(
+                            "Éxito", 
+                            "Permisos actualizados exitosamente.\n\n"
+                            "⚠️ IMPORTANTE: Los usuarios con este rol deben\n"
+                            "cerrar sesión y volver a iniciar sesión para que\n"
+                            "los cambios surtan efecto."
+                        )
+                    
                     self.refresh_roles()
                 else:
                     messagebox.showerror("Error", message)
             else:
-                print("DEBUG MANAGE_PERMISOS - dialog.result es None/vacío, no se actualiza nada")
+                print(f"\n⚠️ NO ENTRA AL BLOQUE DE ACTUALIZACIÓN")
+                print(f"   Razón: dialog.result es {dialog.result}")
+                print(f"   Tipo: {type(dialog.result)}")
+                if dialog.result is not None and isinstance(dialog.result, list):
+                    print(f"   Lista vacía: {len(dialog.result) == 0}")
+                print(f"{'='*80}\n")
                     
         except Exception as e:
             print(f"DEBUG MANAGE_PERMISOS - Excepción: {e}")
@@ -559,7 +979,7 @@ class RoleManagementView:
                 self.roles_tree.selection_set(item)
                 
                 # Crear menú contextual
-                context_menu = tk.Menu(self.main_frame, tearoff=0)
+                context_menu = tk.Menu(self.root, tearoff=0)
                 context_menu.add_command(label="✏️ Editar", command=self.edit_role)
                 context_menu.add_command(label="🔓 Permisos", command=self.manage_permissions)
                 context_menu.add_separator()
@@ -574,14 +994,55 @@ class RoleManagementView:
         except Exception as e:
             print(f"Error en menú contextual: {e}")
     
-    def bind_callback(self, event: str, callback: Callable):
-        """Registrar callback"""
-        self.callbacks[event] = callback
+    def bind_callback(self, event_name: str, callback: Callable):
+        """Registrar un callback para un evento"""
+        self.callbacks[event_name] = callback
+        print(f"📋 Role: Callback '{event_name}' registrado")
+        
+        # Crear navbar cuando se registre el primer callback de navegación
+        if not self.navbar_built and event_name in ['back_to_dashboard', 'new_sale', 'view_products']:
+            print(f"   📋 Primer callback de navegación detectado")
+            # Esperar un poco para que se registren todos los callbacks
+            self.root.after(100, self._try_build_navbar)
+    
+    def _try_build_navbar(self):
+        """Intentar construir navbar después de un delay"""
+        if not self.navbar_built:
+            print(f"📋 Callbacks totales registrados en roles: {len(self.callbacks)}")
+            for key in self.callbacks:
+                print(f"   - {key}")
+            self.build_navbar()
+            self.navbar_built = True
+    
+    def build_navbar(self):
+        """Construir navbar DESPUÉS de registrar callbacks"""
+        print("🔨 Construyendo navbar en role_management_view...")
+        # Encontrar el widget header para insertar el navbar después
+        header_widget = None
+        for widget in self.root.winfo_children():
+            if isinstance(widget, tk.Frame):
+                try:
+                    if widget.cget('bg') == '#2c3e50' and widget.cget('height') != 50:
+                        header_widget = widget
+                        break
+                except:
+                    pass
+        
+        if header_widget:
+            self.create_navbar(header_widget)
+            print("   ✅ Navbar construido")
+        else:
+            print("   ✗ No se encontró el header, creando navbar sin after")
+            self.create_navbar()
     
     def _back_to_dashboard(self):
         """Volver al dashboard"""
         if 'back_to_dashboard' in self.callbacks:
             self.callbacks['back_to_dashboard']()
+    
+    def on_back_to_dashboard(self):
+        """Callback para volver al dashboard"""
+        self._back_to_dashboard()
 
 
 class RoleDialog:
@@ -604,73 +1065,302 @@ class RoleDialog:
         self.create_dialog()
     
     def create_dialog(self):
-        """Crear ventana de diálogo"""
+        """Crear ventana de diálogo con diseño moderno"""
         self.dialog = tk.Toplevel(self.parent)
         self.dialog.title(self.title)
-        self.dialog.geometry("600x500")
+        self.dialog.geometry("650x600")
         self.dialog.resizable(False, False)
         self.dialog.transient(self.parent)
         self.dialog.grab_set()
+        self.dialog.configure(bg='#f5f6fa')
+
+        # Atajo: Ctrl+S para guardar rol
+        self.dialog.bind_all('<Control-s>', lambda e: self.save())
+        self.dialog.bind_all('<Control-S>', lambda e: self.save())
         
         # Centrar ventana
-        self.dialog.geometry("+%d+%d" % (
-            self.parent.winfo_rootx() + 50,
-            self.parent.winfo_rooty() + 50
-        ))
+        self.dialog.update_idletasks()
+        x = (self.dialog.winfo_screenwidth() // 2) - (650 // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (600 // 2)
+        self.dialog.geometry(f"650x600+{x}+{y}")
         
-        # Marco principal
-        main_frame = ttk.Frame(self.dialog, padding=30)
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        # Header moderno con color
+        header_frame = tk.Frame(self.dialog, bg='#3498db', height=80)
+        header_frame.pack(fill='x')
+        header_frame.pack_propagate(False)
         
-        # Campos del formulario
-        # Nombre
-        ttk.Label(main_frame, text="Nombre del Rol:", font=('Arial', 13)).pack(anchor=tk.W, pady=(0, 8))
-        self.name_entry = ttk.Entry(main_frame, textvariable=self.name_var, font=('Arial', 13))
-        self.name_entry.pack(fill=tk.X, pady=(0, 20))
+        # Icono y título en el header
+        title_container = tk.Frame(header_frame, bg='#3498db')
+        title_container.pack(expand=True, fill='both', padx=30, pady=20)
+        
+        icon_label = tk.Label(
+            title_container,
+            text="🔐",
+            font=('Segoe UI', 28),
+            bg='#3498db',
+            fg='white'
+        )
+        icon_label.pack(side='left', padx=(0, 15))
+        
+        title_label = tk.Label(
+            title_container,
+            text=self.title,
+            font=('Segoe UI', 20, 'bold'),
+            bg='#3498db',
+            fg='white'
+        )
+        title_label.pack(side='left')
+        
+        # Contenedor principal con scroll
+        main_container = tk.Frame(self.dialog, bg='#f5f6fa')
+        main_container.pack(fill='both', expand=True, padx=30, pady=30)
+        
+        # Canvas para scroll
+        canvas = tk.Canvas(main_container, bg='#f5f6fa', highlightthickness=0)
+        scrollbar = ttk.Scrollbar(main_container, orient='vertical', command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg='#f5f6fa')
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor='nw')
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack canvas y scrollbar
+        canvas.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
+        
+        # Frame de formulario dentro del scrollable
+        form_frame = tk.Frame(scrollable_frame, bg='white', relief='flat', bd=0)
+        form_frame.pack(fill='both', expand=True, padx=5, pady=5)
+        
+        # Padding interno
+        inner_frame = tk.Frame(form_frame, bg='white')
+        inner_frame.pack(fill='both', expand=True, padx=25, pady=25)
+        
+        # Campo: Nombre del Rol
+        tk.Label(
+            inner_frame,
+            text="Nombre del Rol",
+            font=('Segoe UI', 12, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(anchor='w', pady=(0, 8))
+        
+        name_frame = tk.Frame(inner_frame, bg='white')
+        name_frame.pack(fill='x', pady=(0, 20))
+        
+        self.name_entry = tk.Entry(
+            name_frame,
+            textvariable=self.name_var,
+            font=('Segoe UI', 12),
+            relief='solid',
+            bd=1,
+            bg='#f8f9fa'
+        )
+        self.name_entry.pack(fill='x', ipady=10)
+        
+        # Si hay datos existentes, forzar actualización visual
+        if self.role_data and self.role_data.get('name'):
+            self.name_entry.delete(0, tk.END)
+            self.name_entry.insert(0, self.role_data.get('name', ''))
+        
         self.name_entry.focus()
         
-        print(f"DEBUG ROLE - Name entry creado, var actual: '{self.name_var.get()}'")
+        # Hint para nombre
+        hint_name = tk.Label(
+            inner_frame,
+            text="Ej: Gerente de Ventas, Cajero, Supervisor",
+            font=('Segoe UI', 9, 'italic'),
+            bg='white',
+            fg='#7f8c8d'
+        )
+        hint_name.pack(anchor='w', pady=(0, 15))
         
-        # Código
-        ttk.Label(main_frame, text="Código del Rol:", font=('Arial', 13)).pack(anchor=tk.W, pady=(0, 8))
-        self.code_entry = ttk.Entry(main_frame, textvariable=self.code_var, font=('Arial', 13))
-        self.code_entry.pack(fill=tk.X, pady=(0, 20))
+        # Campo: Código del Rol
+        tk.Label(
+            inner_frame,
+            text="Código del Rol",
+            font=('Segoe UI', 12, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(anchor='w', pady=(0, 8))
         
-        print(f"DEBUG ROLE - Code entry creado, var actual: '{self.code_var.get()}'")
+        code_frame = tk.Frame(inner_frame, bg='white')
+        code_frame.pack(fill='x', pady=(0, 20))
         
-        # Descripción
-        ttk.Label(main_frame, text="Descripción:", font=('Arial', 13)).pack(anchor=tk.W, pady=(0, 8))
-        desc_frame = ttk.Frame(main_frame)
-        desc_frame.pack(fill=tk.X, pady=(0, 20))
+        self.code_entry = tk.Entry(
+            code_frame,
+            textvariable=self.code_var,
+            font=('Segoe UI', 12),
+            relief='solid',
+            bd=1,
+            bg='#f8f9fa'
+        )
+        self.code_entry.pack(fill='x', ipady=10)
         
-        self.desc_text = tk.Text(desc_frame, height=5, font=('Arial', 12), wrap=tk.WORD)
-        desc_scrollbar = ttk.Scrollbar(desc_frame, orient=tk.VERTICAL, command=self.desc_text.yview)
+        # Si hay datos existentes, forzar actualización visual
+        if self.role_data and self.role_data.get('code'):
+            self.code_entry.delete(0, tk.END)
+            self.code_entry.insert(0, self.role_data.get('code', ''))
+        
+        # Hint para código
+        hint_code = tk.Label(
+            inner_frame,
+            text="Código único (sin espacios, minúsculas). Ej: gerente_ventas, cajero",
+            font=('Segoe UI', 9, 'italic'),
+            bg='white',
+            fg='#7f8c8d'
+        )
+        hint_code.pack(anchor='w', pady=(0, 15))
+        
+        # Campo: Descripción
+        tk.Label(
+            inner_frame,
+            text="Descripción",
+            font=('Segoe UI', 12, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(anchor='w', pady=(0, 8))
+        
+        desc_container = tk.Frame(inner_frame, bg='white', relief='solid', bd=1)
+        desc_container.pack(fill='x', pady=(0, 20))
+        
+        self.desc_text = tk.Text(
+            desc_container,
+            height=5,
+            font=('Segoe UI', 11),
+            wrap=tk.WORD,
+            relief='flat',
+            bg='#f8f9fa',
+            padx=10,
+            pady=10
+        )
+        desc_scrollbar = ttk.Scrollbar(desc_container, orient=tk.VERTICAL, command=self.desc_text.yview)
         self.desc_text.configure(yscrollcommand=desc_scrollbar.set)
         
-        self.desc_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        desc_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.desc_text.pack(side='left', fill='both', expand=True)
+        desc_scrollbar.pack(side='right', fill='y')
         
         # Insertar descripción existente
         if self.role_data.get('description'):
             self.desc_text.insert('1.0', self.role_data.get('description'))
         
-        # Estado
-        ttk.Checkbutton(main_frame, text="Rol Activo", 
-                       variable=self.active_var).pack(anchor=tk.W, pady=(15, 25))
+        # Hint para descripción
+        hint_desc = tk.Label(
+            inner_frame,
+            text="Describe las responsabilidades y alcance de este rol",
+            font=('Segoe UI', 9, 'italic'),
+            bg='white',
+            fg='#7f8c8d'
+        )
+        hint_desc.pack(anchor='w', pady=(0, 20))
         
-        # Botones
-        button_frame = ttk.Frame(main_frame)
-        button_frame.pack(fill=tk.X, pady=(20, 0))
+        # Separador visual
+        separator = tk.Frame(inner_frame, bg='#e0e0e0', height=1)
+        separator.pack(fill='x', pady=20)
         
-        ttk.Button(button_frame, text="Cancelar", 
-                  command=self.cancel).pack(side=tk.RIGHT, padx=(10, 0))
+        # Estado con mejor diseño
+        status_frame = tk.Frame(inner_frame, bg='white')
+        status_frame.pack(fill='x', pady=(0, 10))
         
-        ttk.Button(button_frame, text="Guardar", 
-                  command=self.save, style="Accent.TButton").pack(side=tk.RIGHT)
+        tk.Label(
+            status_frame,
+            text="Estado del Rol",
+            font=('Segoe UI', 12, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(side='left', padx=(0, 20))
+        
+        # Checkbutton personalizado
+        self.active_check = tk.Checkbutton(
+            status_frame,
+            text="✓ Activo",
+            variable=self.active_var,
+            font=('Segoe UI', 11),
+            bg='white',
+            fg='#27ae60',
+            activebackground='white',
+            activeforeground='#27ae60',
+            selectcolor='white',
+            cursor='hand2'
+        )
+        self.active_check.pack(side='left')
+        
+        # Footer con botones
+        footer_frame = tk.Frame(self.dialog, bg='#ecf0f1', height=80)
+        footer_frame.pack(fill='x', side='bottom')
+        footer_frame.pack_propagate(False)
+        
+        button_container = tk.Frame(footer_frame, bg='#ecf0f1')
+        button_container.pack(expand=True, fill='both', padx=30, pady=20)
+        
+        # Botón Cancelar
+        cancel_btn = tk.Button(
+            button_container,
+            text="✕ Cancelar",
+            command=self.cancel,
+            bg='#95a5a6',
+            fg='white',
+            font=('Segoe UI', 12, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            padx=30,
+            pady=12
+        )
+        cancel_btn.pack(side='right', padx=(10, 0))
+        
+        # Botón Guardar
+        save_btn = tk.Button(
+            button_container,
+            text="✓ Guardar Rol",
+            command=self.save,
+            bg='#27ae60',
+            fg='white',
+            font=('Segoe UI', 12, 'bold'),
+            relief='flat',
+            cursor='hand2',
+            padx=30,
+            pady=12
+        )
+        save_btn.pack(side='right')
+        
+        # Información adicional (si es edición)
+        if self.role_data:
+            info_label = tk.Label(
+                button_container,
+                text=f"📝 Editando rol existente",
+                font=('Segoe UI', 10),
+                bg='#ecf0f1',
+                fg='#7f8c8d'
+            )
+            info_label.pack(side='left')
         
         # Bind Enter y Escape
         self.dialog.bind('<Return>', lambda e: self.save())
         self.dialog.bind('<Escape>', lambda e: self.cancel())
+        
+        # Efecto hover en botones
+        def on_enter_save(e):
+            save_btn.config(bg='#229954')
+        
+        def on_leave_save(e):
+            save_btn.config(bg='#27ae60')
+        
+        def on_enter_cancel(e):
+            cancel_btn.config(bg='#7f8c8d')
+        
+        def on_leave_cancel(e):
+            cancel_btn.config(bg='#95a5a6')
+        
+        save_btn.bind('<Enter>', on_enter_save)
+        save_btn.bind('<Leave>', on_leave_save)
+        cancel_btn.bind('<Enter>', on_enter_cancel)
+        cancel_btn.bind('<Leave>', on_leave_cancel)
+        
+        print(f"DEBUG ROLE - Diálogo creado con diseño moderno")
     
     def save(self):
         """Guardar rol"""
@@ -751,7 +1441,7 @@ class RoleDialog:
 
 
 class PermissionsDialog:
-    """Diálogo para gestionar permisos de un rol"""
+    """Diálogo mejorado para gestionar permisos de un rol"""
     
     def __init__(self, parent, role: Dict[str, Any], role_controller: RoleController):
         self.parent = parent
@@ -759,298 +1449,756 @@ class PermissionsDialog:
         self.role_controller = role_controller
         self.result = None
         
-        # Variables para permisos y etiquetas
+        # Variables para permisos
         self.permission_vars = {}
-        self.permission_labels = {}
+        self.permission_metadata = {}
+        self.permission_frames = {}
+        self.category_vars = {}  # Para checkboxes de categorías
         
         # Crear diálogo
         self.create_dialog()
     
     def create_dialog(self):
-        """Crear ventana de diálogo"""
+        """Crear ventana de diálogo moderna"""
         self.dialog = tk.Toplevel(self.parent)
-        self.dialog.title(f"Permisos del Rol: {self.role.get('name')}")
-        self.dialog.geometry("800x700")
+        self.dialog.title(f"🔐 Gestión de Permisos - {self.role.get('name')}")
+        
+        # Obtener dimensiones de la pantalla
+        screen_width = self.dialog.winfo_screenwidth()
+        screen_height = self.dialog.winfo_screenheight()
+        
+        # Calcular tamaño de ventana (80% del ancho, 85% del alto)
+        window_width = int(screen_width * 0.80)
+        window_height = int(screen_height * 0.85)
+        
+        # Calcular posición centrada
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        
+        self.dialog.geometry(f"{window_width}x{window_height}+{x}+{y}")
         self.dialog.resizable(True, True)
         self.dialog.transient(self.parent)
         self.dialog.grab_set()
+        self.dialog.configure(bg='#f8f9fa')
         
-        # Centrar ventana
-        self.dialog.geometry("+%d+%d" % (
-            self.parent.winfo_rootx() + 50,
-            self.parent.winfo_rooty() + 50
-        ))
+        # Header moderno
+        self.create_header()
         
-        # Marco principal
-        main_frame = ttk.Frame(self.dialog, padding=10)
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        # Toolbar con acciones rápidas
+        self.create_toolbar()
         
-        # Título
-        title_frame = ttk.Frame(main_frame)
-        title_frame.pack(fill=tk.X, pady=(0, 10))
+        # Contenedor principal con scroll
+        self.create_permissions_area()
         
-        ttk.Label(title_frame, text=f"🔓 Permisos del Rol: {self.role.get('name')}", 
-                 font=('Arial', 16, 'bold')).pack(side=tk.LEFT)
-        
-        # Botones de selección rápida
-        quick_frame = ttk.Frame(main_frame)
-        quick_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        select_all_btn = ttk.Button(quick_frame, text="✅ Seleccionar Todo", 
-                  command=self.select_all_safe)
-        select_all_btn.pack(side=tk.LEFT, padx=(0, 5))
-        # Prevenir activación automática por focus/binding
-        select_all_btn.configure(takefocus=False)
-        
-        deselect_all_btn = ttk.Button(quick_frame, text="❌ Deseleccionar Todo", 
-                  command=self.deselect_all)
-        deselect_all_btn.pack(side=tk.LEFT, padx=(0, 5))
-        deselect_all_btn.configure(takefocus=False)
-        
-        reset_btn = ttk.Button(quick_frame, text="🔄 Restablecer", 
-                  command=self.reset_permissions)
-        reset_btn.pack(side=tk.LEFT)
-        reset_btn.configure(takefocus=False)
-        
-        # Marco con scroll para permisos
-        canvas_frame = ttk.Frame(main_frame)
-        canvas_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
-        
-        canvas = tk.Canvas(canvas_frame)
-        scrollbar = ttk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = ttk.Frame(canvas)
-        
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
-        
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-        
-        # Crear permisos por categoría
-        self.create_permissions_checkboxes(scrollable_frame)
-        
-        # Botones
-        button_frame = ttk.Frame(main_frame)
-        button_frame.pack(fill=tk.X, pady=(10, 0))
-        
-        ttk.Button(button_frame, text="Cancelar", 
-                  command=self.cancel).pack(side=tk.RIGHT, padx=(10, 0))
-        
-        ttk.Button(button_frame, text="Guardar Permisos", 
-                  command=self.save, style="Accent.TButton").pack(side=tk.RIGHT)
+        # Footer con botones
+        self.create_footer()
         
         # Bind Escape
         self.dialog.bind('<Escape>', lambda e: self.cancel())
     
-    def create_permissions_checkboxes(self, parent):
-        """Crear checkboxes de permisos organizados por categoría"""
+    def create_header(self):
+        """Crear header moderno"""
+        header_frame = tk.Frame(self.dialog, bg='#2c3e50', height=80)
+        header_frame.pack(fill='x')
+        header_frame.pack_propagate(False)
+        
+        content_frame = tk.Frame(header_frame, bg='#2c3e50')
+        content_frame.pack(expand=True, fill='both', padx=25, pady=15)
+        
+        # Icono y título
+        title_frame = tk.Frame(content_frame, bg='#2c3e50')
+        title_frame.pack(side='left')
+        
+        tk.Label(
+            title_frame,
+            text="🔐",
+            font=('Segoe UI', 32),
+            bg='#2c3e50',
+            fg='white'
+        ).pack(side='left', padx=(0, 15))
+        
+        info_frame = tk.Frame(title_frame, bg='#2c3e50')
+        info_frame.pack(side='left')
+        
+        tk.Label(
+            info_frame,
+            text="Gestión de Permisos",
+            font=('Segoe UI', 18, 'bold'),
+            fg='white',
+            bg='#2c3e50'
+        ).pack(anchor='w')
+        
+        tk.Label(
+            info_frame,
+            text=f"Rol: {self.role.get('name')} ({self.role.get('code')})",
+            font=('Segoe UI', 11),
+            fg='#bdc3c7',
+            bg='#2c3e50'
+        ).pack(anchor='w')
+        
+        # Contador de permisos
+        self.counter_label = tk.Label(
+            content_frame,
+            text="0 / 0",
+            font=('Segoe UI', 16, 'bold'),
+            fg='white',
+            bg='#2c3e50'
+        )
+        self.counter_label.pack(side='right')
+    
+    def create_toolbar(self):
+        """Crear toolbar con acciones rápidas"""
+        toolbar_frame = tk.Frame(self.dialog, bg='white', height=60)
+        toolbar_frame.pack(fill='x', pady=(0, 1))
+        toolbar_frame.pack_propagate(False)
+        
+        inner_toolbar = tk.Frame(toolbar_frame, bg='white')
+        inner_toolbar.pack(expand=True, fill='both', padx=25, pady=10)
+        
+        # Título
+        tk.Label(
+            inner_toolbar,
+            text="Acciones Rápidas:",
+            font=('Segoe UI', 11, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(side='left', padx=(0, 15))
+        
+        # Botones de acción
+        btn_style = {
+            'font': ('Segoe UI', 10, 'bold'),
+            'cursor': 'hand2',
+            'relief': 'flat',
+            'padx': 15,
+            'pady': 8,
+            'bd': 0
+        }
+        
+        tk.Button(
+            inner_toolbar,
+            text="✅ Seleccionar Todo",
+            bg='#27ae60',
+            fg='white',
+            activebackground='#229954',
+            activeforeground='white',
+            command=self.select_all_permissions,
+            **btn_style
+        ).pack(side='left', padx=3)
+        
+        tk.Button(
+            inner_toolbar,
+            text="❌ Deseleccionar Todo",
+            bg='#e74c3c',
+            fg='white',
+            activebackground='#c0392b',
+            activeforeground='white',
+            command=self.deselect_all_permissions,
+            **btn_style
+        ).pack(side='left', padx=3)
+        
+        tk.Button(
+            inner_toolbar,
+            text="🔄 Restablecer",
+            bg='#3498db',
+            fg='white',
+            activebackground='#2980b9',
+            activeforeground='white',
+            command=self.reset_permissions,
+            **btn_style
+        ).pack(side='left', padx=3)
+        
+        # Buscador
+        tk.Label(
+            inner_toolbar,
+            text="🔍",
+            font=('Segoe UI', 14),
+            bg='white'
+        ).pack(side='right', padx=(15, 5))
+        
+        self.search_var = tk.StringVar()
+        self.search_var.trace('w', self.filter_permissions)
+        
+        search_entry = tk.Entry(
+            inner_toolbar,
+            textvariable=self.search_var,
+            font=('Segoe UI', 10),
+            width=25,
+            relief='solid',
+            bd=1
+        )
+        search_entry.pack(side='right')
+    
+    def create_permissions_area(self):
+        """Crear área de permisos con scroll"""
+        # Frame contenedor
+        container = tk.Frame(self.dialog, bg='#f8f9fa')
+        container.pack(fill='both', expand=True, padx=25, pady=10)
+        
+        # Canvas con scrollbar
+        canvas = tk.Canvas(container, bg='#f8f9fa', highlightthickness=0)
+        scrollbar = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = tk.Frame(canvas, bg='#f8f9fa')
+        
+        # Función mejorada para actualizar región de scroll y ancho
+        def _configure_scroll(event):
+            # Actualizar región de scroll
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            # Hacer que el frame interno ocupe todo el ancho del canvas
+            canvas_width = canvas.winfo_width()
+            canvas.itemconfig(window_id, width=canvas_width)
+        
+        self.scrollable_frame.bind("<Configure>", _configure_scroll)
+        
+        # Crear ventana en canvas y guardar ID
+        window_id = canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Bind para actualizar ancho cuando el canvas cambie de tamaño
+        def _on_canvas_configure(event):
+            canvas.itemconfig(window_id, width=event.width)
+        
+        canvas.bind("<Configure>", _on_canvas_configure)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Bind mouse wheel
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+        
+        # Crear permisos por categoría
+        self.create_permissions_by_category()
+    
+    def create_permissions_by_category(self):
+        """Crear permisos organizados por categoría con diseño moderno"""
         try:
-            print(f"DEBUG PERMISOS - Rol completo: {self.role}")
+            print("\n" + "="*100)
+            print("🔐 INICIANDO CREACIÓN DE INTERFAZ DE PERMISOS")
+            print("="*100)
+            
             permissions_by_category = self.role_controller.get_permissions_by_category()
             current_permissions = self.role.get('permissions', [])
             
-            print(f"DEBUG PERMISOS - current_permissions tipo: {type(current_permissions)}")
-            print(f"DEBUG PERMISOS - current_permissions valor: {current_permissions}")
+            print(f"\n📋 ROL: {self.role.get('name')} (ID: {self.role.get('id')})")
+            print(f"   Código: {self.role.get('code')}")
+            print(f"\n📊 PERMISOS ACTUALES DEL ROL:")
+            print(f"   Tipo: {type(current_permissions)}")
+            print(f"   Valor: {current_permissions}")
             
-            # Si los permisos están en formato JSON string, convertir a lista
+            # Convertir si es JSON string
             if isinstance(current_permissions, str):
+                import json
                 try:
-                    import json
                     current_permissions = json.loads(current_permissions)
-                    print(f"DEBUG PERMISOS - Convertido de JSON: {current_permissions}")
+                    print(f"   ✓ Convertido desde JSON a lista")
                 except:
-                    print("DEBUG PERMISOS - Error convirtiendo JSON, usando lista vacía")
                     current_permissions = []
+                    print(f"   ⚠️ Error convirtiendo JSON, usando lista vacía")
             
-            for category, permissions in permissions_by_category.items():
-                # Marco para la categoría
-                category_frame = ttk.LabelFrame(parent, text=f"📂 {category}", padding=10)
-                category_frame.pack(fill=tk.X, pady=(0, 10), padx=5)
+            print(f"\n📂 CATEGORÍAS DISPONIBLES: {len(permissions_by_category)}")
+            for cat_name, perms in permissions_by_category.items():
+                print(f"   - {cat_name}: {len(perms)} permisos")
+            
+            # VALIDACIÓN ESPECIAL PARA MÓDULO DE USUARIOS
+            print("\n" + "="*100)
+            print("🔍 VALIDACIÓN DE PERMISOS DEL MÓDULO DE USUARIOS")
+            print("="*100)
+            
+            users_permissions = permissions_by_category.get('Usuarios', [])
+            print(f"\n📌 Permisos de Usuarios registrados en el sistema: {len(users_permissions)}")
+            for perm in users_permissions:
+                description = self.role_controller.get_permission_description(perm)
+                has_it = perm in current_permissions or '*' in current_permissions
+                status = "✅ TIENE" if has_it else "❌ NO TIENE"
+                print(f"   {status} | {perm:<30} | {description}")
+            
+            print("\n" + "="*100)
+            
+            total_permissions = 0
+            selected_permissions = 0
+            
+            for category_name, permissions in permissions_by_category.items():
+                print(f"\n{'─'*100}")
+                print(f"📂 PROCESANDO CATEGORÍA: {category_name}")
+                print(f"   Total de permisos: {len(permissions)}")
                 
-                # Crear grid para permisos
-                for i, permission in enumerate(permissions):
-                    var = tk.BooleanVar()
+                # Frame de categoría con diseño moderno
+                category_container = tk.Frame(self.scrollable_frame, bg='#f8f9fa')
+                category_container.pack(fill='x', pady=(0, 15))
+                
+                # Header de categoría
+                category_header = tk.Frame(category_container, bg='white', relief='flat', bd=0)
+                category_header.pack(fill='x', pady=(0, 5))
+                
+                # Variable para checkbox de categoría
+                category_var = tk.BooleanVar()
+                self.category_vars[category_name] = category_var
+                
+                print(f"   ✓ Variable de categoría creada: {type(category_var)}")
+                
+                # Checkbox de categoría (seleccionar toda la categoría)
+                category_check_frame = tk.Frame(category_header, bg='#34495e', padx=15, pady=12)
+                category_check_frame.pack(fill='x')
+                
+                def on_category_click(cat=category_name):
+                    """Callback para checkbox de categoría"""
+                    state = self.category_vars[cat].get()
+                    print(f"\n🔘 CLICK EN CATEGORÍA: {cat}")
+                    print(f"   Nuevo estado: {state}")
+                    print(f"   Aplicando a {len(permissions_by_category[cat])} permisos...")
+                    self.toggle_category(cat)
+                
+                category_checkbox = tk.Checkbutton(
+                    category_check_frame,
+                    variable=category_var,
+                    command=on_category_click,
+                    bg='#34495e',
+                    activebackground='#34495e',
+                    selectcolor='#2c3e50',
+                    font=('Segoe UI', 11, 'bold'),
+                    fg='white',
+                    activeforeground='white',
+                    cursor='hand2',
+                    text=f"📂 {category_name}",
+                    anchor='w',
+                    indicatoron=1
+                )
+                category_checkbox.pack(side='left', fill='x', expand=True)
+                
+                # Contador de permisos de categoría
+                category_count_label = tk.Label(
+                    category_check_frame,
+                    text=f"0/{len(permissions)}",
+                    font=('Segoe UI', 10, 'bold'),
+                    bg='#34495e',
+                    fg='#bdc3c7'
+                )
+                category_count_label.pack(side='right')
+                
+                # Grid de permisos
+                permissions_grid = tk.Frame(category_container, bg='white', relief='solid', bd=1)
+                permissions_grid.pack(fill='x')
+                
+                for idx, permission in enumerate(permissions):
+                    total_permissions += 1
                     
-                    # Marcar si el rol ya tiene este permiso
-                    has_permission = permission in current_permissions or '*' in current_permissions
+                    # 1️⃣ Crear variable CON MASTER EXPLÍCITO (esto es crítico para que funcione)
+                    var = tk.BooleanVar(master=self.dialog)
                     
-                    print(f"DEBUG PERMISOS - Procesando '{permission}': en_lista={permission in current_permissions}, es_admin={'*' in current_permissions}, final={has_permission}")
-                    
-                    if has_permission:
-                        var.set(True)
-                        print(f"DEBUG PERMISOS - ✅ MARCANDO '{permission}'")
-                    else:
-                        print(f"DEBUG PERMISOS - ❌ NO marcando '{permission}'")
-                    
+                    # 2️⃣ Guardar en diccionario PRIMERO
                     self.permission_vars[permission] = var
                     
-                    # Obtener descripción del permiso
-                    description = self.role_controller.get_permission_description(permission)
+                    # 3️⃣ Verificar si tiene el permiso
+                    has_permission = permission in current_permissions or '*' in current_permissions
                     
-                    # Crear frame para el permiso (sin checkbox tradicional)
-                    checkbox_frame = ttk.Frame(category_frame)
-                    checkbox_frame.pack(fill=tk.X, pady=2)
+                    if has_permission:
+                        selected_permissions += 1
                     
-                    # Etiqueta con formato mejorado y clickeable
-                    status_icon = "✅" if var.get() else "⬜"
-                    label_text = f"{status_icon} {permission} - {description}"
-                    
-                    label = tk.Label(
-                        checkbox_frame,
-                        text=label_text,
-                        font=('Arial', 10),
-                        anchor='w',
-                        cursor='hand2',
-                        bg='lightgreen' if var.get() else 'lightgray',
-                        relief='raised',
-                        bd=1,
-                        padx=10,
-                        pady=5
+                    # Frame del permiso (tarjeta)
+                    perm_frame = tk.Frame(
+                        permissions_grid,
+                        bg='#f8f9fa' if idx % 2 == 0 else 'white',
+                        relief='flat',
+                        bd=0
                     )
-                    label.pack(fill=tk.X, expand=True)
+                    perm_frame.pack(fill='both', expand=True, padx=10, pady=3)
+                    self.permission_frames[permission] = perm_frame
                     
-                    # Guardar referencia a la etiqueta
-                    self.permission_labels[permission] = label
+                    # Contenedor interno que ocupa todo el ancho
+                    inner_frame = tk.Frame(perm_frame, bg=perm_frame['bg'], padx=10, pady=8)
+                    inner_frame.pack(fill='both', expand=True)
                     
-                    # Hacer la etiqueta clickeable
-                    def toggle_permission(event, v=var):
-                        v.set(not v.get())
+                    # Obtener metadatos del permiso
+                    metadata = self.role_controller.get_permission_metadata(permission)
+                    self.permission_metadata[permission] = metadata
+
+                    label = str(metadata.get('label', permission))
+                    description = str(metadata.get('description', label))
+                    scope_value = str(metadata.get('scope', '')).lower()
+                    scope_labels = {
+                        'read': 'VER',
+                        'write': 'GESTIONAR',
+                        'admin': 'ADMIN',
+                    }
+                    scope_badge = scope_labels.get(scope_value, scope_value.upper() if scope_value else '')
+                    scope_prefix = f"[{scope_badge}] " if scope_badge else ''
+                    permission_text = f"{scope_prefix}{label} ({permission}) - {description}"
                     
-                    label.bind('<Button-1>', toggle_permission)
+                    # 4️⃣ Configurar el valor inicial ANTES de agregar trace
+                    var.set(has_permission)
                     
-                    # Actualizar etiqueta cuando cambie el checkbox
-                    def update_label(perm=permission, lbl=label, v=var):
-                        icon = "✅" if v.get() else "⬜"
-                        desc = self.role_controller.get_permission_description(perm)
-                        lbl.config(
-                            text=f"{icon} {perm} - {desc}",
-                            bg='lightgreen' if v.get() else 'lightgray'
-                        )
+                    # 5️⃣ Crear función de callback que se ejecutará DESPUÉS del click
+                    def make_update_callback(cat_name, cat_label, perm_name):
+                        """Factory para crear callback con closure correcto"""
+                        def callback():
+                            # Verificar el estado actual
+                            current_state = self.permission_vars[perm_name].get()
+                            print(f"🔔 CLICK en {perm_name}: estado ahora es {current_state}")
+                            # Usar after para ejecutar DESPUÉS de que Tkinter actualice la variable
+                            self.dialog.after(1, lambda: self.update_counters(cat_name, cat_label))
+                        return callback
                     
-                    var.trace('w', lambda *args, ul=update_label: ul())
+                    # Checkbox del permiso con texto incluido
+                    perm_checkbox = tk.Checkbutton(
+                        inner_frame,
+                        text=permission_text,
+                        variable=var,
+                        command=make_update_callback(category_name, category_count_label, permission),  # ✅ Con callback
+                        bg=perm_frame['bg'],
+                        activebackground=perm_frame['bg'],
+                        selectcolor='#4CAF50',  # ✅ VERDE cuando está marcado
+                        cursor='hand2',
+                        font=('Segoe UI', 10),
+                        fg='#2c3e50',
+                        activeforeground='#2c3e50',
+                        indicatoron=1,  # ✅ MOSTRAR CHECKBOX (cuadrito con checkmark)
+                        onvalue=True,   # ✅ Valor cuando está marcado
+                        offvalue=False, # ✅ Valor cuando NO está marcado
+                        anchor='w',
+                        wraplength=700,
+                        justify='left',
+                        relief='flat',  # Sin relieve
+                        borderwidth=0   # Sin borde
+                    )
+                    perm_checkbox.pack(fill='x', expand=True)
+                    
+                    # Log de creación
+                    print(f"✓ Checkbox creado: {permission} | Estado inicial: {var.get()} | ID: {id(perm_checkbox)}")
+                
+                # Actualizar estado inicial de checkbox de categoría
+                self.update_category_checkbox(category_name, update_count=False)
             
-            # Verificar estado final de los checkboxes
-            marked_count = sum(1 for var in self.permission_vars.values() if var.get())
-            total_count = len(self.permission_vars)
-            print(f"DEBUG PERMISOS - Estado final: {marked_count}/{total_count} checkboxes marcados")
+            # Actualizar contador global
+            self.update_global_counter()
             
-            # Forzar actualización de la UI después de configurar los valores
-            self.dialog.update_idletasks()
-            self.dialog.update()
+            # RESUMEN FINAL
+            print("\n" + "="*100)
+            print("✅ INTERFAZ DE PERMISOS CREADA EXITOSAMENTE")
+            print("="*100)
+            print(f"\n📊 RESUMEN:")
+            print(f"   Total de categorías: {len(permissions_by_category)}")
+            print(f"   Total de permisos: {len(self.permission_vars)}")
+            print(f"   Permisos seleccionados: {sum(1 for var in self.permission_vars.values() if var.get())}")
+            print(f"\n🎯 ESTADO DE CHECKBOXES:")
+            print(f"   Variables creadas: {len(self.permission_vars)}")
+            print(f"   Frames creados: {len(self.permission_frames)}")
+            print(f"   Categorías: {len(self.category_vars)}")
             
-            # Verificar nuevamente después de la actualización
-            final_marked_count = sum(1 for var in self.permission_vars.values() if var.get())
-            print(f"DEBUG PERMISOS - Estado después de update: {final_marked_count}/{total_count} checkboxes marcados")
+            print(f"\n🔍 VALIDACIÓN DE WIDGETS:")
+            sample_count = 0
+            for perm, var in list(self.permission_vars.items())[:5]:
+                print(f"   - {perm}")
+                print(f"     Tipo variable: {type(var)}")
+                print(f"     Estado: {var.get()}")
+                sample_count += 1
             
-            if final_marked_count != marked_count:
-                print(f"DEBUG PERMISOS - ⚠️ CAMBIO DE ESTADO después de update: {marked_count} -> {final_marked_count}")
+            if len(self.permission_vars) > 5:
+                print(f"   ... y {len(self.permission_vars) - 5} permisos más")
+            
+            print("\n" + "="*100)
+            print("🚀 INTERFAZ LISTA PARA USO")
+            print("="*100 + "\n")
             
         except Exception as e:
-            print(f"DEBUG PERMISOS - Excepción: {e}")
+            print(f"\n❌ ERROR CREANDO INTERFAZ:")
+            print(f"   {str(e)}")
             import traceback
             traceback.print_exc()
-            messagebox.showerror("Error", f"Error creando permisos:\n{str(e)}")
+            messagebox.showerror("Error", f"Error creando interfaz de permisos:\n{str(e)}")
     
-    def select_all_safe(self):
-        """Seleccionar todos los permisos (versión segura)"""
-        print("DEBUG PERMISOS - ✅ SELECT_ALL_SAFE llamado manualmente")
-        for permission, var in self.permission_vars.items():
-            var.set(True)
-            # Actualizar etiqueta inmediatamente
-            if permission in self.permission_labels:
-                desc = self.role_controller.get_permission_description(permission)
-                self.permission_labels[permission].config(
-                    text=f"✅ {permission} - {desc}",
-                    bg='lightgreen'
-                )
+    def toggle_category(self, category_name):
+        """Activar/desactivar todos los permisos de una categoría"""
+        print(f"\n🔄 TOGGLE_CATEGORY: {category_name}")
         
-        # Forzar actualización de UI
-        self.dialog.update_idletasks()
+        permissions_by_category = self.role_controller.get_permissions_by_category()
+        permissions = permissions_by_category.get(category_name, [])
+        
+        # Obtener estado del checkbox de categoría
+        category_state = self.category_vars[category_name].get()
+        
+        print(f"   Estado de categoría: {category_state}")
+        print(f"   Permisos a modificar: {len(permissions)}")
+        
+        # Aplicar a todos los permisos de la categoría
+        for permission in permissions:
+            if permission in self.permission_vars:
+                old_state = self.permission_vars[permission].get()
+                self.permission_vars[permission].set(category_state)
+                print(f"   - {permission}: {old_state} → {category_state}")
+        
+        print(f"   ✓ Todos los permisos actualizados")
     
-    def select_all(self):
-        """Seleccionar todos los permisos (método original con debug)"""
-        print("DEBUG PERMISOS - ⚠️ SELECT_ALL llamado!")
-        import traceback
-        traceback.print_stack()
-        for var in self.permission_vars.values():
+    def update_category_checkbox(self, category_name, update_count=True):
+        """Actualizar estado del checkbox de categoría basado en sus permisos"""
+        permissions_by_category = self.role_controller.get_permissions_by_category()
+        permissions = permissions_by_category.get(category_name, [])
+        
+        # Contar permisos seleccionados
+        selected_count = sum(1 for p in permissions 
+                           if p in self.permission_vars and self.permission_vars[p].get())
+        
+        print(f"\n📊 UPDATE_CATEGORY_CHECKBOX: {category_name}")
+        print(f"   Permisos seleccionados: {selected_count}/{len(permissions)}")
+        
+        # Actualizar checkbox de categoría
+        if category_name in self.category_vars:
+            if selected_count == 0:
+                self.category_vars[category_name].set(False)
+                print(f"   → Categoría desmarcada (0 permisos)")
+            elif selected_count == len(permissions):
+                self.category_vars[category_name].set(True)
+                print(f"   → Categoría marcada (todos los permisos)")
+            else:
+                print(f"   → Categoría parcial ({selected_count}/{len(permissions)})")
+        
+        if update_count:
+            self.update_global_counter()
+    
+    def update_counters(self, category_name, label):
+        """Actualizar contador de permisos de una categoría"""
+        permissions_by_category = self.role_controller.get_permissions_by_category()
+        permissions = permissions_by_category.get(category_name, [])
+        
+        selected_count = sum(1 for p in permissions 
+                           if p in self.permission_vars and self.permission_vars[p].get())
+        
+        print(f"\n📈 UPDATE_COUNTERS: {category_name}")
+        print(f"   Contador actualizado: {selected_count}/{len(permissions)}")
+        
+        label.config(text=f"{selected_count}/{len(permissions)}")
+        self.update_global_counter()
+    
+    def update_global_counter(self):
+        """Actualizar contador global de permisos"""
+        total = len(self.permission_vars)
+        selected = sum(1 for var in self.permission_vars.values() if var.get())
+        
+        print(f"\n🌐 CONTADOR GLOBAL: {selected}/{total} permisos seleccionados")
+        
+        self.counter_label.config(
+            text=f"{selected} / {total} permisos",
+            fg='#27ae60' if selected > 0 else 'white'
+        )
+    
+    def filter_permissions(self, *args):
+        """Filtrar permisos por búsqueda"""
+        search_text = self.search_var.get().lower()
+        
+        for permission, frame in self.permission_frames.items():
+            metadata = self.permission_metadata.get(permission) or self.role_controller.get_permission_metadata(permission)
+            searchable_parts = [
+                permission,
+                str(metadata.get('label', '')),
+                str(metadata.get('description', '')),
+                str(metadata.get('scope', '')),
+            ]
+            searchable = ' '.join(searchable_parts).lower()
+            
+            if search_text in searchable:
+                frame.pack(fill='x', padx=10, pady=3)
+            else:
+                frame.pack_forget()
+    
+    def select_all_permissions(self):
+        """Seleccionar todos los permisos"""
+        print("\n" + "🟢"*50)
+        print("✅ SELECCIONAR TODO - INICIADO")
+        print("🟢"*50)
+        
+        count = 0
+        for permission, var in self.permission_vars.items():
+            old_state = var.get()
             var.set(True)
+            if not old_state:
+                count += 1
+                print(f"   ✓ {permission}: False → True")
+        
+        print(f"\n   Total modificados: {count}/{len(self.permission_vars)}")
+        
+        # Actualizar checkboxes de categorías
+        for category_name, category_var in self.category_vars.items():
+            category_var.set(True)
+            print(f"   ✓ Categoría '{category_name}': marcada")
+        
+        self.update_global_counter()
+        print("🟢"*50 + "\n")
     
-    def deselect_all(self):
+    def deselect_all_permissions(self):
         """Deseleccionar todos los permisos"""
-        print("DEBUG PERMISOS - ⚠️ DESELECT_ALL llamado!")
-        for permission, var in self.permission_vars.items():
-            var.set(False)
-            # Actualizar etiqueta inmediatamente
-            if permission in self.permission_labels:
-                desc = self.role_controller.get_permission_description(permission)
-                self.permission_labels[permission].config(
-                    text=f"⬜ {permission} - {desc}",
-                    bg='lightgray'
-                )
+        print("\n" + "🔴"*50)
+        print("❌ DESELECCIONAR TODO - INICIADO")
+        print("🔴"*50)
         
-        # Forzar actualización de UI
-        self.dialog.update_idletasks()
+        count = 0
+        for permission, var in self.permission_vars.items():
+            old_state = var.get()
+            var.set(False)
+            if old_state:
+                count += 1
+                print(f"   ✓ {permission}: True → False")
+        
+        print(f"\n   Total modificados: {count}/{len(self.permission_vars)}")
+        
+        # Actualizar checkboxes de categorías
+        for category_name, category_var in self.category_vars.items():
+            category_var.set(False)
+            print(f"   ✓ Categoría '{category_name}': desmarcada")
+        
+        self.update_global_counter()
+        print("🔴"*50 + "\n")
     
     def reset_permissions(self):
         """Restablecer permisos originales"""
-        print("DEBUG PERMISOS - ⚠️ RESET_PERMISSIONS llamado!")
+        print("\n" + "🔵"*50)
+        print("🔄 RESTABLECER - INICIADO")
+        print("🔵"*50)
+        
         current_permissions = self.role.get('permissions', [])
-        print(f"DEBUG RESET - Permisos originales del rol: {current_permissions}")
         
-        marked_before = sum(1 for var in self.permission_vars.values() if var.get())
-        print(f"DEBUG RESET - Estado antes: {marked_before}/{len(self.permission_vars)} marcados")
+        # Convertir si es JSON string
+        if isinstance(current_permissions, str):
+            import json
+            try:
+                current_permissions = json.loads(current_permissions)
+            except:
+                current_permissions = []
         
+        print(f"\n   Permisos originales: {len(current_permissions)}")
+        print(f"   Permisos a restaurar: {current_permissions}\n")
+        
+        modified = 0
         for permission, var in self.permission_vars.items():
             should_be_checked = permission in current_permissions or '*' in current_permissions
+            old_state = var.get()
             var.set(should_be_checked)
             
-            # Actualizar etiqueta inmediatamente
-            if permission in self.permission_labels:
-                desc = self.role_controller.get_permission_description(permission)
-                icon = "✅" if should_be_checked else "⬜"
-                self.permission_labels[permission].config(
-                    text=f"{icon} {permission} - {desc}",
-                    bg='lightgreen' if should_be_checked else 'lightgray'
-                )
-            
-        # Forzar actualización de UI
-        self.dialog.update_idletasks()
+            if old_state != should_be_checked:
+                modified += 1
+                print(f"   ✓ {permission}: {old_state} → {should_be_checked}")
         
-        marked_after = sum(1 for var in self.permission_vars.values() if var.get())
-        print(f"DEBUG RESET - Estado después: {marked_after}/{len(self.permission_vars)} marcados")
+        print(f"\n   Total modificados: {modified}/{len(self.permission_vars)}")
         
-        if marked_after != len(current_permissions):
-            print(f"DEBUG RESET - ⚠️ DISCREPANCIA: esperado {len(current_permissions)}, obtenido {marked_after}")
+        # Actualizar checkboxes de categorías
+        permissions_by_category = self.role_controller.get_permissions_by_category()
+        for category_name in permissions_by_category.keys():
+            self.update_category_checkbox(category_name)
+        
+        self.update_global_counter()
+        print("🔵"*50 + "\n")
+    
+    def create_footer(self):
+        """Crear footer con botones de acción"""
+        footer_frame = tk.Frame(self.dialog, bg='white', height=70)
+        footer_frame.pack(fill='x', side='bottom', pady=(10, 0))
+        footer_frame.pack_propagate(False)
+        
+        button_container = tk.Frame(footer_frame, bg='white')
+        button_container.pack(expand=True, pady=15)
+        
+        btn_style = {
+            'font': ('Segoe UI', 12, 'bold'),
+            'cursor': 'hand2',
+            'relief': 'flat',
+            'padx': 30,
+            'pady': 12,
+            'bd': 0
+        }
+        
+        # Botón Cancelar
+        tk.Button(
+            button_container,
+            text="❌ Cancelar",
+            bg='#95a5a6',
+            fg='white',
+            activebackground='#7f8c8d',
+            activeforeground='white',
+            command=self.cancel,
+            **btn_style
+        ).pack(side='right', padx=5)
+        
+        # Botón Guardar
+        tk.Button(
+            button_container,
+            text="💾 Guardar Permisos",
+            bg='#27ae60',
+            fg='white',
+            activebackground='#229954',
+            activeforeground='white',
+            command=self.save,
+            **btn_style
+        ).pack(side='right', padx=5)
     
     def save(self):
         """Guardar permisos"""
+        print("\n🚨🚨🚨 MÉTODO save() LLAMADO 🚨🚨🚨\n")
         try:
-            print("DEBUG SAVE_PERMISOS - Iniciando guardado...")
+            print("\n" + "="*80)
+            print("💾 GUARDAR PERMISOS - INICIADO")
+            print("="*80)
+            
+            print(f"\n🔍 DIAGNÓSTICO DE VARIABLES:")
+            print(f"   Total de permission_vars: {len(self.permission_vars)}")
+            print(f"   Tipo de permission_vars: {type(self.permission_vars)}")
+            
+            # 🔍 LOGS DETALLADOS: Mostrar TODOS los estados
+            print(f"\n📋 ESTADO COMPLETO DE TODAS LAS VARIABLES:")
+            true_count = 0
+            false_count = 0
+            for perm, var in self.permission_vars.items():
+                state = var.get()
+                if state:
+                    true_count += 1
+                    print(f"   ✅ TRUE:  {perm}")
+                else:
+                    false_count += 1
+            
+            print(f"\n📊 RESUMEN DE ESTADOS:")
+            print(f"   Variables con TRUE:  {true_count}")
+            print(f"   Variables con FALSE: {false_count}")
+            print(f"   Total: {true_count + false_count}")
             
             # Obtener permisos seleccionados
-            selected_permissions = []
+            selected_permissions = [
+                permission for permission, var in self.permission_vars.items()
+                if var.get()
+            ]
             
+            print(f"\n📊 PERMISOS SELECCIONADOS: {len(selected_permissions)}/60")
+            
+            # Mostrar estado de cada variable (primeros 10)
+            print(f"\n� ESTADO DE VARIABLES (primeros 10):")
+            count = 0
             for permission, var in self.permission_vars.items():
-                if var.get():
-                    selected_permissions.append(permission)
-                    print(f"DEBUG SAVE_PERMISOS - Permiso marcado: {permission}")
+                if count < 10:
+                    print(f"   {permission}: {var.get()} (tipo: {type(var)})")
+                    count += 1
             
-            print(f"DEBUG SAVE_PERMISOS - Total permisos seleccionados: {len(selected_permissions)}")
-            print(f"DEBUG SAVE_PERMISOS - Permisos: {selected_permissions}")
+            print(f"\n�📝 LISTA DE PERMISOS SELECCIONADOS:")
+            for perm in sorted(selected_permissions)[:10]:
+                print(f"   ✓ {perm}")
+            if len(selected_permissions) > 10:
+                print(f"   ... y {len(selected_permissions) - 10} más")
             
+            # Guardar resultado
+            print(f"\n🔧 GUARDANDO EN self.result...")
             self.result = selected_permissions
-            print(f"DEBUG SAVE_PERMISOS - Result asignado: {self.result}")
             
+            print(f"✅ self.result establecido")
+            print(f"   Tipo: {type(self.result)}")
+            print(f"   Longitud: {len(self.result)}")
+            print(f"   Contenido (primeros 5): {self.result[:5] if len(self.result) > 0 else '[]'}")
+            print(f"   self.result is None: {self.result is None}")
+            print(f"   bool(self.result): {bool(self.result)}")
+            print("="*80 + "\n")
+            
+            # Cerrar diálogo
+            print("🔒 Cerrando diálogo...")
             self.dialog.destroy()
-            print("DEBUG SAVE_PERMISOS - Diálogo cerrado")
+            print("✅ Diálogo cerrado")
             
         except Exception as e:
-            print(f"DEBUG SAVE_PERMISOS - Excepción: {e}")
+            print(f"\n❌ ERROR en save(): {e}")
             import traceback
             traceback.print_exc()
             messagebox.showerror("Error", f"Error guardando permisos:\n{str(e)}")

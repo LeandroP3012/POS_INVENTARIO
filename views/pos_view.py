@@ -10,6 +10,7 @@ from tkinter import ttk, messagebox
 from datetime import datetime
 from decimal import Decimal
 import logging
+from utils.responsive_utils import ResponsiveManager
 
 class POSView:
     """Vista del Punto de Venta"""
@@ -20,6 +21,9 @@ class POSView:
         self.user_data = user_data
         self.on_back = on_back
         
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(parent)
+        
         # Estado del carrito
         self.cart_items = []
         self.current_customer = None
@@ -27,12 +31,121 @@ class POSView:
         # Variables de cálculo
         self.current_total = 0.0
         
-        # Frame principal
-        self.main_frame = tk.Frame(parent, bg='#ecf0f1')
-        self.main_frame.pack(fill='both', expand=True)
-        
+        # Configurar viewport responsivo
+        self._configure_viewport()
+
         self.setup_ui()
-    
+
+    def _configure_viewport(self):
+        """Adaptar la vista para resoluciones medias como 1366x768."""
+        master = self.parent.winfo_toplevel() if hasattr(self.parent, 'winfo_toplevel') else self.parent
+
+        try:
+            screen_w = master.winfo_screenwidth()
+            screen_h = master.winfo_screenheight()
+        except Exception:
+            screen_w, screen_h = 1366, 768
+
+        # Calcular dimensiones responsivas basadas en pantalla real
+        base_width, base_height = self.responsive.get_window_size()
+        margin = 40
+        usable_width = min(int(screen_w * 0.92), screen_w - margin)
+        usable_height = min(int(screen_h * 0.9), screen_h - margin)
+
+        target_width = max(min(usable_width, screen_w - margin), min(base_width, screen_w - margin))
+        target_height = max(min(usable_height, screen_h - margin), min(int(base_height * 0.9), screen_h - margin))
+
+        min_width = max(min(base_width, screen_w - margin), 1100)
+        min_height = max(min(int(base_height * 0.75), screen_h - margin), 640)
+
+        try:
+            master.minsize(min_width, min_height)
+            master.geometry(f"{target_width}x{target_height}")
+        except Exception:
+            pass
+
+        self.viewport_container = tk.Frame(self.parent, bg='#ecf0f1')
+        self.viewport_container.pack(fill='both', expand=True)
+
+        self._viewport_canvas = tk.Canvas(
+            self.viewport_container,
+            bg='#ecf0f1',
+            highlightthickness=0
+        )
+        v_scroll = ttk.Scrollbar(
+            self.viewport_container,
+            orient='vertical',
+            command=self._viewport_canvas.yview
+        )
+        self._viewport_canvas.configure(yscrollcommand=v_scroll.set)
+
+        self._viewport_canvas.pack(side='left', fill='both', expand=True)
+        v_scroll.pack(side='right', fill='y')
+
+        self.main_frame = tk.Frame(self._viewport_canvas, bg='#ecf0f1')
+        self._viewport_window = self._viewport_canvas.create_window((0, 0), window=self.main_frame, anchor='nw')
+
+        def _update_scroll_region(_event=None):
+            self._viewport_canvas.configure(scrollregion=self._viewport_canvas.bbox('all'))
+            self._ensure_content_height()
+
+        self.main_frame.bind('<Configure>', _update_scroll_region)
+
+        def _on_mousewheel(event):
+            canvas = getattr(self, '_viewport_canvas', None)
+            if canvas is None:
+                return
+            try:
+                if not canvas.winfo_exists():
+                    self._unbind_mousewheel()
+                    return
+            except Exception:
+                return
+            try:
+                canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+            except tk.TclError:
+                self._unbind_mousewheel()
+
+        self._viewport_canvas.bind_all('<MouseWheel>', _on_mousewheel)
+        self._mousewheel_handler = _on_mousewheel
+
+        # Ajustar altura inicial cuando el canvas cambie de tamaño
+        self._viewport_canvas.bind('<Configure>', lambda _e: self._ensure_content_height())
+
+        # Asegurar limpieza cuando se destruya la ventana
+        self.parent.bind('<Destroy>', self._on_parent_destroy)
+
+    def _ensure_content_height(self):
+        """Asegurar que el contenido cubra toda la altura disponible"""
+        if not hasattr(self, '_viewport_canvas') or not hasattr(self, '_viewport_window'):
+            return
+
+        self.main_frame.update_idletasks()
+        content_height = self.main_frame.winfo_reqheight()
+        viewport_height = max(self._viewport_canvas.winfo_height(), 600)
+        target_height = max(content_height, viewport_height)
+
+        try:
+            self._viewport_canvas.itemconfigure(self._viewport_window, height=target_height)
+        except Exception:
+            pass
+
+    def _unbind_mousewheel(self):
+        """Eliminar binding global del mousewheel si sigue activo"""
+        if getattr(self, '_mousewheel_handler', None) is None:
+            return
+        try:
+            self.parent.unbind_all('<MouseWheel>')
+        except Exception:
+            pass
+        self._mousewheel_handler = None
+
+    def _on_parent_destroy(self, event):
+        """Limpiar bindings cuando el contenedor se destruye"""
+        # Solo interesa cuando se destruye la ventana principal
+        if event.widget is self.parent or event.widget is getattr(self.parent, 'winfo_toplevel', lambda: None)():
+            self._unbind_mousewheel()
+
     def setup_ui(self):
         """Configura la interfaz completa"""
         # Header
@@ -41,21 +154,30 @@ class POSView:
         # Contenedor principal (3 columnas)
         content_frame = tk.Frame(self.main_frame, bg='#ecf0f1')
         content_frame.pack(fill='both', expand=True, padx=10, pady=10)
-        
+
+        content_frame.columnconfigure(0, weight=3)
+        content_frame.columnconfigure(1, weight=2)
+        content_frame.columnconfigure(2, weight=0)
+        content_frame.rowconfigure(0, weight=1)
+
         # Columna izquierda: Búsqueda y productos
         left_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1)
-        left_frame.pack(side='left', fill='both', expand=True, padx=(0, 5))
+        left_frame.grid(row=0, column=0, sticky='nsew', padx=(0, 5))
         self.create_search_section(left_frame)
         
         # Columna central: Carrito
         center_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1)
-        center_frame.pack(side='left', fill='both', expand=True, padx=5)
+        center_frame.grid(row=0, column=1, sticky='nsew', padx=5)
         self.create_cart_section(center_frame)
         
         # Columna derecha: Totales y pago
-        right_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1)
-        right_frame.pack(side='left', fill='both', padx=(5, 0))
+        right_frame = tk.Frame(content_frame, bg='white', relief='solid', borderwidth=1, width=360)
+        right_frame.grid(row=0, column=2, sticky='ns', padx=(5, 0))
+        right_frame.grid_propagate(False)
         self.create_totals_section(right_frame)
+
+        # Ajustar altura una vez montada la interfaz
+        self.parent.after(200, self._ensure_content_height)
     
     def create_header(self):
         """Crea el header con información del cajero"""
@@ -151,7 +273,8 @@ class POSView:
         self.search_entry.bind('<KeyRelease>', lambda e: self.on_search_change())
         
         # Bind enter para agregar rápido
-        self.search_entry.bind('<Return>', lambda e: self.quick_add_product())
+        # MODIFICADO: Ejecutar búsqueda síncrona antes de agregar
+        self.search_entry.bind('<Return>', lambda e: self.quick_add_product_with_search())
         
         # Instrucciones mejoradas
         instruction_frame = tk.Frame(search_frame, bg='#e8f4f8', relief='solid', borderwidth=1)
@@ -170,9 +293,10 @@ class POSView:
         tree_frame = tk.Frame(parent, bg='white')
         tree_frame.pack(fill='both', expand=True, padx=10, pady=(0, 10))
         
-        # Scrollbar
-        scrollbar = tk.Scrollbar(tree_frame)
-        scrollbar.pack(side='right', fill='y')
+        # Scrollbars
+        scrollbar_y = tk.Scrollbar(tree_frame)
+        scrollbar_y.pack(side='right', fill='y')
+        scrollbar_x = tk.Scrollbar(tree_frame, orient='horizontal')
         
         # Treeview de productos
         columns = ('sku', 'name', 'price', 'stock')
@@ -181,7 +305,8 @@ class POSView:
             columns=columns,
             show='headings',
             height=15,
-            yscrollcommand=scrollbar.set
+            yscrollcommand=scrollbar_y.set,
+            xscrollcommand=scrollbar_x.set
         )
         
         # Configurar columnas
@@ -196,7 +321,9 @@ class POSView:
         self.products_tree.column('stock', width=80, anchor='center')
         
         self.products_tree.pack(fill='both', expand=True)
-        scrollbar.config(command=self.products_tree.yview)
+        scrollbar_x.pack(side='bottom', fill='x')
+        scrollbar_y.config(command=self.products_tree.yview)
+        scrollbar_x.config(command=self.products_tree.xview)
         
         # Estilos para el Treeview
         style = ttk.Style()
@@ -264,8 +391,7 @@ class POSView:
         # Inicializar diccionario de productos
         self.product_data = {}
         
-        # Cargar productos iniciales (después de que la UI esté lista)
-        self.main_frame.after(100, self.load_initial_products)
+        # ✅ NO cargar productos aquí - esperar a que se muestre la vista
         
     def create_cart_section(self, parent):
         """Crea sección del carrito de compras"""
@@ -327,9 +453,10 @@ class POSView:
         tree_frame = tk.Frame(parent, bg='white')
         tree_frame.pack(fill='both', expand=True, padx=10, pady=(0, 10))
         
-        # Scrollbar
-        scrollbar = tk.Scrollbar(tree_frame)
-        scrollbar.pack(side='right', fill='y')
+        # Scrollbars
+        scrollbar_y = tk.Scrollbar(tree_frame)
+        scrollbar_y.pack(side='right', fill='y')
+        scrollbar_x = tk.Scrollbar(tree_frame, orient='horizontal')
         
         # Treeview
         columns = ('Producto', 'Cant.', 'Precio', 'Subtotal')
@@ -338,7 +465,8 @@ class POSView:
             columns=columns,
             show='headings',
             height=15,
-            yscrollcommand=scrollbar.set
+            yscrollcommand=scrollbar_y.set,
+            xscrollcommand=scrollbar_x.set
         )
         
         # Configurar columnas
@@ -353,7 +481,12 @@ class POSView:
         self.cart_tree.column('Subtotal', width=100, anchor='e')
         
         self.cart_tree.pack(fill='both', expand=True)
-        scrollbar.config(command=self.cart_tree.yview)
+        scrollbar_x.pack(side='bottom', fill='x')
+        scrollbar_y.config(command=self.cart_tree.yview)
+        scrollbar_x.config(command=self.cart_tree.xview)
+        
+        # ✅ AGREGAR EVENTO DE DOBLE CLIC PARA EDITAR CANTIDAD
+        self.cart_tree.bind('<Double-Button-1>', lambda e: self.edit_quantity())
         
         # Botones de carrito
         buttons_frame = tk.Frame(parent, bg='white')
@@ -457,7 +590,7 @@ class POSView:
         ).pack(side='left')
         
         # Variable para el toggle
-        self.include_tax_var = tk.BooleanVar(value=True)
+        self.include_tax_var = tk.BooleanVar(value=False)  # ✅ DESACTIVADO POR DEFECTO
         
         # Frame del toggle switch personalizado
         toggle_frame = tk.Frame(igv_frame, bg='white')
@@ -474,9 +607,9 @@ class POSView:
         )
         self.toggle_canvas.pack(side='left')
         
-        # Dibujar el toggle switch
-        self.toggle_bg = self.toggle_canvas.create_oval(2, 2, 48, 22, fill='#27ae60', outline='')
-        self.toggle_circle = self.toggle_canvas.create_oval(28, 4, 44, 20, fill='white', outline='')
+        # Dibujar el toggle switch - ESTADO INICIAL OFF
+        self.toggle_bg = self.toggle_canvas.create_oval(2, 2, 48, 22, fill='#95a5a6', outline='')  # Gris cuando OFF
+        self.toggle_circle = self.toggle_canvas.create_oval(6, 4, 22, 20, fill='white', outline='')  # Círculo a la izquierda
         
         # Bind click en el toggle
         self.toggle_canvas.bind('<Button-1>', self.toggle_tax)
@@ -484,10 +617,10 @@ class POSView:
         # Label de estado
         self.tax_status_label = tk.Label(
             toggle_frame,
-            text="ON",
+            text="OFF",  # Estado inicial OFF
             font=('Segoe UI', 9, 'bold'),
             bg='white',
-            fg='#27ae60'
+            fg='#95a5a6'  # Gris cuando OFF
         )
         self.tax_status_label.pack(side='left', padx=5)
         
@@ -541,7 +674,7 @@ class POSView:
         payment_combo = ttk.Combobox(
             payment_frame,
             textvariable=self.payment_method_var,
-            values=['cash', 'card', 'transfer'],
+            values=['cash', 'card', 'transfer', 'yape', 'plin'],
             state='readonly',
             font=('Segoe UI', 10),
             width=20
@@ -553,7 +686,9 @@ class POSView:
             mapping = {
                 'cash': '💵 Efectivo',
                 'card': '💳 Tarjeta',
-                'transfer': '🏦 Transferencia'
+                'transfer': '🏦 Transferencia',
+                'yape': '📱 Yape',
+                'plin': '📱 Plin'
             }
             return mapping.get(value, value)
         
@@ -565,7 +700,9 @@ class POSView:
         payment_combo.configure(values=[
             '💵 Efectivo',
             '💳 Tarjeta', 
-            '🏦 Transferencia'
+            '🏦 Transferencia',
+            '📱 Yape',
+            '📱 Plin'
         ])
         
         # Función para obtener el valor real
@@ -574,7 +711,9 @@ class POSView:
             mapping = {
                 '💵 Efectivo': 'cash',
                 '💳 Tarjeta': 'card',
-                '🏦 Transferencia': 'transfer'
+                '🏦 Transferencia': 'transfer',
+                '📱 Yape': 'yape',
+                '📱 Plin': 'plin'
             }
             return mapping.get(display, 'cash')
         
@@ -656,6 +795,10 @@ class POSView:
         # Efecto hover
         self.process_btn.bind('<Enter>', lambda e: self.process_btn.config(bg='#229954') if self.process_btn['state'] == 'normal' else None)
         self.process_btn.bind('<Leave>', lambda e: self.process_btn.config(bg='#27ae60') if self.process_btn['state'] == 'normal' else None)
+
+        # Atajo: Ctrl+P para procesar venta
+        self.parent.bind_all('<Control-p>', lambda e: self.process_sale())
+        self.parent.bind_all('<Control-P>', lambda e: self.process_sale())
     
     def create_total_row(self, parent, label, value, attr_name):
         """Crea una fila de total"""
@@ -748,6 +891,17 @@ class POSView:
         print(f"   ⏰ Programando búsqueda en 300ms para: '{search_text}'")
         self.search_timer = self.main_frame.after(300, lambda: self.perform_search(search_text))
     
+    def refresh_product_list(self):
+        """Fuerza la actualización de la lista de productos sin importar el texto de búsqueda"""
+        search_text = self.search_entry.get().strip()
+        
+        if not search_text or len(search_text) < 2:
+            # Si no hay búsqueda activa, cargar productos iniciales
+            self.load_initial_products()
+        else:
+            # Si hay búsqueda, ejecutar búsqueda
+            self.perform_search(search_text)
+    
     def perform_search(self, search_text):
         """Realiza la búsqueda de productos"""
         try:
@@ -812,14 +966,33 @@ class POSView:
             price = float(product.get('price', 0))
             sku = product.get('sku', 'N/A')
             name = product.get('name', 'Sin nombre')
+            product_id = product.get('id')
             
-            # Indicador de stock con emoji
-            if stock_qty <= 5:
-                stock_display = f"🔴 {int(stock_qty)}"
-            elif stock_qty <= 10:
-                stock_display = f"🟡 {int(stock_qty)}"
+            # ✅ CALCULAR STOCK DISPONIBLE RESTANDO LO QUE ESTÁ EN EL CARRITO
+            qty_in_cart = 0
+            for cart_item in self.cart_items:
+                if cart_item['id'] == product_id:
+                    qty_in_cart = cart_item['quantity']
+                    break
+            
+            # Stock disponible = stock total - cantidad en carrito
+            available_stock = stock_qty - qty_in_cart
+            
+            # Indicador de stock con emoji (basado en stock disponible)
+            if available_stock <= 0:
+                stock_display = f"⚫ 0 (en carrito: {int(qty_in_cart)})"
+            elif available_stock <= 5:
+                stock_display = f"🔴 {int(available_stock)}"
+                if qty_in_cart > 0:
+                    stock_display += f" (en carrito: {int(qty_in_cart)})"
+            elif available_stock <= 10:
+                stock_display = f"🟡 {int(available_stock)}"
+                if qty_in_cart > 0:
+                    stock_display += f" (en carrito: {int(qty_in_cart)})"
             else:
-                stock_display = f"🟢 {int(stock_qty)}"
+                stock_display = f"🟢 {int(available_stock)}"
+                if qty_in_cart > 0:
+                    stock_display += f" (en carrito: {int(qty_in_cart)})"
             
             # Insertar en la tabla con colores alternados
             tags = ('evenrow',) if i % 2 == 0 else ('oddrow',)
@@ -863,6 +1036,45 @@ class POSView:
             self.products_tree.see(first_item)
             self.add_selected_product()
     
+    def quick_add_product_with_search(self):
+        """
+        Agregar producto con búsqueda síncrona (para pistola de código de barras)
+        
+        Este método resuelve el problema de que la pistola es más rápida que la búsqueda:
+        1. Cancela cualquier búsqueda pendiente
+        2. Ejecuta búsqueda inmediatamente (sin delay)
+        3. Espera a que termine
+        4. Luego agrega el producto
+        """
+        # Obtener texto de búsqueda actual
+        search_text = self.search_entry.get().strip()
+        
+        print(f"\n🔫 DEBUG pistola de código de barras:")
+        print(f"   Código escaneado: '{search_text}'")
+        
+        # Si está vacío, no hacer nada
+        if not search_text:
+            print(f"   ⚠️ Texto vacío - ignorando")
+            return
+        
+        # Cancelar búsqueda programada si existe (importante!)
+        if self.search_timer:
+            print(f"   ⏸️ Cancelando búsqueda programada")
+            self.main_frame.after_cancel(self.search_timer)
+            self.search_timer = None
+        
+        # Ejecutar búsqueda INMEDIATAMENTE (sin delay)
+        print(f"   🔍 Ejecutando búsqueda síncrona...")
+        self.perform_search(search_text)
+        
+        # Ahora agregar el producto (la búsqueda ya terminó)
+        print(f"   ➕ Agregando primer producto encontrado...")
+        self.quick_add_product()
+        
+        # Limpiar campo de búsqueda para siguiente escaneo
+        self.search_entry.delete(0, tk.END)
+        print(f"   ✅ Campo de búsqueda limpiado")
+    
     def add_selected_product(self):
         """Agrega el producto seleccionado al carrito"""
         selection = self.products_tree.selection()
@@ -886,6 +1098,9 @@ class POSView:
                     item['quantity'] += 1
                     self.update_cart_display()
                     self.calculate_totals()
+                    
+                    # ✅ ACTUALIZAR VISTA DE PRODUCTOS EN TIEMPO REAL
+                    self.refresh_product_list()
                 else:
                     messagebox.showwarning(
                         "Stock insuficiente",
@@ -900,11 +1115,16 @@ class POSView:
             'name': product['name'],
             'price': float(product['price']),
             'quantity': 1,
-            'stock_available': float(product['stock_quantity'])
+            'stock_available': float(product['stock_quantity']),
+            'subtotal': float(product['price'])  # Precio * cantidad (1)
         })
         
         self.update_cart_display()
         self.calculate_totals()
+        
+        # ✅ ACTUALIZAR VISTA DE PRODUCTOS EN TIEMPO REAL
+        # Refrescar la lista de productos para mostrar stock actualizado
+        self.refresh_product_list()
         
         # Opcional: Limpiar búsqueda (comentado para mantener la lista visible)
         # self.search_var.set('')
@@ -974,6 +1194,9 @@ class POSView:
         
         self.update_cart_display()
         self.calculate_totals()
+        
+        # ✅ ACTUALIZAR VISTA DE PRODUCTOS EN TIEMPO REAL
+        self.refresh_product_list()
     
     def edit_quantity(self):
         """Edita la cantidad de un item"""
@@ -986,91 +1209,185 @@ class POSView:
         index = self.cart_tree.index(selection[0])
         item = self.cart_items[index]
         
+        print(f"\n📝 DEBUG edit_quantity - INICIO:")
+        print(f"   Index seleccionado: {index}")
+        print(f"   Total items en carrito: {len(self.cart_items)}")
+        print(f"   Item a editar: {item['name']}")
+        print(f"   Cantidad actual: {item['quantity']}")
+        print(f"   Stock disponible: {item['stock_available']}")
+        
         # Diálogo para nueva cantidad
         dialog = tk.Toplevel(self.main_frame)
-        dialog.title("Editar Cantidad")
-        dialog.geometry("300x150")
+        dialog.title("✏️ Editar Cantidad")
+        dialog.configure(bg='white')
+        dialog.geometry("400x320")
         dialog.resizable(False, False)
         dialog.transient(self.main_frame)
         dialog.grab_set()
         
-        tk.Label(
-            dialog,
-            text=f"Producto: {item['name'][:30]}",
-            font=('Segoe UI', 10),
-            wraplength=280
-        ).pack(pady=10)
+        # ✅ CENTRAR EL DIÁLOGO EN LA PANTALLA
+        dialog.update_idletasks()  # Actualizar para obtener dimensiones reales
+        window_width = 400
+        window_height = 320
+        screen_width = dialog.winfo_screenwidth()
+        screen_height = dialog.winfo_screenheight()
+        center_x = int((screen_width - window_width) / 2)
+        center_y = int((screen_height - window_height) / 2)
+        dialog.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
         
         tk.Label(
             dialog,
-            text=f"Stock disponible: {item['stock_available']}",
-            font=('Segoe UI', 9),
-            fg='#7f8c8d'
-        ).pack()
+            text=f"Producto: {item['name'][:40]}",
+            font=('Segoe UI', 11, 'bold'),
+            bg='white',
+            fg='#2c3e50',
+            wraplength=360
+        ).pack(pady=(15, 5))
+        
+        tk.Label(
+            dialog,
+            text=f"Stock disponible: {int(item['stock_available'])} unidades",
+            font=('Segoe UI', 10),
+            bg='white',
+            fg='#27ae60'
+        ).pack(pady=(0, 5))
         
         tk.Label(
             dialog,
             text="Nueva cantidad:",
-            font=('Segoe UI', 10)
-        ).pack(pady=(10, 5))
+            font=('Segoe UI', 11, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(pady=(10, 0))
         
-        quantity_var = tk.StringVar(value=str(item['quantity']))
+        tk.Label(
+            dialog,
+            text="(Escribe el número total que deseas)",
+            font=('Segoe UI', 9, 'italic'),
+            bg='white',
+            fg='#7f8c8d'
+        ).pack(pady=(0, 5))
+        
+        quantity_var = tk.StringVar(value=str(int(item['quantity'])))  # Sin decimales
         quantity_entry = tk.Entry(
             dialog,
             textvariable=quantity_var,
-            font=('Segoe UI', 11),
+            font=('Segoe UI', 18, 'bold'),  # Fuente MÁS grande
             justify='center',
-            width=10
+            width=10,
+            bg='#fff3cd',  # Fondo amarillo claro (destaca)
+            fg='#2c3e50',
+            relief='solid',
+            bd=3,
+            highlightthickness=2,
+            highlightcolor='#3498db',
+            highlightbackground='#95a5a6'
         )
-        quantity_entry.pack()
-        quantity_entry.select_range(0, tk.END)
+        quantity_entry.pack(pady=10)
+        
+        # ✅ SELECCIONAR TODO AUTOMÁTICAMENTE al abrir
+        # Para que el usuario pueda escribir directamente el nuevo número
         quantity_entry.focus()
+        quantity_entry.select_range(0, tk.END)
+        quantity_entry.icursor(tk.END)
         
         def save_quantity():
+            print(f"\n🔵 DEBUG save_quantity - EJECUTANDO")
             try:
-                new_qty = float(quantity_var.get())
+                # ✅ LEER DIRECTAMENTE DEL ENTRY WIDGET (no del StringVar)
+                new_qty_str = quantity_entry.get().strip()
+                print(f"   → Valor leído DIRECTAMENTE del Entry: '{new_qty_str}'")
+                print(f"   → Valor del StringVar (comparación): '{quantity_var.get()}'")
+                
+                if not new_qty_str:
+                    print(f"   ❌ Campo vacío!")
+                    messagebox.showerror("Error", "Debes ingresar una cantidad")
+                    return
+                
+                new_qty = float(new_qty_str)
+                
+                print(f"\n🔍 DEBUG edit_quantity:")
+                print(f"   Producto: {item['name']}")
+                print(f"   Cantidad actual: {item['quantity']}")
+                print(f"   Nueva cantidad: {new_qty}")
+                print(f"   Stock disponible: {item['stock_available']}")
                 
                 if new_qty <= 0:
+                    print(f"   ❌ Cantidad inválida: debe ser mayor a 0")
                     messagebox.showerror("Error", "La cantidad debe ser mayor a 0")
                     return
                 
                 if new_qty > item['stock_available']:
+                    print(f"   ❌ Stock insuficiente!")
                     messagebox.showerror(
                         "Error",
                         f"Stock insuficiente\nDisponible: {item['stock_available']}"
                     )
                     return
                 
+                # Actualizar cantidad en el item del carrito
+                print(f"   → Actualizando cantidad...")
                 item['quantity'] = new_qty
-                self.update_cart_display()
-                self.calculate_totals()
-                dialog.destroy()
+                item['subtotal'] = item['price'] * new_qty  # Actualizar subtotal también
                 
-            except ValueError:
+                print(f"   ✅ Cantidad actualizada a: {item['quantity']}")
+                print(f"   ✅ Subtotal actualizado a: S/ {item['subtotal']:.2f}")
+                
+                print(f"   → Actualizando display del carrito...")
+                self.update_cart_display()
+                
+                print(f"   → Recalculando totales...")
+                self.calculate_totals()
+                
+                print(f"   → Refrescando lista de productos...")
+                # ✅ ACTUALIZAR VISTA DE PRODUCTOS EN TIEMPO REAL
+                self.refresh_product_list()
+                
+                print(f"   → Cerrando diálogo...")
+                dialog.destroy()
+                print(f"   ✅ Proceso completado exitosamente!")
+                
+            except ValueError as e:
+                print(f"   ❌ Error de conversión: {e}")
                 messagebox.showerror("Error", "Cantidad inválida")
         
         tk.Button(
             dialog,
-            text="Guardar",
-            command=save_quantity,
-            font=('Segoe UI', 10),
+            text="✅ Guardar Cambios",
+            command=lambda: (print("🟢 Botón Guardar presionado"), save_quantity()),
+            font=('Segoe UI', 12, 'bold'),
             bg='#27ae60',
             fg='white',
-            padx=20,
-            pady=5
-        ).pack(pady=10)
+            activebackground='#229954',
+            activeforeground='white',
+            padx=30,
+            pady=10,
+            relief='flat',
+            cursor='hand2'
+        ).pack(pady=15)
         
-        quantity_entry.bind('<Return>', lambda e: save_quantity())
+        quantity_entry.bind('<Return>', lambda e: (print("🟢 Enter presionado"), save_quantity()))
     
-    def clear_cart(self):
-        """Vacía el carrito"""
+    def clear_cart(self, ask_confirmation=True):
+        """Vacía el carrito
+        
+        Args:
+            ask_confirmation: Si es True, pide confirmación al usuario
+        """
         if not self.cart_items:
             return
         
-        if messagebox.askyesno("Confirmar", "¿Vaciar todo el carrito?"):
-            self.cart_items.clear()
-            self.update_cart_display()
-            self.calculate_totals()
+        # Solo pedir confirmación si ask_confirmation=True
+        if ask_confirmation:
+            if not messagebox.askyesno("Confirmar", "¿Vaciar todo el carrito?"):
+                return
+        
+        self.cart_items.clear()
+        self.update_cart_display()
+        self.calculate_totals()
+        
+        # ✅ ACTUALIZAR VISTA DE PRODUCTOS EN TIEMPO REAL
+        self.refresh_product_list()
     
     # ==========================================
     # CÁLCULOS
@@ -1245,6 +1562,28 @@ class POSView:
                 foreground='#7f8c8d',
                 font=('Segoe UI', 13)
             )
+
+    def reset_payment_fields(self):
+        """Reinicia los campos de pago después de procesar la venta"""
+        # Limpiar entrada de monto pagado (no solo la variable)
+        self.paid_var.set("")
+        try:
+            self.paid_entry.delete(0, tk.END)
+        except Exception:
+            pass
+
+        # Restablecer método de pago a efectivo (display con emoji)
+        try:
+            self.payment_method_var.set('💵 Efectivo')
+        except Exception:
+            pass
+
+        # Reiniciar etiqueta de vuelto
+        self.change_label.config(
+            text="S/ 0.00",
+            foreground='#7f8c8d',
+            font=('Segoe UI', 13, 'bold')
+        )
     
     # ==========================================
     # CLIENTE
@@ -1299,9 +1638,12 @@ class POSView:
             messagebox.showerror("Error", "Monto pagado inválido")
             return
         
-        # Confirmar venta
-        if not messagebox.askyesno("Confirmar", f"¿Procesar venta por S/ {total:.2f}?"):
-            return
+        # ✅ PROCESAR AUTOMÁTICAMENTE SIN CONFIRMACIÓN
+        # (Comentado el diálogo de confirmación)
+        # if not messagebox.askyesno("Confirmar", f"¿Procesar venta por S/ {total:.2f}?"):
+        #     return
+        
+        print(f"   → Procesando venta automáticamente...")
         
         # Preparar datos de pago
         discount = 0.0
@@ -1310,11 +1652,15 @@ class POSView:
         except:
             pass
         
+        # Obtener el estado del IGV
+        include_tax = self.include_tax_var.get()
+        
         payment_info = {
             'method': payment_method,
             'paid_amount': paid if payment_method == 'cash' else total,
             'change_amount': max(0, paid - total) if payment_method == 'cash' else 0,
-            'discount_amount': discount
+            'discount_amount': discount,
+            'include_tax': include_tax  # ✅ Pasar el estado del IGV al controlador
         }
         
         # Procesar en el controlador
@@ -1333,10 +1679,15 @@ class POSView:
             # Generar y mostrar boleta (esto abrirá la ventana de vista previa)
             self.generate_ticket(result, total, paid, payment_method, discount)
             
-            # Limpiar carrito después de mostrar ticket
-            self.clear_cart()
+            # ✅ LIMPIAR CARRITO AUTOMÁTICAMENTE SIN CONFIRMACIÓN
+            self.clear_cart(ask_confirmation=False)
             self.discount_var.set("0.00")
-            self.paid_var.set("0.00")
+            self.reset_payment_fields()
+            
+            # ✅ ACTUALIZAR LISTA DE PRODUCTOS (refrescar stock)
+            self.refresh_product_list()
+            
+            print(f"   ✅ Carrito limpiado automáticamente")
             
         else:
             messagebox.showerror("Error", f"❌ {result['message']}")
@@ -1347,9 +1698,13 @@ class POSView:
             from utils.ticket_generator import TicketGenerator
             from datetime import datetime
             
-            # Calcular IGV y subtotal
-            subtotal = total / 1.18  # Total sin IGV
-            igv = total - subtotal
+            # Calcular IGV y subtotal SOLO si está activado
+            if self.include_tax_var.get():  # ✅ Verificar si IGV está activado
+                subtotal = total / 1.18  # Total sin IGV
+                igv = total - subtotal
+            else:
+                subtotal = total  # Sin IGV, el subtotal es igual al total
+                igv = 0  # No hay IGV
             
             # Preparar datos para el ticket
             ticket_data = {
@@ -1360,7 +1715,7 @@ class POSView:
                 'items': [],
                 'subtotal': subtotal,
                 'discount': discount,
-                'igv': igv,
+                'igv': igv,  # Será 0 si IGV está desactivado
                 'total': total,
                 'payment_method': payment_method,
                 'paid_amount': paid,
@@ -1393,20 +1748,20 @@ class POSView:
                 print(f"✅ Ticket TXT guardado en: {ticket_path}")
             
             # Mostrar ventana de vista previa con opción de imprimir
-            self.show_ticket_preview(ticket_content, generator, ticket_html, ticket_html_path)
+            self.show_ticket_preview(ticket_content, generator, ticket_html, ticket_html_path, ticket_data)
         
         except Exception as e:
             print(f"❌ Error generando ticket: {e}")
             import traceback
             traceback.print_exc()
     
-    def show_ticket_preview(self, ticket_content, generator, ticket_html=None, ticket_html_path=None):
+    def show_ticket_preview(self, ticket_content, generator, ticket_html=None, ticket_html_path=None, ticket_data=None):
         """Mostrar ventana con vista previa del ticket"""
         
         # Si auto_print está activado Y hay HTML, imprimir automáticamente
         if ticket_html_path and generator.config.get('print_copy', False):
             print("🖨️ Imprimiendo boleta automáticamente...")
-            generator.print_ticket_html(ticket_html, ticket_html_path)
+            generator.print_ticket_html(ticket_html, ticket_html_path, ticket_data)
             return  # No mostrar la ventana de vista previa
         
         preview_window = tk.Toplevel(self.main_frame)
@@ -1483,7 +1838,7 @@ class POSView:
             tk.Button(
                 button_frame,
                 text='🖨️ Imprimir con Logo',
-                command=lambda: generator.print_ticket_html(ticket_html, ticket_html_path),
+                command=lambda: generator.print_ticket_html(ticket_html, ticket_html_path, ticket_data),
                 bg='#e74c3c',
                 fg='white',
                 font=('Segoe UI', 11, 'bold'),
@@ -1530,6 +1885,9 @@ class POSView:
     def show(self):
         """Muestra la vista"""
         self.main_frame.pack(fill='both', expand=True)
+        
+        # ✅ Cargar productos DESPUÉS de que la vista esté visible
+        self.main_frame.after(100, self.load_initial_products)
     
     def hide(self):
         """Oculta la vista"""

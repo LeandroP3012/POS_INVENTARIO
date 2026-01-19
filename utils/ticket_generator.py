@@ -19,8 +19,6 @@ class TicketGenerator:
     
     def _load_config(self) -> Dict[str, Any]:
         """Cargar configuración de la boleta desde system_config.json"""
-        config_path = os.path.join('config', 'system_config.json')
-        
         # Configuración por defecto para campos de ticket
         default_ticket_config = {
             'ticket_footer_message': '¡Gracias por su compra!',
@@ -30,33 +28,33 @@ class TicketGenerator:
         
         try:
             print(f"\n🎫 DEBUG: Cargando configuración de ticket desde system_config.json")
-            print(f"   Ruta: {config_path}")
-            print(f"   ¿Existe? {os.path.exists(config_path)}")
             
-            if os.path.exists(config_path):
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    system_config = json.load(f)
-                    print(f"   ✅ Configuración cargada desde system_config.json")
-                    print(f"   Empresa: {system_config.get('company_name', 'N/A')}")
-                    print(f"   RUC: {system_config.get('company_rut', 'N/A')}")
-                    
-                    # Mapear campos de system_config a formato de ticket
-                    config = {
-                        'company_name': system_config.get('company_name', 'MI EMPRESA'),
-                        'company_address': system_config.get('company_address', 'Dirección no configurada'),
-                        'company_city': system_config.get('company_city', 'Lima, Perú'),
-                        'company_phone': system_config.get('company_phone', ''),
-                        'company_email': system_config.get('company_email', ''),
-                        'company_ruc': system_config.get('company_rut', ''),
-                        'show_logo': system_config.get('print_logo', False),
-                        'logo_text': system_config.get('ticket_logo_text', default_ticket_config['ticket_logo_text']),
-                        'footer_message': system_config.get('ticket_footer_message', default_ticket_config['ticket_footer_message']),
-                        'footer_message_2': system_config.get('ticket_footer_message_2', default_ticket_config['ticket_footer_message_2']),
-                        'show_barcode': system_config.get('print_barcode', False),
-                        'print_copy': system_config.get('auto_print', True)
-                    }
-                    
-                    return config
+            # Usar PathManager para cargar configuración
+            from utils.path_manager import load_config
+            system_config = load_config('system_config.json')
+            
+            if system_config:
+                print(f"   ✅ Configuración cargada desde system_config.json")
+                print(f"   Empresa: {system_config.get('company_name', 'N/A')}")
+                print(f"   RUC: {system_config.get('company_rut', 'N/A')}")
+                
+                # Mapear campos de system_config a formato de ticket
+                config = {
+                    'company_name': system_config.get('company_name', 'MI EMPRESA'),
+                    'company_address': system_config.get('company_address', 'Dirección no configurada'),
+                    'company_city': system_config.get('company_city', 'Lima, Perú'),
+                    'company_phone': system_config.get('company_phone', ''),
+                    'company_email': system_config.get('company_email', ''),
+                    'company_ruc': system_config.get('company_rut', ''),
+                    'show_logo': system_config.get('print_logo', False),
+                    'logo_text': system_config.get('ticket_logo_text', default_ticket_config['ticket_logo_text']),
+                    'footer_message': system_config.get('ticket_footer_message', default_ticket_config['ticket_footer_message']),
+                    'footer_message_2': system_config.get('ticket_footer_message_2', default_ticket_config['ticket_footer_message_2']),
+                    'show_barcode': system_config.get('print_barcode', False),
+                    'print_copy': system_config.get('auto_print', True)
+                }
+                
+                return config
             else:
                 print(f"   ⚠️ Archivo system_config.json no existe")
                 return {
@@ -196,7 +194,10 @@ class TicketGenerator:
         if sale_data.get('discount', 0) > 0:
             ticket.append(self._left_right('DESCUENTO:', f"S/ -{sale_data['discount']:.2f}"))
         
-        ticket.append(self._left_right('IGV (18%):', f"S/ {sale_data['igv']:.2f}"))
+        # ✅ Solo mostrar IGV si es mayor a 0 (cuando está activado)
+        if sale_data.get('igv', 0) > 0:
+            ticket.append(self._left_right('IGV (18%):', f"S/ {sale_data['igv']:.2f}"))
+        
         ticket.append(self._separator('-'))
         ticket.append(self._left_right('TOTAL:', f"S/ {sale_data['total']:.2f}"))
         ticket.append(self._separator('='))
@@ -294,14 +295,14 @@ class TicketGenerator:
         Generar ticket en formato HTML con imagen de logo
         Ideal para impresión moderna y vista previa
         """
-        # Cargar configuración actualizada para obtener logo_path
-        config_path = os.path.join('config', 'system_config.json')
+        # Cargar configuración actualizada para obtener logo_path usando PathManager
+        from utils.path_manager import load_config
         logo_path = ""
         logo_base64 = ""
         
         try:
-            with open(config_path, 'r', encoding='utf-8') as f:
-                system_config = json.load(f)
+            system_config = load_config('system_config.json')
+            if system_config:
                 logo_path = system_config.get('logo_path', '')
                 
                 # Convertir imagen a base64 para incrustar en HTML
@@ -477,11 +478,16 @@ class TicketGenerator:
         </div>
 """
         
-        html += f"""
+        # ✅ Solo agregar IGV si es mayor a 0 (cuando está activado)
+        if sale_data.get('igv', 0) > 0:
+            html += f"""
         <div class='total-row'>
             <span>IGV (18%):</span>
             <span>S/ {sale_data['igv']:.2f}</span>
         </div>
+"""
+        
+        html += f"""
         <div class='total-row total-final'>
             <span>TOTAL:</span>
             <span>S/ {sale_data['total']:.2f}</span>
@@ -538,41 +544,144 @@ class TicketGenerator:
             print(f"Error guardando ticket HTML: {e}")
             return None
     
-    def print_ticket_html(self, ticket_html: str, ticket_html_path: str = None):
-        """Imprimir ticket HTML a PDF usando la impresora configurada"""
+    def print_ticket_html(self, ticket_html: str, ticket_html_path: str = None, ticket_data: Dict[str, Any] = None):
+        """
+        Imprimir ticket usando impresora configurada
+        
+        Args:
+            ticket_html: Contenido HTML del ticket (para PDF o navegador)
+            ticket_html_path: Ruta al archivo HTML guardado (opcional)
+            ticket_data: Datos de la venta (necesario para impresoras térmicas)
+        """
         try:
-            import tempfile
-            import subprocess
-            
-            # Leer configuración de impresora
-            config_path = os.path.join('config', 'system_config.json')
+            # ============================================
+            # RECARGAR CONFIGURACIÓN ACTUALIZADA
+            # Esto permite cambiar la impresora en system_config.json
+            # y que se aplique inmediatamente sin reiniciar el sistema
+            # ============================================
+            from utils.path_manager import load_config
             printer_name = "Microsoft Print to PDF"  # Default
+            is_thermal = False
+            current_config = {}  # Configuración actualizada para esta impresión
             
             try:
-                with open(config_path, 'r', encoding='utf-8') as f:
-                    system_config = json.load(f)
+                system_config = load_config('system_config.json')
+                if system_config:
                     printer_name = system_config.get('printer', 'Microsoft Print to PDF')
-                    print(f"🖨️ Usando impresora: {printer_name}")
-            except:
-                pass
+
+                    print(f"\n🔄 Recargando configuración de impresora desde system_config.json...")
+                    print(f"🖨️  Impresora configurada: {printer_name}")
+
+                    # Crear configuración actualizada para el ticket
+                    current_config = {
+                        'company_name': system_config.get('company_name', 'MI EMPRESA'),
+                        'company_address': system_config.get('company_address', 'Dirección no configurada'),
+                        'company_city': system_config.get('company_city', 'Lima, Perú'),
+                        'company_phone': system_config.get('company_phone', ''),
+                        'company_email': system_config.get('company_email', ''),
+                        'company_ruc': system_config.get('company_rut', ''),
+                        'print_logo': system_config.get('print_logo', False),
+                        'logo_text': system_config.get('ticket_logo_text', '*** POS SYSTEM ***'),
+                        'ticket_footer_message': system_config.get('ticket_footer_message', '¡Gracias por su compra!'),
+                        'ticket_footer_message_2': system_config.get('ticket_footer_message_2', 'Vuelva pronto'),
+                        'print_barcode': system_config.get('print_barcode', False),
+                        'auto_print': system_config.get('auto_print', True)
+                    }
+
+                    # Detectar si es impresora térmica
+                    printer_mode = str(system_config.get('printer_mode', 'auto')).strip().lower()
+                    force_thermal = bool(system_config.get('force_thermal_print', False))
+
+                    thermal_keywords = ['TP-', 'TM-', 'GP-', 'THERMAL', 'TERMICA', 'POS', '80MM', 'TICKET', 'GPRINTER']
+                    extra_keywords = system_config.get('thermal_printer_keywords', [])
+
+                    if isinstance(extra_keywords, str):
+                        extra_keywords = [k.strip() for k in extra_keywords.split(',') if k.strip()]
+                    if isinstance(extra_keywords, list):
+                        thermal_keywords.extend([str(k).upper() for k in extra_keywords if isinstance(k, (str, bytes))])
+
+                    thermal_keywords = [str(k).upper() for k in thermal_keywords]
+
+                    normalized_name = printer_name.upper()
+
+                    if force_thermal or printer_mode == 'thermal':
+                        is_thermal = True
+                        print("   ✓ Modo térmico forzado desde la configuración")
+                    elif printer_mode == 'standard':
+                        is_thermal = False
+                        print("   → Modo estándar forzado desde la configuración")
+                    else:
+                        is_thermal = any(keyword in normalized_name for keyword in thermal_keywords)
+                        if is_thermal:
+                            print("   ✓ Detectada como impresora térmica (auto)")
+                        else:
+                            print("   → Impresora estándar/PDF (auto)")
+            except Exception as e:
+                print(f"   ⚠️ Error cargando configuración: {e}")
+                current_config = self.config  # Usar configuración por defecto si falla
             
-            # Crear archivo HTML temporal si no se proporciona
-            if not ticket_html_path:
-                with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as f:
-                    f.write(ticket_html)
-                    ticket_html_path = f.name
+            # ============================================
+            # IMPRESORAS TÉRMICAS (TP-300, TM-T20, etc.)
+            # ============================================
+            if is_thermal:
+                print(f"🖨️  Usando módulo de impresión térmica...")
+                
+                if not ticket_data:
+                    print(f"   ⚠️  Error: No se proporcionaron datos de venta para impresora térmica")
+                    print(f"   🔄 Cambiando a impresión HTML...")
+                    is_thermal = False  # Fallback a HTML
+                else:
+                    try:
+                        from utils.thermal_printer import ThermalPrinter
+                        
+                        # Crear instancia de impresora térmica con nombre actualizado
+                        thermal = ThermalPrinter(printer_name)
+                        
+                        # Imprimir usando ESC/POS con configuración actualizada
+                        success = thermal.print_ticket(ticket_data, current_config)
+                        
+                        if success:
+                            print(f"   ✅ Ticket enviado a impresora térmica exitosamente")
+                            return True
+                        else:
+                            print(f"   ❌ Error en impresión térmica, cambiando a HTML...")
+                            is_thermal = False  # Fallback a HTML
+                    
+                    except ImportError as ie:
+                        print(f"   ⚠️ Módulo thermal_printer no disponible: {ie}")
+                        print(f"   🔄 Cambiando a impresión HTML...")
+                        is_thermal = False  # Fallback a HTML
+                    
+                    except Exception as e:
+                        print(f"   ❌ Error en impresión térmica: {e}")
+                        import traceback
+                        traceback.print_exc()
+                        print(f"   🔄 Cambiando a impresión HTML...")
+                        is_thermal = False  # Fallback a HTML
             
-            # Si la impresora es "Microsoft Print to PDF", generar PDF directamente
-            if "Print to PDF" in printer_name or "PDF" in printer_name:
-                return self._print_html_to_pdf(ticket_html_path, ticket_html)
-            else:
-                # Para otras impresoras, abrir en navegador
-                import webbrowser
-                webbrowser.open('file://' + os.path.abspath(ticket_html_path))
-                return True
+            # ============================================
+            # IMPRESORAS ESTÁNDAR / PDF
+            # ============================================
+            if not is_thermal:
+                import tempfile
+                
+                # Crear archivo HTML temporal si no se proporciona
+                if not ticket_html_path:
+                    with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as f:
+                        f.write(ticket_html)
+                        ticket_html_path = f.name
+                
+                # Si la impresora es "Microsoft Print to PDF", generar PDF directamente
+                if "Print to PDF" in printer_name or "PDF" in printer_name:
+                    return self._print_html_to_pdf(ticket_html_path, ticket_html)
+                else:
+                    # Para otras impresoras estándar, abrir en navegador
+                    import webbrowser
+                    webbrowser.open('file://' + os.path.abspath(ticket_html_path))
+                    return True
         
         except Exception as e:
-            print(f"❌ Error imprimiendo ticket HTML: {e}")
+            print(f"❌ Error imprimiendo ticket: {e}")
             import traceback
             traceback.print_exc()
             return False

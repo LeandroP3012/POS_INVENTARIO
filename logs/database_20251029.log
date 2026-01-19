@@ -1,0 +1,26 @@
+2025-10-29 21:47:32 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-29 21:47:50 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-29 21:49:19 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-29 23:50:35 - INFO - Intentando reconectar a la base de datos...
+2025-10-29 23:50:36 - INFO - Conectado exitosamente a MySQL Server versión 8.0.41
+2025-10-29 23:50:36 - INFO - \U0001f4dd EJECUTANDO SQL: 
+    SELECT 
+        u.id,
+        u.username,
+        u.full_name,
+        u.email,
+        u.user_type,
+        u.role_id,
+        u.active,
+        u.phone,
+        u.avatar_path,
+        u.created_at,
+        u.updated_at,
+        r.name as role_name,
+        r.code as role_code
+    FROM users u
+    LEFT JOIN roles r ON u.role_id = r.id
+    WHERE u.id = 15
+    
+2025-10-29 23:50:36 - INFO - \U0001f4e6 PARÁMETROS: None
+2025-10-29 23:50:36 - INFO - \u2705 SELECT retornó 1 filas

@@ -8,6 +8,9 @@ from tkinter import ttk, messagebox
 from typing import Dict, Any, Callable, Optional, List
 from views.base_view import BaseView
 from decimal import Decimal
+import unicodedata
+from services.permission_service import PermissionService
+from utils.responsive_utils import ResponsiveManager
 
 
 class ProductManagementView(BaseView):
@@ -18,13 +21,30 @@ class ProductManagementView(BaseView):
         self.user_data = user_data
         super().__init__(parent)
         
+        self.permission_service = PermissionService()
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(self.root)
+        
         self.callbacks = {}
         self.products = []
+        self.all_products_cache = []  # Mantiene la lista completa para filtrar en memoria
         self.categories = []
         self.units = []
         self.selected_product = None
         
+        # Flag para saber si ya se creó el navbar
+        self.navbar_built = False
+        
         self.setup_product_view()
+    
+    def has_permission(self, permission: str) -> bool:
+        """Verificar si el usuario actual tiene un permiso específico"""
+        try:
+            return self.permission_service.check_permission(self.user_data, permission)
+        except Exception as e:
+            print(f"Error verificando permiso {permission}: {e}")
+            return False
     
     def setup_product_view(self):
         """Configurar vista principal"""
@@ -35,8 +55,8 @@ class ProductManagementView(BaseView):
         # Header
         self.create_header()
         
-        # Navbar personalizado
-        self.create_navbar()
+        # El navbar se creará después de registrar callbacks
+        # en build_navbar()
         
         # Toolbar con búsqueda y acciones
         self.create_toolbar()
@@ -88,10 +108,29 @@ class ProductManagementView(BaseView):
         )
         user_label.pack(side='right', padx=10)
     
-    def create_navbar(self):
+    def build_navbar(self):
+        """Construir navbar DESPUÉS de registrar callbacks"""
+        print("🔨 Construyendo navbar...")
+        # Encontrar el widget header para insertar el navbar después
+        header_widget = None
+        for widget in self.main_frame.winfo_children():
+            if isinstance(widget, tk.Frame) and widget.cget('bg') == '#2c3e50':
+                header_widget = widget
+                break
+        
+        if header_widget:
+            self.create_navbar(header_widget)
+            print("   ✅ Navbar construido")
+        else:
+            print("   ✗ No se encontró el header")
+    
+    def create_navbar(self, after_widget=None):
         """Crear navbar personalizado con menús - GLOBAL para todos los módulos"""
         navbar_frame = tk.Frame(self.main_frame, bg='#2c3e50', height=50)
-        navbar_frame.pack(fill='x')
+        if after_widget:
+            navbar_frame.pack(fill='x', after=after_widget)
+        else:
+            navbar_frame.pack(fill='x')
         navbar_frame.pack_propagate(False)
         
         # Estilo de botones
@@ -112,57 +151,74 @@ class ProductManagementView(BaseView):
         buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
         buttons_container.pack(side='left', padx=10, pady=5)
         
+        # Helper para ejecutar callbacks de forma segura
+        def safe_call(callback_name):
+            def wrapper():
+                print(f"🔄 Navbar: Intentando ejecutar '{callback_name}'")
+                callback = self.callbacks.get(callback_name)
+                if callback:
+                    print(f"   ✓ Callback encontrado, ejecutando...")
+                    callback()
+                else:
+                    print(f"   ✗ Callback no encontrado o es None")
+            return wrapper
+        
         # Botón Archivo
         file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
         file_btn.pack(side='left', padx=2)
         file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
         file_btn.config(menu=file_menu)
-        file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
-        file_menu.add_separator()
-        file_menu.add_command(label="Volver al Dashboard", command=self.callbacks.get('back_to_dashboard', lambda: None))
+        if self.has_permission('sales.create'):
+            file_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+            file_menu.add_separator()
+        file_menu.add_command(label="Volver al Dashboard", command=safe_call('back_to_dashboard'))
         
         # Botón Ventas
         sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
         sales_btn.pack(side='left', padx=2)
         sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
         sales_btn.config(menu=sales_menu)
-        sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
-        sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        if self.has_permission('sales.create'):
+            sales_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+        if self.has_permission('sales.view'):
+            sales_menu.add_command(label="Historial de Ventas", command=safe_call('sales_history'))
+        if sales_menu.index('end') is None:
+            sales_menu.add_command(label="Sin accesos disponibles", state='disabled')
         
         # Botón Inventario
         inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
         inv_btn.pack(side='left', padx=2)
         inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
         inv_btn.config(menu=inv_menu)
-        inv_menu.add_command(label="Ver Productos", command=self.callbacks.get('view_products', lambda: None))
-        inv_menu.add_command(label="Gestionar Categorías", command=self.callbacks.get('view_categories', lambda: None))
-        inv_menu.add_command(label="Control de Stock", command=self.callbacks.get('go_to_inventory', lambda: None))
+        inv_menu.add_command(label="Ver Productos ✓", command=lambda: None)  # Actual
+        inv_menu.add_command(label="Gestionar Categorías", command=safe_call('view_categories'))
+        inv_menu.add_command(label="Control de Stock", command=safe_call('go_to_inventory'))
         
         # Botón Reportes
         rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
         rep_btn.pack(side='left', padx=2)
         rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
         rep_btn.config(menu=rep_menu)
-        rep_menu.add_command(label="Ventas del Día", command=self.callbacks.get('daily_report', lambda: None))
-        rep_menu.add_command(label="Reporte Completo", command=self.callbacks.get('full_report', lambda: None))
+        rep_menu.add_command(label="Ventas del Día", command=safe_call('daily_report'))
+        rep_menu.add_command(label="Reporte Completo", command=safe_call('full_report'))
         
         # Botón Administración
         admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
         admin_btn.pack(side='left', padx=2)
         admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
         admin_btn.config(menu=admin_menu)
-        admin_menu.add_command(label="Gestionar Usuarios", command=self.callbacks.get('manage_users', lambda: None))
-        admin_menu.add_command(label="Gestionar Roles", command=self.callbacks.get('manage_roles', lambda: None))
+        admin_menu.add_command(label="Gestionar Usuarios", command=safe_call('manage_users'))
+        admin_menu.add_command(label="Gestionar Roles", command=safe_call('manage_roles'))
         admin_menu.add_separator()
-        admin_menu.add_command(label="Configuración", command=self.callbacks.get('system_config', lambda: None))
+        admin_menu.add_command(label="Configuración", command=safe_call('system_config'))
         
         # Botón Ayuda
         help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
         help_btn.pack(side='left', padx=2)
         help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 11))
         help_btn.config(menu=help_menu)
-        help_menu.add_command(label="Manual de Usuario", command=self.callbacks.get('show_manual', lambda: None))
-        help_menu.add_command(label="Acerca de", command=self.callbacks.get('show_about', lambda: None))
+        help_menu.add_command(label="Manual de Usuario", command=safe_call('show_manual'))
+        help_menu.add_command(label="Acerca de", command=safe_call('show_about'))
     
     def create_toolbar(self):
         """Crear toolbar con búsqueda y botones"""
@@ -182,9 +238,13 @@ class ProductManagementView(BaseView):
         ).pack(side='left', padx=(0, 10))
         
         self.search_var = tk.StringVar()
-        self.search_var.trace('w', lambda *args: self.on_search())
+        # Trace incremental y binding por tecla para asegurar que dispare en todos los entornos
+        try:
+            self.search_var.trace_add('write', lambda *args: self.on_search())
+        except Exception:
+            self.search_var.trace('w', lambda *args: self.on_search())
         
-        search_entry = tk.Entry(
+        self.search_entry = tk.Entry(
             left_frame,
             textvariable=self.search_var,
             font=('Segoe UI', 10),
@@ -192,53 +252,60 @@ class ProductManagementView(BaseView):
             relief='solid',
             bd=1
         )
-        search_entry.pack(side='left')
+        self.search_entry.pack(side='left')
+        self.search_entry.bind('<KeyRelease>', lambda e: self.on_search())
         
         # Frame derecho: Botones de acción
         right_frame = tk.Frame(toolbar, bg='#ecf0f1')
         right_frame.pack(side='right', fill='y', padx=20, pady=10)
         
-        # Botón Nuevo Producto
-        tk.Button(
-            right_frame,
-            text="➕ Nuevo Producto",
-            font=('Segoe UI', 10, 'bold'),
-            bg='#27ae60',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            padx=15,
-            pady=8,
-            command=self.on_new_product
-        ).pack(side='left', padx=5)
+        # Botón Nuevo Producto - Solo si tiene permiso inventory.create
+        if self.has_permission('inventory.create'):
+            tk.Button(
+                right_frame,
+                text="➕ Nuevo Producto",
+                font=('Segoe UI', 10, 'bold'),
+                bg='#27ae60',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=8,
+                command=self.on_new_product
+            ).pack(side='left', padx=5)
+            # Atajo: Ctrl+N para nuevo producto
+            self.main_frame.bind_all('<Control-n>', lambda e: self.on_new_product())
+            self.main_frame.bind_all('<Control-N>', lambda e: self.on_new_product())
         
-        # Botón Actualizar Stock - Dirige a Gestión de Inventario
-        tk.Button(
-            right_frame,
-            text="📊 Actualizar Stock",
-            font=('Segoe UI', 10),
-            bg='#3498db',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            padx=15,
-            pady=8,
-            command=self.on_go_to_inventory
-        ).pack(side='left', padx=5)
+        # Botón Actualizar Stock - Solo si tiene permiso inventory.stock
+        if self.has_permission('inventory.stock'):
+            tk.Button(
+                right_frame,
+                text="📊 Actualizar Stock",
+                font=('Segoe UI', 10),
+                bg='#3498db',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=8,
+                command=self.on_go_to_inventory
+            ).pack(side='left', padx=5)
         
-        # Botón Exportar
-        tk.Button(
-            right_frame,
-            text="📥 Exportar",
-            font=('Segoe UI', 10),
-            bg='#95a5a6',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            padx=15,
-            pady=8,
-            command=self.on_export
-        ).pack(side='left', padx=5)
+        # Botón Exportar - Solo si tiene permiso inventory.export
+        if self.has_permission('inventory.export'):
+            tk.Button(
+                right_frame,
+                text="📥 Exportar",
+                font=('Segoe UI', 10),
+                bg='#95a5a6',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                padx=15,
+                pady=8,
+                command=self.on_export
+            ).pack(side='left', padx=5)
     
     def create_main_content(self):
         """Crear contenido principal"""
@@ -315,7 +382,9 @@ class ProductManagementView(BaseView):
         
         # Eventos
         self.products_tree.bind('<<TreeviewSelect>>', self.on_product_select)
-        self.products_tree.bind('<Double-1>', lambda e: self.on_edit_product())
+        # Solo permitir doble click para editar si el usuario tiene permiso
+        if self.has_permission('inventory.edit'):
+            self.products_tree.bind('<Double-1>', lambda e: self.on_edit_product())
         
         # Grid layout
         self.products_tree.grid(row=0, column=0, sticky='nsew')
@@ -345,6 +414,58 @@ class ProductManagementView(BaseView):
             fg='white'
         ).pack(side='left', padx=15, pady=10)
         
+        # Accesos rápidos a otros módulos relacionados
+        quick_actions = tk.Frame(parent, bg='white')
+        quick_actions.pack(fill='x', padx=15, pady=(10, 5))
+
+        tk.Label(
+            quick_actions,
+            text="Accesos rápidos",
+            font=('Segoe UI', 10, 'bold'),
+            bg='white',
+            fg='#2c3e50'
+        ).pack(anchor='w')
+
+        shortcuts_frame = tk.Frame(quick_actions, bg='white')
+        shortcuts_frame.pack(fill='x', pady=(6, 0))
+
+        if self.has_permission('products.categories'):
+            tk.Button(
+                shortcuts_frame,
+                text="🏷️ Gestionar Categorías",
+                font=('Segoe UI', 9, 'bold'),
+                bg='#8e44ad',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                command=self.open_categories_window,
+                padx=12,
+                pady=8
+            ).pack(fill='x', pady=2)
+
+        if self.has_permission('inventory.stock'):
+            tk.Button(
+                shortcuts_frame,
+                text="📊 Control de Stock",
+                font=('Segoe UI', 9, 'bold'),
+                bg='#2980b9',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                command=self.open_stock_window,
+                padx=12,
+                pady=8
+            ).pack(fill='x', pady=2)
+
+        if not shortcuts_frame.winfo_children():
+            tk.Label(
+                shortcuts_frame,
+                text="No tienes accesos disponibles",
+                font=('Segoe UI', 9),
+                bg='white',
+                fg='#7f8c8d'
+            ).pack(anchor='w', pady=4)
+
         # Contenido
         self.details_content = tk.Frame(parent, bg='white')
         self.details_content.pack(fill='both', expand=True, padx=15, pady=15)
@@ -398,6 +519,14 @@ class ProductManagementView(BaseView):
         def on_canvas_configure(event):
             # Ajustar ancho del frame interno al ancho del canvas
             canvas.itemconfig(canvas_window, width=event.width)
+
+        # Habilitar scroll con rueda del mouse
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+
+        canvas.bind_all('<MouseWheel>', _on_mousewheel)
+        canvas.bind_all('<Button-4>', lambda e: canvas.yview_scroll(-1, 'units'))  # Linux
+        canvas.bind_all('<Button-5>', lambda e: canvas.yview_scroll(1, 'units'))   # Linux
         
         scrollable_frame.bind("<Configure>", on_frame_configure)
         canvas.bind("<Configure>", on_canvas_configure)
@@ -421,8 +550,8 @@ class ProductManagementView(BaseView):
             fg='#2c3e50'
         ).pack(anchor='w', pady=(0, 5))
         
-        self._add_detail_row(scrollable_frame, "Precio Venta:", f"${product.get('price', 0):,.2f}")
-        self._add_detail_row(scrollable_frame, "Costo:", f"${product.get('cost', 0):,.2f}")
+        self._add_detail_row(scrollable_frame, "Precio Venta:", f"S/ {product.get('price', 0):,.2f}")
+        self._add_detail_row(scrollable_frame, "Costo:", f"S/ {product.get('cost', 0):,.2f}")
         self._add_detail_row(
             scrollable_frame, 
             "Margen:", 
@@ -516,31 +645,35 @@ class ProductManagementView(BaseView):
         action_frame = tk.Frame(scrollable_frame, bg='white')
         action_frame.pack(fill='x', pady=10)
         
-        tk.Button(
-            action_frame,
-            text="✏️ Editar",
-            font=('Segoe UI', 9, 'bold'),
-            bg='#3498db',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            command=self.on_edit_product,
-            width=15,
-            pady=8
-        ).pack(fill='x', pady=2)
+        # Botón Editar - Solo si tiene permiso inventory.edit
+        if self.has_permission('inventory.edit'):
+            tk.Button(
+                action_frame,
+                text="✏️ Editar",
+                font=('Segoe UI', 9, 'bold'),
+                bg='#3498db',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                command=self.on_edit_product,
+                width=15,
+                pady=8
+            ).pack(fill='x', pady=2)
         
-        tk.Button(
-            action_frame,
-            text="️ Eliminar",
-            font=('Segoe UI', 9),
-            bg='#e74c3c',
-            fg='white',
-            relief='flat',
-            cursor='hand2',
-            command=self.on_delete_product,
-            width=15,
-            pady=8
-        ).pack(fill='x', pady=2)
+        # Botón Eliminar - Solo si tiene permiso inventory.delete
+        if self.has_permission('inventory.delete'):
+            tk.Button(
+                action_frame,
+                text="🗑️ Eliminar",
+                font=('Segoe UI', 9),
+                bg='#e74c3c',
+                fg='white',
+                relief='flat',
+                cursor='hand2',
+                command=self.on_delete_product,
+                width=15,
+                pady=8
+            ).pack(fill='x', pady=2)
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
@@ -590,22 +723,59 @@ class ProductManagementView(BaseView):
     # Métodos de eventos
     def on_search(self):
         """Manejar búsqueda"""
-        search_term = self.search_var.get().strip()
+        # Leer directamente del widget para evitar problemas con StringVar en algunos entornos
+        if hasattr(self, 'search_entry'):
+            search_term = self.search_entry.get().strip()
+        else:
+            search_term = self.search_var.get().strip()
+
+
+        # Filtro inmediato en memoria (SKU o Nombre)
+        self._filter_products_local(search_term)
+
+        # Notificar al controlador para traer datos frescos (DB) si existe callback
         if self.callbacks.get('search'):
             self.callbacks['search'](search_term)
     
     def on_new_product(self):
         """Crear nuevo producto"""
+        # Validar permiso primero
+        if not self.has_permission('inventory.create'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para crear productos.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         if self.callbacks.get('create'):
             self.callbacks['create']()
     
     def on_edit_product(self):
         """Editar producto seleccionado"""
+        # Validar permiso primero
+        if not self.has_permission('inventory.edit'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para editar productos.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         if self.selected_product and self.callbacks.get('edit'):
             self.callbacks['edit'](self.selected_product)
     
     def on_delete_product(self):
         """Eliminar producto seleccionado"""
+        # Validar permiso primero
+        if not self.has_permission('inventory.delete'):
+            messagebox.showerror(
+                "Acceso Denegado", 
+                "❌ No tienes permisos para eliminar productos.\n\n"
+                "Contacta al administrador del sistema."
+            )
+            return
+            
         if self.selected_product and self.callbacks.get('delete'):
             if messagebox.askyesno(
                 "Confirmar eliminación",
@@ -634,60 +804,122 @@ class ProductManagementView(BaseView):
         if self.callbacks.get('export'):
             self.callbacks['export']()
     
+    def open_categories_window(self):
+        """Abrir ventana flotante de categorías"""
+        if self.callbacks.get('open_categories_window'):
+            self.callbacks['open_categories_window']()
+
+    def open_stock_window(self):
+        """Abrir ventana flotante de control de stock"""
+        if self.callbacks.get('open_stock_window'):
+            self.callbacks['open_stock_window']()
+
     def on_product_select(self, event):
         """Manejar selección de producto"""
         selection = self.products_tree.selection()
-        if selection:
-            item = self.products_tree.item(selection[0])
-            product_id = item['values'][0] if item['values'] else None
-            
-            # Buscar producto completo
-            for product in self.products:
-                if str(product.get('id')) == str(product_id) or product.get('sku') == product_id:
-                    self.selected_product = product
-                    self.show_product_details(product)
-                    break
+        if not selection:
+            return
+
+        selected_iid = selection[0]
+        selected_product = None
+
+        # Buscar por ID usando el iid del Treeview
+        for product in self.products:
+            if str(product.get('id')) == str(selected_iid):
+                selected_product = product
+                break
+
+        # Fallback: usar el SKU de la fila seleccionada
+        if not selected_product:
+            item = self.products_tree.item(selected_iid)
+            values = item.get('values', [])
+            sku_value = values[0] if values else None
+            if sku_value:
+                for product in self.products:
+                    if str(product.get('sku')) == str(sku_value):
+                        selected_product = product
+                        break
+
+        if selected_product:
+            self.selected_product = selected_product
+            self.show_product_details(selected_product)
     
     # Métodos públicos
     def load_products(self, products: List[Dict[str, Any]]):
-        """Cargar productos en la tabla"""
-        self.products = products
-        
+        """Cargar productos en la tabla y refrescar cache si no hay búsqueda activa"""
+        current_term = self.search_var.get().strip() if hasattr(self, 'search_var') else ''
+
+        # Si no hay término de búsqueda, refrescamos el cache completo.
+        # Si hay término, solo renderizamos para no perder el cache completo (incremental).
+        if current_term:
+            self._render_products(products)
+        else:
+            self.all_products_cache = list(products) if products else []
+            self._render_products(products)
+
+    def _render_products(self, products: List[Dict[str, Any]]):
+        """Renderizar productos en el Treeview"""
+        self.products = products or []
+
         # Limpiar tabla
         for item in self.products_tree.get_children():
             self.products_tree.delete(item)
-        
+
         # Agregar productos
-        for product in products:
+        for product in self.products:
             stock_qty = product.get('stock_quantity', 0)
             stock_status = product.get('stock_status', 'normal')
-            
+
             # Determinar tag para color
             tag = 'normal'
             if stock_status == 'low_stock':
                 tag = 'low_stock'
             elif stock_status == 'out_of_stock':
                 tag = 'out_of_stock'
-            
+
             # Estado visual
             status_text = '✅ Activo' if product.get('status') == 'active' else '❌ Inactivo'
-            
+            row_id = str(product.get('id') or product.get('sku') or product.get('name'))
+
             self.products_tree.insert(
                 '',
                 'end',
+                iid=row_id,
                 values=(
                     product.get('sku', ''),
                     product.get('name', ''),
                     product.get('category_name', 'Sin categoría'),
-                    stock_qty,
-                    f"${product.get('price', 0):,.2f}",
+                    product.get('stock_quantity', 0),
+                    f"S/ {product.get('price', 0):,.2f}",
                     status_text
                 ),
                 tags=(tag,)
             )
-        
+
         # Actualizar estadísticas
         self.update_statistics()
+
+    def _filter_products_local(self, search_term: str):
+        """Filtrar localmente por SKU o Nombre (case-insensitive)"""
+        if not search_term:
+            self._render_products(self.all_products_cache)
+            return
+
+        term = self._normalize_text(search_term)
+        filtered = [
+            p for p in self.all_products_cache
+            if term in self._normalize_text(str(p.get('sku', '')))
+            or term in self._normalize_text(str(p.get('name', '')))
+        ]
+
+        self._render_products(filtered)
+
+    def _normalize_text(self, text: str) -> str:
+        """Normaliza texto a minúsculas y sin acentos para búsquedas flexibles"""
+        if not text:
+            return ''
+        normalized = unicodedata.normalize('NFD', text)
+        return ''.join(ch for ch in normalized if unicodedata.category(ch) != 'Mn').lower()
     
     def update_statistics(self):
         """Actualizar estadísticas en el footer"""
@@ -710,6 +942,22 @@ class ProductManagementView(BaseView):
     def bind_callback(self, event_name: str, callback: Callable):
         """Registrar callback"""
         self.callbacks[event_name] = callback
+        
+        # Crear navbar en el primer callback de navegación que se registre
+        if not self.navbar_built and event_name in ['back_to_dashboard', 'new_sale', 'view_products', 'view_categories']:
+            print(f"📋 Primer callback de navegación detectado: {event_name}")
+            print(f"   Total callbacks hasta ahora: {len(self.callbacks)}")
+            # Esperar un poco para que se registren todos los callbacks
+            self.main_frame.after(100, self._try_build_navbar)
+    
+    def _try_build_navbar(self):
+        """Intentar construir navbar después de un delay"""
+        if not self.navbar_built:
+            print(f"📋 Callbacks totales registrados: {len(self.callbacks)}")
+            for key in self.callbacks:
+                print(f"   - {key}")
+            self.build_navbar()
+            self.navbar_built = True
     
     def refresh(self):
         """Refrescar vista"""

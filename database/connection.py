@@ -1,258 +1,366 @@
+"""
+Módulo de Conexión a la Base de Datos
+Maneja la conexión y configuración de MySQL
+"""
+
 import mysql.connector
-from mysql.connector import Error
-import os
+from mysql.connector import Error, errorcode
 import json
 import logging
-from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional, List, Dict, Any
+import sys
+import os
+
+# Agregar utils al path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from utils.path_manager import load_config, get_config_path
 
 class DatabaseConnection:
-    """Gestor de conexión a la base de datos MySQL"""
+    """Gestiona la conexión a la base de datos MySQL"""
     
-    def __init__(self, config_file: str = "config/database.json"):
-        self.config_file = config_file
+    def __init__(self, config_file: str = 'database.json'):
         self.connection = None
-        self.config = self.load_config()
-        self.setup_logging()
+        self.cursor = None
+        self.config_file = config_file
+        self.config = None
+        self.logger = logging.getLogger(self.__class__.__name__)
+        
+        # Cargar configuración usando PathManager
+        self.load_config()
     
-    def load_config(self) -> Dict[str, Any]:
+    def load_config(self):
         """Cargar configuración de la base de datos"""
         try:
-            if os.path.exists(self.config_file):
-                with open(self.config_file, 'r', encoding='utf-8') as file:
-                    config = json.load(file)
-                    
-                    # Normalizar formato antiguo al nuevo
-                    if 'name' in config and 'database' not in config:
-                        config['database'] = config['name']
-                    if 'user' in config and 'username' not in config:
-                        config['username'] = config['user']
-                    
-                    # Asegurar que port sea int
-                    if 'port' in config and isinstance(config['port'], str):
-                        config['port'] = int(config['port'])
-                    
-                    # Agregar valores por defecto si no existen
-                    config.setdefault('charset', 'utf8mb4')
-                    config.setdefault('autocommit', True)
-                    config.setdefault('connection_timeout', 10)
-                    config.setdefault('reconnection_attempts', 3)
-                    config.setdefault('ssl_disabled', True)
-                    
-                    return config
+            # Usar PathManager para obtener la ruta correcta
+            config_path = get_config_path(self.config_file)
+            self.logger.info(f"🔍 DEBUG - Intentando leer: {config_path}")
+            self.logger.info(f"🔍 DEBUG - ¿Archivo existe?: {config_path.exists()}")
+            
+            self.config = load_config(self.config_file)
+            
+            if not self.config:
+                self.logger.error("No se pudo cargar la configuración de la base de datos")
+                self.config = self._get_default_config()
             else:
-                # Configuración por defecto
-                default_config = {
-                    "host": "localhost",
-                    "port": 3306,
-                    "database": "pos_system",
-                    "username": "root",
-                    "password": "D3v3l0p3r@@$",
-                    "charset": "utf8mb4",
-                    "autocommit": True,
-                    "pool_name": "pos_pool",
-                    "pool_size": 5,
-                    "pool_reset_session": True,
-                    "connection_timeout": 10,
-                    "reconnection_attempts": 3,
-                    "ssl_disabled": True
-                }
-                self.save_config(default_config)
-                return default_config
+                self.logger.info(f"✅ Configuración cargada desde: {config_path}")
+                self.logger.info(f"🔍 DEBUG - Contenido leído: {self.config}")
+                
         except Exception as e:
-            print(f"Error cargando configuración: {e}")
-            return self.get_fallback_config()
+            self.logger.error(f"Error cargando configuración: {e}")
+            self.config = self._get_default_config()
     
-    def save_config(self, config: Dict[str, Any]) -> None:
-        """Guardar configuración de la base de datos"""
-        try:
-            os.makedirs(os.path.dirname(self.config_file), exist_ok=True)
-            with open(self.config_file, 'w', encoding='utf-8') as file:
-                json.dump(config, file, indent=4, ensure_ascii=False)
-        except Exception as e:
-            print(f"Error guardando configuración: {e}")
-    
-    def get_fallback_config(self) -> Dict[str, Any]:
-        """Configuración de emergencia"""
+    def _get_default_config(self) -> dict:
+        """Obtener configuración por defecto"""
         return {
             "host": "localhost",
-            "port": 3306,
-            "database": "pos_system",
-            "username": "root",
-            "password": "D3v3l0p3r@@$",
-            "charset": "utf8mb4",
-            "autocommit": True
+            "port": "3306",
+            "name": "pos_system",
+            "user": "root",
+            "password": "",
+            "max_connections": "10",
+            "timeout": "30"
         }
-    
-    def setup_logging(self) -> None:
-        """Configurar logging para la base de datos"""
-        os.makedirs("logs", exist_ok=True)
-        log_filename = f"logs/database_{datetime.now().strftime('%Y%m%d')}.log"
-        
-        logging.basicConfig(
-            filename=log_filename,
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        
-        # Logger específico para base de datos
-        self.logger = logging.getLogger('database')
     
     def connect(self) -> bool:
         """Establecer conexión con la base de datos"""
         try:
-            self.connection = mysql.connector.connect(
-                host=self.config['host'],
-                port=self.config['port'],
-                database=self.config['database'],
-                user=self.config['username'],
-                password=self.config['password'],
-                charset=self.config['charset'],
-                autocommit=self.config.get('autocommit', True),
-                connection_timeout=self.config.get('connection_timeout', 10),
-                ssl_disabled=self.config.get('ssl_disabled', True)
-            )
-            
-            if self.connection.is_connected():
-                db_info = self.connection.get_server_info()
-                self.logger.info(f"Conectado exitosamente a MySQL Server versión {db_info}")
+            if self._is_connection_alive():
+                self.logger.info("✅ Ya existe una conexión activa")
                 return True
-                
+            
+            # DEBUG: Ver qué contiene self.config
+            self.logger.info(f"🔍 DEBUG - Config completa: {self.config}")
+            
+            # Parámetros de conexión
+            connection_params = {
+                'host': self.config.get('host', 'localhost'),
+                'port': int(self.config.get('port', 3306)),
+                'user': self.config.get('user', 'root'),
+                'password': self.config.get('password', ''),
+                'database': self.config.get('name', 'pos_system'),
+                'charset': 'utf8mb4',
+                'collation': 'utf8mb4_unicode_ci',
+                'autocommit': True,
+                'pool_name': 'pos_pool',
+                'pool_size': int(self.config.get('max_connections', 5)),
+                'pool_reset_session': True
+            }
+            
+            # DEBUG: Ver si la contraseña se leyó
+            pwd_len = len(connection_params['password'])
+            self.logger.info(f"🔍 DEBUG - Contraseña leída: {'*' * pwd_len if pwd_len > 0 else '(VACÍA)'} ({pwd_len} caracteres)")
+            
+            self.logger.info(f"🔌 Conectando a MySQL: {connection_params['user']}@{connection_params['host']}:{connection_params['port']}/{connection_params['database']}")
+            
+            self.connection = mysql.connector.connect(**connection_params)
+            
+            if self._is_connection_alive():
+                db_info = self.connection.get_server_info()
+                self.logger.info(f"✅ Conectado a MySQL Server version {db_info}")
+                return True
+            
+            return False
+            
         except Error as e:
-            self.logger.error(f"Error conectando a MySQL: {e}")
+            self.logger.error(f"❌ Error al conectar a MySQL: {e}")
             return False
         except Exception as e:
-            self.logger.error(f"Error inesperado: {e}")
+            self.logger.error(f"❌ Error inesperado: {e}")
             return False
     
-    def disconnect(self) -> None:
+    def disconnect(self):
         """Cerrar conexión con la base de datos"""
         try:
-            if self.connection and self.connection.is_connected():
+            if self.cursor:
+                self.cursor.close()
+                self.cursor = None
+            
+            if self._is_connection_alive():
                 self.connection.close()
-                self.logger.info("Conexión a MySQL cerrada")
-        except Exception as e:
-            self.logger.error(f"Error cerrando conexión: {e}")
+                self.logger.info("✅ Conexión a MySQL cerrada")
+                
+        except Error as e:
+            self.logger.error(f"❌ Error al cerrar conexión: {e}")
     
-    def is_connected(self) -> bool:
-        """Verificar si la conexión está activa"""
-        try:
-            return self.connection and self.connection.is_connected()
-        except:
-            return False
-    
-    def reconnect(self) -> bool:
-        """Reconectar a la base de datos"""
-        self.logger.info("Intentando reconectar a la base de datos...")
-        self.disconnect()
-        return self.connect()
-    
-    def execute_query(self, query: str, params: tuple = None, fetch: bool = True) -> Optional[list]:
-        """Ejecutar una consulta SQL"""
-        try:
-            if not self.is_connected():
-                if not self.reconnect():
+    def execute_query(self, query: str, params: tuple = None, fetch: bool = True) -> Optional[List[Dict] | int]:
+        """
+        Ejecutar consulta SQL
+        
+        Args:
+            query: Consulta SQL
+            params: Parámetros para la consulta
+            fetch: Si es True, retorna resultados. Si es False, retorna filas afectadas.
+        
+        Returns:
+            Lista de diccionarios (si fetch=True) o número de filas afectadas (si fetch=False)
+        """
+        attempts = 0
+
+        while attempts < 2:
+            cursor = None
+            try:
+                connection = self.ensure_connection()
+                if not connection:
                     return None
-            
-            cursor = self.connection.cursor(dictionary=True)
-            cursor.execute(query, params or ())
-            
-            if fetch and query.strip().upper().startswith('SELECT'):
-                result = cursor.fetchall()
+
+                cursor = connection.cursor(dictionary=True)
+                cursor.execute(query, params)
+
+                if fetch:
+                    result = cursor.fetchall()
+                else:
+                    result = cursor.rowcount
+                    connection.commit()
+
                 cursor.close()
                 return result
-            else:
-                self.connection.commit()
-                affected_rows = cursor.rowcount
-                cursor.close()
-                return affected_rows
-                
-        except Error as e:
-            self.logger.error(f"Error ejecutando query: {e}")
-            self.logger.error(f"Query: {query}")
-            self.logger.error(f"Params: {params}")
-            return None
-        except Exception as e:
-            self.logger.error(f"Error inesperado en query: {e}")
-            print(f"ERROR QUERY DB: {e}")  # Debug adicional
-            import traceback
-            print(f"QUERY TRACEBACK: {traceback.format_exc()}")
-            return None
+
+            except Error as e:
+                if cursor:
+                    cursor.close()
+
+                self.logger.error(f"❌ Error ejecutando query: {e}")
+                self.logger.error(f"Query: {query}")
+                self.logger.error(f"Params: {params}")
+
+                if self.connection:
+                    try:
+                        self.connection.rollback()
+                    except Exception:
+                        pass
+
+                if e.errno in (
+                    errorcode.CR_SERVER_GONE_ERROR,
+                    errorcode.CR_SERVER_LOST,
+                    errorcode.CR_CONN_HOST_ERROR,
+                    errorcode.ER_SERVER_SHUTDOWN,
+                    2006,
+                    2013,
+                ):
+                    self.logger.warning("🔄 Conexión MySQL perdida, intentando reconectar...")
+                    self.connection = None
+                    attempts += 1
+                    continue
+
+                break
+
+            except Exception as e:
+                if cursor:
+                    cursor.close()
+                self.logger.error(f"❌ Error inesperado: {e}")
+                break
+
+        return None
     
-    def execute_many(self, query: str, data: list) -> bool:
-        """Ejecutar múltiples inserciones/actualizaciones"""
-        try:
-            if not self.is_connected():
-                if not self.reconnect():
+    def execute_many(self, query: str, data_list: List[tuple]) -> bool:
+        """Ejecutar múltiples inserts/updates"""
+        attempts = 0
+
+        while attempts < 2:
+            cursor = None
+            try:
+                connection = self.ensure_connection()
+                if not connection:
                     return False
-            
-            cursor = self.connection.cursor()
-            cursor.executemany(query, data)
-            self.connection.commit()
-            cursor.close()
-            return True
-            
-        except Error as e:
-            self.logger.error(f"Error ejecutando executemany: {e}")
-            return False
+
+                cursor = connection.cursor()
+                cursor.executemany(query, data_list)
+                connection.commit()
+                cursor.close()
+                return True
+
+            except Error as e:
+                if cursor:
+                    cursor.close()
+
+                self.logger.error(f"❌ Error en execute_many: {e}")
+                if self.connection:
+                    try:
+                        self.connection.rollback()
+                    except Exception:
+                        pass
+
+                if e.errno in (
+                    errorcode.CR_SERVER_GONE_ERROR,
+                    errorcode.CR_SERVER_LOST,
+                    errorcode.CR_CONN_HOST_ERROR,
+                    errorcode.ER_SERVER_SHUTDOWN,
+                    2006,
+                    2013,
+                ):
+                    self.logger.warning("🔄 Conexión MySQL perdida durante execute_many, reintentando...")
+                    self.connection = None
+                    attempts += 1
+                    continue
+
+                break
+
+            except Exception as e:
+                if cursor:
+                    cursor.close()
+                self.logger.error(f"❌ Error inesperado en execute_many: {e}")
+                break
+
+        return False
     
-    def get_cursor(self, dictionary: bool = True):
-        """Obtener cursor para operaciones manuales"""
-        try:
-            if not self.is_connected():
-                if not self.reconnect():
-                    return None
-            return self.connection.cursor(dictionary=dictionary)
-        except Exception as e:
-            self.logger.error(f"Error obteniendo cursor: {e}")
-            return None
-    
-    def test_connection(self) -> Dict[str, Any]:
-        """Probar conexión y obtener información"""
-        result = {
-            "connected": False,
-            "server_info": None,
-            "database": None,
-            "error": None
-        }
-        
+    def test_connection(self) -> tuple[bool, str]:
+        """Probar conexión a la base de datos"""
         try:
             if self.connect():
-                result["connected"] = True
-                result["server_info"] = self.connection.get_server_info()
-                result["database"] = self.config['database']
+                # Ejecutar query simple
+                result = self.execute_query("SELECT 1 as test")
                 
-                # Probar una consulta simple
-                cursor = self.connection.cursor()
-                cursor.execute("SELECT VERSION()")
-                version = cursor.fetchone()
-                cursor.close()
-                result["mysql_version"] = version[0] if version else "Unknown"
+                if result and result[0]['test'] == 1:
+                    return True, "✅ Conexión exitosa"
+                else:
+                    return False, "❌ Error en query de prueba"
+            else:
+                return False, "❌ No se pudo conectar"
                 
         except Exception as e:
-            result["error"] = str(e)
-            
-        return result
+            return False, f"❌ Error: {str(e)}"
+    
+    def get_tables(self) -> List[str]:
+        """Obtener lista de tablas en la base de datos"""
+        try:
+            result = self.execute_query("SHOW TABLES")
+            if result:
+                # El nombre de la columna varía según la BD
+                key = list(result[0].keys())[0]
+                return [row[key] for row in result]
+            return []
+        except Exception as e:
+            self.logger.error(f"Error obteniendo tablas: {e}")
+            return []
+    
+    def table_exists(self, table_name: str) -> bool:
+        """Verificar si una tabla existe"""
+        tables = self.get_tables()
+        return table_name in tables
 
-# Singleton para conexión global
-_db_instance = None
+    def _is_connection_alive(self) -> bool:
+        """Verificar si la conexión actual sigue activa."""
+        if not self.connection:
+            return False
+        try:
+            return bool(self.connection.is_connected())
+        except AttributeError:
+            self.logger.warning("⚠️  Conexión inválida detectada (AttributeError), restableciendo handle.")
+            self.connection = None
+            return False
+        except Exception as exc:
+            self.logger.warning(f"⚠️  Error verificando conexión: {exc}")
+            try:
+                self.connection.close()
+            except Exception:
+                pass
+            self.connection = None
+            return False
+
+    def ensure_connection(self):
+        """Obtener una conexión activa, reconectando si es necesario."""
+        if not self._is_connection_alive():
+            if not self.connect():
+                return None
+        return self.connection
+    
+    def __enter__(self):
+        """Context manager entry"""
+        self.connect()
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit"""
+        self.disconnect()
+    
+    def __del__(self):
+        """Destructor"""
+        self.disconnect()
+
+
+# Instancia global
+_db_connection = None
+
 
 def get_db_connection() -> DatabaseConnection:
-    """Obtener instancia singleton de la conexión"""
-    global _db_instance
-    if _db_instance is None:
-        _db_instance = DatabaseConnection()
-    return _db_instance
+    """Obtener instancia global de la conexión a la base de datos"""
+    global _db_connection
+    
+    if _db_connection is None:
+        _db_connection = DatabaseConnection()
+    
+    return _db_connection
 
-def init_database() -> bool:
-    """Inicializar base de datos"""
+
+def test_database_connection() -> tuple[bool, str]:
+    """Probar conexión a la base de datos"""
     db = get_db_connection()
-    return db.connect()
+    return db.test_connection()
 
-def close_database() -> None:
-    """Cerrar conexión global"""
-    global _db_instance
-    if _db_instance:
-        _db_instance.disconnect()
-        _db_instance = None
+
+if __name__ == "__main__":
+    # Prueba de conexión
+    logging.basicConfig(level=logging.INFO)
+    
+    print("\n" + "=" * 60)
+    print("PRUEBA DE CONEXIÓN A LA BASE DE DATOS")
+    print("=" * 60 + "\n")
+    
+    # Mostrar ruta de configuración
+    from utils.path_manager import get_config_path
+    print(f"📁 Archivo de configuración: {get_config_path('database.json')}\n")
+    
+    # Probar conexión
+    success, message = test_database_connection()
+    print(f"\n{message}\n")
+    
+    if success:
+        # Mostrar tablas
+        db = get_db_connection()
+        tables = db.get_tables()
+        print(f"📊 Tablas encontradas ({len(tables)}):")
+        for table in tables:
+            print(f"   • {table}")
+    
+    print("\n" + "=" * 60 + "\n")

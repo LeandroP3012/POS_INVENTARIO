@@ -1,0 +1,9 @@
+{
+    "printer_name": "",
+    "paper_width": 80,
+    "print_logo": false,
+    "logo_path": "",
+    "header_text": "TICKET DE VENTA",
+    "footer_text": "¡Gracias por su compra!",
+    "show_barcode": false
+}

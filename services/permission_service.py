@@ -9,6 +9,12 @@ import logging
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
+from config.permissions_catalog import (
+    get_permission_label,
+    normalize_permission_code,
+    normalize_permissions,
+)
+
 # Agregar el directorio raíz al path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -46,13 +52,15 @@ class PermissionService:
             if not user_id:
                 return False
             
+            normalized_permission = normalize_permission_code(permission)
+
             # Verificar caché primero
-            cache_key = f"{user_id}_{permission}"
+            cache_key = f"{user_id}_{normalized_permission}"
             if self._is_cache_valid(cache_key):
                 return self._permissions_cache[cache_key]['result']
             
             # Verificar permisos del usuario
-            has_permission = self._check_user_permission_detailed(user, permission)
+            has_permission = self._check_user_permission_detailed(user, normalized_permission)
             
             # Guardar en caché
             self._cache_permission(cache_key, has_permission)
@@ -67,18 +75,30 @@ class PermissionService:
         """Verificación detallada de permisos - SOLO permisos explícitamente asignados"""
         try:
             # 1. Verificar permisos específicos del usuario (tienen prioridad)
-            user_permissions = user.get('permissions', {})
-            if isinstance(user_permissions, dict):
-                # Convertir formato anterior a nuevo formato
+            user_permissions = user.get('permissions')
+            
+            # Si los permisos son una LISTA (nuevo sistema de roles)
+            if isinstance(user_permissions, list):
+                normalized_user_permissions = normalize_permissions(user_permissions, drop_unknown=False)
+                if permission in normalized_user_permissions or '*' in normalized_user_permissions:
+                    return True
+
+                category = permission.split('.')[0]
+                if f"{category}.*" in normalized_user_permissions:
+                    return True
+            
+            # Si los permisos son un DICT (sistema antiguo)
+            elif isinstance(user_permissions, dict):
+                # Super admin o all_modules tienen acceso a todo
+                if user_permissions.get('super_admin') or user_permissions.get('all_modules'):
+                    return True
+                
+                # Buscar permiso en formato antiguo (con guión bajo)
                 permission_key = permission.replace('.', '_')
                 if user_permissions.get(permission_key):
                     return True
-                
-                # Super admin o all_modules
-                if user_permissions.get('super_admin') or user_permissions.get('all_modules'):
-                    return True
             
-            # 2. Verificar permisos por rol (PRIORIDAD PRINCIPAL)
+            # 2. Verificar permisos por rol (si tiene role_id)
             role_id = user.get('role_id')
             if role_id:
                 has_role_permission = self.role_model.role_has_permission(role_id, permission)
@@ -189,7 +209,7 @@ class PermissionService:
                 legacy_permissions = self._get_legacy_permissions(user_type)
                 permissions.update(legacy_permissions)
             
-            return list(permissions)
+            return normalize_permissions(list(permissions), drop_unknown=False)
             
         except Exception as e:
             self.logger.error(f"Error obteniendo permisos del usuario: {e}")
@@ -259,7 +279,7 @@ class PermissionService:
             'inventory': ['inventory.view', 'inventory.create', 'inventory.edit'],
             'sales': ['sales.view', 'sales.create', 'sales.edit'],
             'dashboard': ['dashboard.view', 'dashboard.stats'],
-            'reports': ['reports.sales', 'reports.inventory', 'reports.users']
+            'reports': ['reports.basic', 'reports.full']
         }
         
         permissions = module_permissions.get(module, [])
@@ -312,51 +332,7 @@ class PermissionService:
     
     def get_permission_description(self, permission: str) -> str:
         """Obtener descripción amigable de un permiso"""
-        descriptions = {
-            # Usuarios
-            'users.view': 'Ver lista de usuarios',
-            'users.create': 'Crear nuevos usuarios',
-            'users.edit': 'Editar usuarios existentes',
-            'users.delete': 'Eliminar usuarios',
-            'users.activate': 'Activar usuarios',
-            'users.deactivate': 'Desactivar usuarios',
-            
-            # Roles
-            'roles.view': 'Ver lista de roles',
-            'roles.create': 'Crear nuevos roles',
-            'roles.edit': 'Editar roles existentes',
-            'roles.delete': 'Eliminar roles',
-            'roles.assign': 'Asignar roles a usuarios',
-            
-            # Sistema
-            'system.config': 'Configurar sistema',
-            'system.backup': 'Crear respaldos',
-            'system.reports': 'Reportes del sistema',
-            
-            # Dashboard
-            'dashboard.view': 'Ver dashboard principal',
-            'dashboard.stats': 'Ver estadísticas',
-            
-            # Inventario
-            'inventory.view': 'Ver inventario',
-            'inventory.create': 'Agregar productos',
-            'inventory.edit': 'Editar productos',
-            'inventory.reports': 'Reportes de inventario',
-            
-            # Ventas
-            'sales.view': 'Ver todas las ventas',
-            'sales.create': 'Realizar ventas',
-            'sales.edit': 'Editar ventas',
-            'sales.view_own': 'Ver solo sus propias ventas',
-            'sales.reports': 'Reportes de ventas',
-            
-            # Caja
-            'cash.register': 'Operar caja registradora',
-            'cash.open': 'Abrir caja',
-            'cash.close': 'Cerrar caja'
-        }
-        
-        return descriptions.get(permission, permission)
+        return get_permission_label(permission)
     
     def validate_permission_format(self, permission: str) -> bool:
         """Validar que un permiso tenga el formato correcto"""

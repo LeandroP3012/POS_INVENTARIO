@@ -1,0 +1,59 @@
+           *** POS SYSTEM ***           
+========================================
+               SYSTEM_POS               
+           Garcia Villon #568           
+               Lima, Perú               
+           Tel: +51 960724886           
+           lmqpando@gmail.com           
+             RUC: 123456789             
+========================================
+            BOLETA DE VENTA             
+----------------------------------------
+N° Venta: VTA-2026-00006
+Fecha: 15/01/2026 22:55:25
+Cajero: Administrador del Sistema
+----------------------------------------
+Cliente: Cliente Genérico
+========================================
+PRODUCTO                           TOTAL
+----------------------------------------
+Agua Mineral 500ml
+  8 x S/ 0.75                    S/ 6.00
+Diamond
+  1 x S/ 500.00                S/ 500.00
+Esmeralda
+  1 x S/ 5000.00              S/ 5000.00
+LapizV10
+  1 x S/ 62.00                  S/ 62.00
+LapizV1
+  1 x S/ 12.00                  S/ 12.00
+LapizV9
+  1 x S/ 5.00                    S/ 5.00
+LapizV6
+  1 x S/ 6.00                    S/ 6.00
+LapizV8
+  1 x S/ 4.00                    S/ 4.00
+LapizV7
+  1 x S/ 5.00                    S/ 5.00
+Oro
+  1 x S/ 1000.00              S/ 1000.00
+Laptop Dell Inspiron 15
+  1 x S/ 799.99                S/ 799.99
+Mouse Inalámbrico Logitech
+  1 x S/ 24.99                  S/ 24.99
+Rubí
+  1 x S/ 10000.00            S/ 10000.00
+========================================
+SUBTOTAL:                    S/ 17424.98
+----------------------------------------
+TOTAL:                       S/ 17424.98
+========================================
+Método de Pago: 💵 Efectivo
+Pagado:                      S/ 17424.98
+Vuelto:                          S/ 0.00
+========================================
+
+        ¡Gracias por su compra!         
+             Vuelva pronto              
+
+========================================

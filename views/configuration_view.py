@@ -11,6 +11,7 @@ import os
 from datetime import datetime
 from views.base_view import BaseView
 from controllers.configuration_controller import ConfigurationController
+from utils.responsive_utils import ResponsiveManager
 
 
 class ConfigurationView(BaseView):
@@ -26,6 +27,13 @@ class ConfigurationView(BaseView):
         self.embedded = embedded
         self.loading_data = True  # Flag para evitar marcar cambios durante la carga
         self.saving_data = False  # Flag para evitar marcar cambios durante el guardado
+        
+        # Inicializar gestor responsivo
+        self.responsive = ResponsiveManager(self.root)
+        
+        # Callbacks para navegación del navbar
+        self.callbacks = {}
+        self.navbar_built = False
         
         # Inicializar controlador de configuración
         self.config_controller = ConfigurationController()
@@ -68,8 +76,8 @@ class ConfigurationView(BaseView):
         # Header
         self.create_header()
         
-        # Navbar
-        self.create_navbar()
+        # El navbar se creará después de registrar callbacks
+        # en build_navbar()
         
         # Notebook para las categorías
         self.create_categories_notebook()
@@ -123,10 +131,13 @@ class ConfigurationView(BaseView):
         )
         user_label.pack(side='right')
     
-    def create_navbar(self):
+    def create_navbar(self, after_widget=None):
         """Crear navbar personalizado - GLOBAL para todos los módulos"""
         navbar_frame = tk.Frame(self.root, bg='#2c3e50', height=50)
-        navbar_frame.pack(fill='x')
+        if after_widget:
+            navbar_frame.pack(fill='x', after=after_widget)
+        else:
+            navbar_frame.pack(fill='x')
         navbar_frame.pack_propagate(False)
         
         # Estilo de botones
@@ -147,58 +158,70 @@ class ConfigurationView(BaseView):
         buttons_container = tk.Frame(navbar_frame, bg='#2c3e50')
         buttons_container.pack(side='left', padx=10, pady=5)
         
+        # Helper para ejecutar callbacks de forma segura
+        def safe_call(callback_name):
+            def wrapper():
+                print(f"🔄 Navbar (config): Intentando ejecutar '{callback_name}'")
+                callback = self.callbacks.get(callback_name)
+                if callback:
+                    print(f"   ✓ Callback encontrado, ejecutando...")
+                    callback()
+                else:
+                    print(f"   ✗ Callback no encontrado o es None")
+            return wrapper
+        
         # Botón Archivo
         file_btn = tk.Menubutton(buttons_container, text="📁 Archivo", **btn_style)
         file_btn.pack(side='left', padx=2)
         file_menu = tk.Menu(file_btn, tearoff=0, font=('Segoe UI', 11))
         file_btn.config(menu=file_menu)
-        file_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
+        file_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
         file_menu.add_separator()
-        if self.embedded:
-            file_menu.add_command(label="Volver al Dashboard", command=self.go_back_to_dashboard)
+        file_menu.add_command(label="Volver al Dashboard", command=safe_call('back_to_dashboard'))
         
         # Botón Ventas
         sales_btn = tk.Menubutton(buttons_container, text="💰 Ventas", **btn_style)
         sales_btn.pack(side='left', padx=2)
         sales_menu = tk.Menu(sales_btn, tearoff=0, font=('Segoe UI', 11))
         sales_btn.config(menu=sales_menu)
-        sales_menu.add_command(label="Nueva Venta", command=self.callbacks.get('new_sale', lambda: None))
-        sales_menu.add_command(label="Historial de Ventas", command=self.callbacks.get('sales_history', lambda: None))
+        sales_menu.add_command(label="Nueva Venta", command=safe_call('new_sale'))
+        sales_menu.add_command(label="Historial de Ventas", command=safe_call('sales_history'))
         
         # Botón Inventario
         inv_btn = tk.Menubutton(buttons_container, text="📦 Inventario", **btn_style)
         inv_btn.pack(side='left', padx=2)
         inv_menu = tk.Menu(inv_btn, tearoff=0, font=('Segoe UI', 11))
         inv_btn.config(menu=inv_menu)
-        inv_menu.add_command(label="Ver Productos", command=self.callbacks.get('view_products', lambda: None))
-        inv_menu.add_command(label="Gestionar Categorías", command=self.callbacks.get('view_categories', lambda: None))
-        inv_menu.add_command(label="Control de Stock", command=self.callbacks.get('stock_control', lambda: None))
+        inv_menu.add_command(label="Ver Productos", command=safe_call('view_products'))
+        inv_menu.add_command(label="Gestionar Categorías", command=safe_call('view_categories'))
+        inv_menu.add_command(label="Control de Stock", command=safe_call('stock_control'))
         
         # Botón Reportes
         rep_btn = tk.Menubutton(buttons_container, text="📊 Reportes", **btn_style)
         rep_btn.pack(side='left', padx=2)
         rep_menu = tk.Menu(rep_btn, tearoff=0, font=('Segoe UI', 11))
         rep_btn.config(menu=rep_menu)
-        rep_menu.add_command(label="Ventas del Día", command=self.callbacks.get('daily_report', lambda: None))
-        rep_menu.add_command(label="Reporte Completo", command=self.callbacks.get('full_report', lambda: None))
+        rep_menu.add_command(label="Ventas del Día", command=safe_call('daily_report'))
+        rep_menu.add_command(label="Reporte Completo", command=safe_call('full_report'))
         
-        # Botón Administración
+        # Botón Administración (ACTIVO)
         admin_btn = tk.Menubutton(buttons_container, text="⚙️ Administración", **btn_style)
+        admin_btn.config(bg='#34495e')  # Resaltar activo
         admin_btn.pack(side='left', padx=2)
         admin_menu = tk.Menu(admin_btn, tearoff=0, font=('Segoe UI', 11))
         admin_btn.config(menu=admin_menu)
-        admin_menu.add_command(label="Gestionar Usuarios", command=self.callbacks.get('manage_users', lambda: None))
-        admin_menu.add_command(label="Gestionar Roles", command=self.callbacks.get('manage_roles', lambda: None))
+        admin_menu.add_command(label="Gestionar Usuarios", command=safe_call('manage_users'))
+        admin_menu.add_command(label="Gestionar Roles", command=safe_call('manage_roles'))
         admin_menu.add_separator()
-        admin_menu.add_command(label="Configuración del Sistema", command=lambda: None)
+        admin_menu.add_command(label="Configuración del Sistema ✓", command=lambda: None)  # Actual
         
         # Botón Ayuda
         help_btn = tk.Menubutton(buttons_container, text="❓ Ayuda", **btn_style)
         help_btn.pack(side='left', padx=2)
         help_menu = tk.Menu(help_btn, tearoff=0, font=('Segoe UI', 11))
         help_btn.config(menu=help_menu)
-        help_menu.add_command(label="Manual de Usuario", command=self.callbacks.get('show_manual', lambda: None))
-        help_menu.add_command(label="Acerca de", command=self.callbacks.get('show_about', lambda: None))
+        help_menu.add_command(label="Manual de Usuario", command=safe_call('show_manual'))
+        help_menu.add_command(label="Acerca de", command=safe_call('show_about'))
     
     def create_categories_notebook(self):
         """Crear notebook con categorías de configuración"""
@@ -555,7 +578,7 @@ class ConfigurationView(BaseView):
         currency_symbol_entry.pack(fill='x', pady=5, ipady=8)
         
         # ESTABLECER VALOR INICIAL DIRECTAMENTE
-        initial_symbol = self.config_data.get('currency_symbol', '$')
+        initial_symbol = self.config_data.get('currency_symbol', 'S/')
         currency_symbol_entry.delete(0, tk.END)
         currency_symbol_entry.insert(0, initial_symbol)
         
@@ -935,17 +958,17 @@ class ConfigurationView(BaseView):
         ).pack(anchor='w')
         
         # CREAR COMBOBOX SIN TEXTVARIABLE - APLICAR FIX MANUAL
-        printer_combo = ttk.Combobox(
+        self.printer_combo = ttk.Combobox(
             printer_inner,
             values=self.config_controller.get_available_printers(),
             state='readonly',
             font=('Segoe UI', 11)
         )
-        printer_combo.pack(fill='x', pady=(5, 15), ipady=5)
+        self.printer_combo.pack(fill='x', pady=(5, 15), ipady=5)
         
         # ESTABLECER VALOR INICIAL DIRECTAMENTE
         initial_printer = self.config_data.get('printer', 'Impresora del sistema')
-        printer_combo.set(initial_printer)
+        self.printer_combo.set(initial_printer)
         
         # CREAR VARIABLE PARA TRACKING MANUAL
         self.printer_var = tk.StringVar(value=initial_printer)
@@ -953,23 +976,23 @@ class ConfigurationView(BaseView):
         # SINCRONIZACIÓN MANUAL BIDIRECCIONAL
         def on_printer_change(event):
             """Sincronizar Combobox → Variable"""
-            new_value = printer_combo.get()
+            new_value = self.printer_combo.get()
             self.printer_var.set(new_value)
             self.mark_changes_made()
         
         def on_printer_var_change(*args):
             """Sincronizar Variable → Combobox"""
             new_value = self.printer_var.get()
-            if printer_combo.get() != new_value:
-                printer_combo.set(new_value)
+            if self.printer_combo.get() != new_value:
+                self.printer_combo.set(new_value)
         
-        printer_combo.bind('<<ComboboxSelected>>', on_printer_change)
+        self.printer_combo.bind('<<ComboboxSelected>>', on_printer_change)
         self.printer_var.trace_add('write', on_printer_var_change)
         
         # REGISTRO EN MAPA DE WIDGETS MANUALES
-        self.widget_var_map[printer_combo] = ('printer', self.printer_var)
+        self.widget_var_map[self.printer_combo] = ('printer', self.printer_var)
         
-        print(f"      👀 Combobox creado para printer: valor='{printer_combo.get()}' | ✅ SINCRONIZADO MANUALMENTE")
+        print(f"      👀 Combobox creado para printer: valor='{self.printer_combo.get()}' | ✅ SINCRONIZADO MANUALMENTE")
         
         # Botón para refrescar impresoras
         refresh_button = tk.Button(
@@ -984,7 +1007,77 @@ class ConfigurationView(BaseView):
             padx=15,
             pady=8
         )
-        refresh_button.pack(anchor='w')
+        refresh_button.pack(anchor='w', pady=(0, 15))
+        
+        # Modo de impresora
+        tk.Label(
+            printer_inner,
+            text="Modo de Impresora:",
+            font=('Segoe UI', 12, 'bold'),
+            fg='#2c3e50',
+            bg='#f8f9fa'
+        ).pack(anchor='w', pady=(10, 5))
+        
+        tk.Label(
+            printer_inner,
+            text="Selecciona cómo detectar el tipo de impresora",
+            font=('Segoe UI', 9),
+            fg='#7f8c8d',
+            bg='#f8f9fa'
+        ).pack(anchor='w')
+        
+        # Combobox para modo de impresora
+        self.printer_mode_combo = ttk.Combobox(
+            printer_inner,
+            values=['auto', 'thermal', 'standard'],
+            state='readonly',
+            font=('Segoe UI', 11)
+        )
+        self.printer_mode_combo.pack(fill='x', pady=(5, 5), ipady=5)
+        
+        # Establecer valor inicial
+        initial_mode = self.config_data.get('printer_mode', 'auto')
+        self.printer_mode_combo.set(initial_mode)
+        self.printer_mode_var = tk.StringVar(value=initial_mode)
+        
+        # Sincronización manual
+        def on_mode_change(event):
+            new_value = self.printer_mode_combo.get()
+            self.printer_mode_var.set(new_value)
+            self.mark_changes_made()
+        
+        def on_mode_var_change(*args):
+            new_value = self.printer_mode_var.get()
+            if self.printer_mode_combo.get() != new_value:
+                self.printer_mode_combo.set(new_value)
+        
+        self.printer_mode_combo.bind('<<ComboboxSelected>>', on_mode_change)
+        self.printer_mode_var.trace_add('write', on_mode_var_change)
+        self.widget_var_map[self.printer_mode_combo] = ('printer_mode', self.printer_mode_var)
+        
+        # Descripción de modos
+        mode_descriptions = {
+            'auto': '🔄 Auto: Detecta automáticamente (recomendado)',
+            'thermal': '🔥 Térmica: Fuerza impresión térmica ESC/POS (GP-L80180, TP-300)',
+            'standard': '📄 Estándar: Fuerza impresión estándar/PDF'
+        }
+        
+        mode_label = tk.Label(
+            printer_inner,
+            text=mode_descriptions.get(initial_mode, ''),
+            font=('Segoe UI', 9, 'italic'),
+            fg='#27ae60',
+            bg='#f8f9fa',
+            wraplength=400,
+            justify='left'
+        )
+        mode_label.pack(anchor='w', pady=(0, 10))
+        
+        def update_mode_description(*args):
+            mode = self.printer_mode_var.get()
+            mode_label.config(text=mode_descriptions.get(mode, ''))
+        
+        self.printer_mode_var.trace_add('write', update_mode_description)
         
         # Configuración de formato
         format_section = tk.Frame(left_column, bg='#f8f9fa', relief='solid', bd=1)
@@ -1279,10 +1372,34 @@ class ConfigurationView(BaseView):
     def refresh_printers(self):
         """Actualizar lista de impresoras disponibles"""
         try:
+            # Obtener lista actualizada de impresoras
             printers = self.config_controller.get_available_printers()
-            # Actualizar el combobox con la nueva lista
-            # Nota: Esto requeriría mantener una referencia al combobox
-            messagebox.showinfo("Impresoras", f"Lista actualizada. {len(printers)} impresoras encontradas.")
+            
+            # Guardar el valor actual
+            current_value = self.printer_combo.get()
+            
+            # Actualizar la lista de valores del combobox
+            self.printer_combo['values'] = printers
+            
+            # Si el valor actual sigue siendo válido, mantenerlo
+            # Si no, seleccionar la primera impresora de la lista
+            if current_value in printers:
+                self.printer_combo.set(current_value)
+            elif printers:
+                self.printer_combo.set(printers[0])
+                self.printer_var.set(printers[0])
+                self.mark_changes_made()
+            
+            # Mostrar mensaje con las impresoras encontradas
+            printer_list = "\n".join(f"  • {p}" for p in printers)
+            messagebox.showinfo(
+                "Impresoras Detectadas",
+                f"Se encontraron {len(printers)} impresora(s):\n\n{printer_list}\n\n" +
+                "Si tu impresora GP-L80180 Series no aparece, verifica que:\n" +
+                "1. La impresora esté correctamente instalada en Windows\n" +
+                "2. Los drivers estén actualizados\n" +
+                "3. La impresora esté encendida y conectada"
+            )
         except Exception as e:
             messagebox.showerror("Error", f"Error actualizando impresoras:\n{str(e)}")
     
@@ -2212,11 +2329,11 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
     def load_database_config(self):
         """Cargar configuración de base de datos"""
         try:
-            db_config_path = os.path.join('config', 'database.json')
-            if os.path.exists(db_config_path):
-                with open(db_config_path, 'r', encoding='utf-8') as f:
-                    db_config = json.load(f)
-                    self.config_data.update(db_config)
+            # Usar PathManager para cargar configuración
+            from utils.path_manager import load_config
+            db_config = load_config('database.json')
+            if db_config:
+                self.config_data.update(db_config)
         except Exception as e:
             print(f"Error cargando configuración de BD: {e}")
     
@@ -2231,7 +2348,7 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
             'company_website': '',
             'company_logo': '',
             'currency': 'CLP',
-            'currency_symbol': '$',
+            'currency_symbol': 'S/',
             'tax_rate': '19',
             'include_tax_in_price': True,
             'theme': 'Claro',
@@ -2494,6 +2611,47 @@ Estado: {'🟢 Operativa' if info.get('status') == 'OK' else '🔴 Con problemas
             # Si es None (Cancelar), no hacer nada
         else:
             self.trigger_callback('back_to_dashboard')
+    
+    def bind_callback(self, event_name: str, callback: Callable):
+        """Registrar callback para navegación"""
+        self.callbacks[event_name] = callback
+        print(f"📋 Config: Callback '{event_name}' registrado")
+        
+        # Crear navbar cuando se registre el primer callback de navegación
+        if not self.navbar_built and event_name in ['back_to_dashboard', 'new_sale', 'view_products']:
+            print(f"   📋 Primer callback de navegación detectado")
+            # Esperar un poco para que se registren todos los callbacks
+            self.root.after(100, self._try_build_navbar)
+    
+    def _try_build_navbar(self):
+        """Intentar construir navbar después de un delay"""
+        if not self.navbar_built:
+            print(f"📋 Callbacks totales registrados en config: {len(self.callbacks)}")
+            for key in self.callbacks:
+                print(f"   - {key}")
+            self.build_navbar()
+            self.navbar_built = True
+    
+    def build_navbar(self):
+        """Construir navbar DESPUÉS de registrar callbacks"""
+        print("🔨 Construyendo navbar en configuration_view...")
+        # Encontrar el widget header para insertar el navbar después
+        header_widget = None
+        for widget in self.root.winfo_children():
+            if isinstance(widget, tk.Frame):
+                try:
+                    if widget.cget('bg') == '#2c3e50' and widget.cget('height') != 50:
+                        header_widget = widget
+                        break
+                except:
+                    pass
+        
+        if header_widget:
+            self.create_navbar(header_widget)
+            print("   ✅ Navbar construido")
+        else:
+            print("   ✗ No se encontró el header, creando navbar sin after")
+            self.create_navbar()
     
     def on_close(self):
         """Manejar cierre de ventana"""
