@@ -40,7 +40,7 @@ class ReportModel(BaseModel):
             
             cursor = connection.cursor(dictionary=True)
             
-            # Query base
+            # ✅ Query optimizada: usar sub-query para contar items en lugar de JOIN
             query = """
                 SELECT 
                     s.id,
@@ -55,12 +55,11 @@ class ReportModel(BaseModel):
                     s.payment_method,
                     s.status,
                     u.full_name as cashier_name,
-                    c.name as customer_name,
-                    COUNT(sd.id) as items_count
+                    COALESCE(c.name, 'CLIENTE GENERAL') as customer_name,
+                    (SELECT COUNT(*) FROM sale_items WHERE sale_id = s.id) as items_count
                 FROM sales s
                 LEFT JOIN users u ON s.user_id = u.id
                 LEFT JOIN customers c ON s.customer_id = c.id
-                LEFT JOIN sale_details sd ON s.id = sd.sale_id
                 WHERE s.sale_date BETWEEN %s AND %s
                 AND s.status = 'completed'
             """
@@ -71,18 +70,18 @@ class ReportModel(BaseModel):
                 query += " AND s.user_id = %s"
                 params.append(user_id)
             
-            query += " GROUP BY s.id ORDER BY s.sale_date DESC"
+            query += " ORDER BY s.sale_date DESC"
             
             cursor.execute(query, params)
             sales = cursor.fetchall()
             
-            # Calcular total de productos vendidos
+            # ✅ Calcular total de productos en una sola query optimizada
             total_products = 0
             if sales:
                 product_query = """
-                    SELECT SUM(sd.quantity) as total_products
-                    FROM sale_details sd
-                    INNER JOIN sales s ON sd.sale_id = s.id
+                    SELECT SUM(si.quantity) as total_products
+                    FROM sale_items si
+                    INNER JOIN sales s ON si.sale_id = s.id
                     WHERE s.sale_date BETWEEN %s AND %s
                     AND s.status = 'completed'
                 """
@@ -169,13 +168,13 @@ class ReportModel(BaseModel):
                     p.sku,
                     p.name,
                     p.price,
-                    SUM(sd.quantity) as total_quantity,
-                    SUM(sd.subtotal) as total_sales,
-                    COUNT(DISTINCT sd.sale_id) as times_sold,
-                    AVG(sd.unit_price) as avg_price
-                FROM sale_details sd
-                INNER JOIN products p ON sd.product_id = p.id
-                INNER JOIN sales s ON sd.sale_id = s.id
+                    SUM(si.quantity) as total_quantity,
+                    SUM(si.subtotal) as total_sales,
+                    COUNT(DISTINCT si.sale_id) as times_sold,
+                    AVG(si.unit_price) as avg_price
+                FROM sale_items si
+                INNER JOIN products p ON si.product_id = p.id
+                INNER JOIN sales s ON si.sale_id = s.id
                 WHERE s.sale_date BETWEEN %s AND %s
                 AND s.status = 'completed'
                 GROUP BY p.id
@@ -404,3 +403,381 @@ class ReportModel(BaseModel):
         except Exception as e:
             self.logger.error(f"Error en reporte de notas de crédito: {e}")
             return {'success': False, 'message': str(e)}
+
+    # ==========================================
+    # REPORTES AVANZADOS
+    # ==========================================
+
+    def get_product_flow_report(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+        """Reporte de flujo de productos: entradas, salidas y stock actual por producto"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return {'success': False, 'message': 'No hay conexión a la base de datos'}
+
+            cursor = connection.cursor(dictionary=True)
+
+            query = """
+                SELECT 
+                    p.id,
+                    p.sku,
+                    p.name,
+                    p.stock_quantity,
+                    p.cost,
+                    p.price,
+                    c.name as category_name,
+                    COALESCE(SUM(CASE WHEN im.quantity > 0 THEN im.quantity ELSE 0 END), 0) as total_entradas,
+                    COALESCE(SUM(CASE WHEN im.quantity < 0 THEN ABS(im.quantity) ELSE 0 END), 0) as total_salidas,
+                    COUNT(im.id) as total_movimientos
+                FROM products p
+                LEFT JOIN categories c ON p.category_id = c.id
+                LEFT JOIN inventory_movements im ON p.id = im.product_id
+                    AND im.created_at BETWEEN %s AND %s
+                WHERE p.status = 'active'
+                GROUP BY p.id
+                ORDER BY total_movimientos DESC, p.name ASC
+            """
+
+            cursor.execute(query, [start_date, end_date])
+            products = cursor.fetchall()
+
+            # Totales
+            total_entradas = sum(int(p['total_entradas'] or 0) for p in products)
+            total_salidas = sum(int(p['total_salidas'] or 0) for p in products)
+            productos_con_movimiento = sum(1 for p in products if int(p['total_movimientos'] or 0) > 0)
+
+            cursor.close()
+
+            return {
+                'success': True,
+                'data': {
+                    'products': products,
+                    'summary': {
+                        'total_products': len(products),
+                        'products_with_movement': productos_con_movimiento,
+                        'total_entradas': total_entradas,
+                        'total_salidas': total_salidas,
+                        'balance': total_entradas - total_salidas
+                    },
+                    'period': {
+                        'start': start_date.strftime('%d/%m/%Y'),
+                        'end': end_date.strftime('%d/%m/%Y')
+                    }
+                }
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error en reporte de flujo de productos: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'success': False, 'message': str(e)}
+
+    def get_monthly_sales_report(self, year: int) -> Dict[str, Any]:
+        """Reporte mensual de ventas agrupado por mes para un año dado"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return {'success': False, 'message': 'No hay conexión a la base de datos'}
+
+            cursor = connection.cursor(dictionary=True)
+
+            query = """
+                SELECT 
+                    MONTH(s.sale_date) as mes,
+                    COUNT(s.id) as total_ventas,
+                    COALESCE(SUM(s.total_amount), 0) as monto_total,
+                    COALESCE(AVG(s.total_amount), 0) as ticket_promedio,
+                    COALESCE(SUM(s.discount_amount), 0) as total_descuentos,
+                    COALESCE(SUM(s.tax_amount), 0) as total_impuestos,
+                    COALESCE(SUM(
+                        (SELECT SUM(si.quantity) FROM sale_items si WHERE si.sale_id = s.id)
+                    ), 0) as total_productos
+                FROM sales s
+                WHERE YEAR(s.sale_date) = %s
+                AND s.status = 'completed'
+                GROUP BY MONTH(s.sale_date)
+                ORDER BY mes ASC
+            """
+
+            cursor.execute(query, [year])
+            monthly_data = cursor.fetchall()
+
+            # Crear diccionario con los 12 meses
+            meses_nombres = [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ]
+
+            months = {}
+            for i in range(1, 13):
+                months[i] = {
+                    'mes': i,
+                    'nombre': meses_nombres[i - 1],
+                    'total_ventas': 0,
+                    'monto_total': 0,
+                    'ticket_promedio': 0,
+                    'total_descuentos': 0,
+                    'total_impuestos': 0,
+                    'total_productos': 0
+                }
+
+            for row in monthly_data:
+                m = int(row['mes'])
+                months[m] = {
+                    'mes': m,
+                    'nombre': meses_nombres[m - 1],
+                    'total_ventas': int(row['total_ventas']),
+                    'monto_total': float(row['monto_total']),
+                    'ticket_promedio': float(row['ticket_promedio']),
+                    'total_descuentos': float(row['total_descuentos']),
+                    'total_impuestos': float(row['total_impuestos']),
+                    'total_productos': int(row['total_productos'] or 0)
+                }
+
+            months_list = list(months.values())
+
+            # Totales anuales
+            total_ventas_anual = sum(m['total_ventas'] for m in months_list)
+            monto_total_anual = sum(m['monto_total'] for m in months_list)
+            ticket_promedio_anual = monto_total_anual / total_ventas_anual if total_ventas_anual > 0 else 0
+
+            # Mejor y peor mes
+            meses_con_ventas = [m for m in months_list if m['total_ventas'] > 0]
+            mejor_mes = max(meses_con_ventas, key=lambda x: x['monto_total'])['nombre'] if meses_con_ventas else 'N/A'
+            peor_mes = min(meses_con_ventas, key=lambda x: x['monto_total'])['nombre'] if meses_con_ventas else 'N/A'
+
+            cursor.close()
+
+            return {
+                'success': True,
+                'data': {
+                    'months': months_list,
+                    'year': year,
+                    'summary': {
+                        'total_ventas': total_ventas_anual,
+                        'monto_total': monto_total_anual,
+                        'ticket_promedio': round(ticket_promedio_anual, 2),
+                        'mejor_mes': mejor_mes,
+                        'peor_mes': peor_mes
+                    }
+                }
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error en reporte mensual: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'success': False, 'message': str(e)}
+
+    def get_inventory_investment_report(self) -> Dict[str, Any]:
+        """Reporte de inversión en inventario: stock × costo y stock × precio de venta"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return {'success': False, 'message': 'No hay conexión a la base de datos'}
+
+            cursor = connection.cursor(dictionary=True)
+
+            # Productos con valor de inversión
+            query_products = """
+                SELECT 
+                    p.id,
+                    p.sku,
+                    p.name,
+                    p.stock_quantity,
+                    p.cost,
+                    p.price,
+                    c.name as category_name,
+                    (p.stock_quantity * p.cost) as inversion_costo,
+                    (p.stock_quantity * p.price) as valor_venta,
+                    CASE 
+                        WHEN p.cost > 0 THEN ROUND(((p.price - p.cost) / p.cost) * 100, 2)
+                        ELSE 0
+                    END as margen_pct
+                FROM products p
+                LEFT JOIN categories c ON p.category_id = c.id
+                WHERE p.status = 'active'
+                ORDER BY inversion_costo DESC
+            """
+
+            cursor.execute(query_products)
+            products = cursor.fetchall()
+
+            # Totales por categoría
+            query_categories = """
+                SELECT 
+                    COALESCE(c.name, 'Sin Categoría') as category_name,
+                    COUNT(p.id) as total_productos,
+                    SUM(p.stock_quantity) as total_unidades,
+                    SUM(p.stock_quantity * p.cost) as inversion_costo,
+                    SUM(p.stock_quantity * p.price) as valor_venta
+                FROM products p
+                LEFT JOIN categories c ON p.category_id = c.id
+                WHERE p.status = 'active'
+                GROUP BY c.id
+                ORDER BY inversion_costo DESC
+            """
+
+            cursor.execute(query_categories)
+            categories = cursor.fetchall()
+
+            # Totales generales
+            total_inversion_costo = sum(Decimal(str(p['inversion_costo'] or 0)) for p in products)
+            total_valor_venta = sum(Decimal(str(p['valor_venta'] or 0)) for p in products)
+            total_unidades = sum(int(p['stock_quantity'] or 0) for p in products)
+            ganancia_potencial = total_valor_venta - total_inversion_costo
+            margen_global = float((ganancia_potencial / total_inversion_costo) * 100) if total_inversion_costo > 0 else 0
+
+            cursor.close()
+
+            return {
+                'success': True,
+                'data': {
+                    'products': products,
+                    'categories': categories,
+                    'summary': {
+                        'total_products': len(products),
+                        'total_unidades': total_unidades,
+                        'total_inversion_costo': float(total_inversion_costo),
+                        'total_valor_venta': float(total_valor_venta),
+                        'ganancia_potencial': float(ganancia_potencial),
+                        'margen_global': round(margen_global, 2)
+                    }
+                }
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error en reporte de inversión: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'success': False, 'message': str(e)}
+
+    def get_specific_product_report(self, product_id: int, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+        """Reporte de rendimiento de un producto específico en un período"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return {'success': False, 'message': 'No hay conexión a la base de datos'}
+
+            cursor = connection.cursor(dictionary=True)
+
+            # Info del producto
+            cursor.execute("""
+                SELECT p.id, p.sku, p.name, p.cost, p.price, p.stock_quantity,
+                       c.name as category_name
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id
+                WHERE p.id = %s
+            """, [product_id])
+            product_info = cursor.fetchone()
+
+            if not product_info:
+                return {'success': False, 'message': 'Producto no encontrado'}
+
+            # Detalle de ventas del producto
+            query_sales = """
+                SELECT 
+                    s.sale_number,
+                    s.sale_date,
+                    si.quantity,
+                    si.unit_price,
+                    si.subtotal,
+                    si.discount_amount,
+                    u.full_name as cashier_name,
+                    COALESCE(cu.name, 'CLIENTE GENERAL') as customer_name
+                FROM sale_items si
+                INNER JOIN sales s ON si.sale_id = s.id
+                LEFT JOIN users u ON s.user_id = u.id
+                LEFT JOIN customers cu ON s.customer_id = cu.id
+                WHERE si.product_id = %s
+                AND s.sale_date BETWEEN %s AND %s
+                AND s.status = 'completed'
+                ORDER BY s.sale_date DESC
+            """
+
+            cursor.execute(query_sales, [product_id, start_date, end_date])
+            sales = cursor.fetchall()
+
+            # Totales
+            total_unidades = sum(int(s['quantity'] or 0) for s in sales)
+            total_ingresos = sum(Decimal(str(s['subtotal'] or 0)) for s in sales)
+            total_descuentos = sum(Decimal(str(s['discount_amount'] or 0)) for s in sales)
+            veces_vendido = len(sales)
+            precio_promedio = float(total_ingresos / total_unidades) if total_unidades > 0 else 0
+
+            # Costo total vendido  
+            costo_unitario = Decimal(str(product_info['cost'] or 0))
+            costo_total_vendido = costo_unitario * total_unidades
+            ganancia = float(total_ingresos - costo_total_vendido)
+
+            # Movimientos de inventario del producto
+            query_movements = """
+                SELECT 
+                    im.movement_type,
+                    im.quantity,
+                    im.previous_stock,
+                    im.new_stock,
+                    im.created_at,
+                    im.notes
+                FROM inventory_movements im
+                WHERE im.product_id = %s
+                AND im.created_at BETWEEN %s AND %s
+                ORDER BY im.created_at DESC
+                LIMIT 50
+            """
+
+            cursor.execute(query_movements, [product_id, start_date, end_date])
+            movements = cursor.fetchall()
+
+            cursor.close()
+
+            return {
+                'success': True,
+                'data': {
+                    'product': product_info,
+                    'sales': sales,
+                    'movements': movements,
+                    'summary': {
+                        'total_unidades_vendidas': total_unidades,
+                        'total_ingresos': float(total_ingresos),
+                        'total_descuentos': float(total_descuentos),
+                        'veces_vendido': veces_vendido,
+                        'precio_promedio': round(precio_promedio, 2),
+                        'costo_total_vendido': float(costo_total_vendido),
+                        'ganancia': ganancia,
+                        'stock_actual': int(product_info['stock_quantity'] or 0)
+                    },
+                    'period': {
+                        'start': start_date.strftime('%d/%m/%Y'),
+                        'end': end_date.strftime('%d/%m/%Y')
+                    }
+                }
+            }
+
+        except Exception as e:
+            self.logger.error(f"Error en reporte de producto específico: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'success': False, 'message': str(e)}
+
+    def get_all_products_list(self) -> List[Dict[str, Any]]:
+        """Obtener lista simple de productos activos para selectores"""
+        try:
+            connection = self.get_connection()
+            if not connection:
+                return []
+
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT id, sku, name 
+                FROM products 
+                WHERE status = 'active' 
+                ORDER BY name ASC
+            """)
+            products = cursor.fetchall()
+            cursor.close()
+            return products
+
+        except Exception as e:
+            self.logger.error(f"Error al obtener lista de productos: {e}")
+            return []

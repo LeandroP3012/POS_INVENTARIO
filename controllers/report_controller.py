@@ -119,3 +119,46 @@ class ReportController:
             
         except Exception as e:
             return {'success': False, 'message': str(e)}
+
+    # ==========================================
+    # REPORTES AVANZADOS
+    # ==========================================
+
+    def get_product_flow_report(self, start_date: str, end_date: str) -> Dict[str, Any]:
+        """Reporte de flujo de productos"""
+        try:
+            start = datetime.strptime(start_date, '%Y-%m-%d')
+            end = datetime.strptime(end_date, '%Y-%m-%d')
+            end = end.replace(hour=23, minute=59, second=59)
+            return self.report_model.get_product_flow_report(start, end)
+        except Exception as e:
+            return {'success': False, 'message': str(e)}
+
+    def get_monthly_sales_report(self, year: int) -> Dict[str, Any]:
+        """Reporte mensual de ventas"""
+        try:
+            return self.report_model.get_monthly_sales_report(year)
+        except Exception as e:
+            return {'success': False, 'message': str(e)}
+
+    def get_inventory_investment_report(self) -> Dict[str, Any]:
+        """Reporte de inversión en inventario"""
+        try:
+            return self.report_model.get_inventory_investment_report()
+        except Exception as e:
+            return {'success': False, 'message': str(e)}
+
+    def get_specific_product_report(self, product_id: int, start_date: str, end_date: str) -> Dict[str, Any]:
+        """Reporte de producto específico"""
+        try:
+            start = datetime.strptime(start_date, '%Y-%m-%d')
+            end = datetime.strptime(end_date, '%Y-%m-%d')
+            end = end.replace(hour=23, minute=59, second=59)
+            return self.report_model.get_specific_product_report(product_id, start, end)
+        except Exception as e:
+            return {'success': False, 'message': str(e)}
+
+    def get_all_products_list(self):
+        """Obtener lista de productos para selectores"""
+        return self.report_model.get_all_products_list()
+

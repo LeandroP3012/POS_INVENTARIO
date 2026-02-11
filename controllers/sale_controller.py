@@ -55,6 +55,12 @@ class SaleController:
             # Calcular totales
             totals = self._calculate_totals(cart_items, payment_info.get('discount_amount', 0), include_tax)
             
+            # Redondear todos los valores a 2 decimales para evitar problemas de precisión
+            totals['subtotal'] = round(totals['subtotal'], 2)
+            totals['tax_amount'] = round(totals['tax_amount'], 2)
+            totals['discount_amount'] = round(totals['discount_amount'], 2)
+            totals['total'] = round(totals['total'], 2)
+            
             # Preparar datos de venta
             sale_data = {
                 'user_id': user_id,
@@ -66,8 +72,8 @@ class SaleController:
                 'discount_amount': totals['discount_amount'],
                 'total_amount': totals['total'],
                 'payment_method': payment_info.get('method', 'cash'),
-                'paid_amount': payment_info.get('paid_amount', totals['total']),
-                'change_amount': payment_info.get('change_amount', 0),
+                'paid_amount': round(payment_info.get('paid_amount', totals['total']), 2),
+                'change_amount': round(payment_info.get('change_amount', 0), 2),
                 'status': 'completed',
                 'notes': notes
             }

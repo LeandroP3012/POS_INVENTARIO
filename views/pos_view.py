@@ -1451,17 +1451,17 @@ class POSView:
             self.current_total = 0.0
             return
         
-        # Subtotal
-        subtotal = sum(item['price'] * item['quantity'] for item in self.cart_items)
+        # Subtotal - redondear a 2 decimales para evitar problemas de precisión
+        subtotal = round(sum(item['price'] * item['quantity'] for item in self.cart_items), 2)
         
         # Descuento
         try:
-            discount = float(self.discount_var.get())
+            discount = round(float(self.discount_var.get()), 2)
         except:
             discount = 0.0
         
         # Subtotal con descuento
-        subtotal_after_discount = subtotal - discount
+        subtotal_after_discount = round(subtotal - discount, 2)
         
         # Leer tax_rate de la configuración (si no existe, usar 18%)
         try:
@@ -1473,14 +1473,14 @@ class POSView:
         
         # IGV - solo si está activado
         if self.include_tax_var.get():
-            tax = subtotal_after_discount * tax_rate
-            total = subtotal_after_discount + tax
+            tax = round(subtotal_after_discount * tax_rate, 2)
+            total = round(subtotal_after_discount + tax, 2)
         else:
             tax = 0.0
-            total = subtotal_after_discount
+            total = round(subtotal_after_discount, 2)
         
-        # Guardar total actual como variable de instancia
-        self.current_total = total
+        # Guardar total actual como variable de instancia - REDONDEADO A 2 DECIMALES
+        self.current_total = round(total, 2)
         
         # Actualizar labels con colores
         self.subtotal_label.config(
@@ -1517,7 +1517,7 @@ class POSView:
         """Calcula el vuelto con formato mejorado"""
         try:
             # Usar la variable de instancia current_total en lugar de leer el label
-            total = getattr(self, 'current_total', 0.0)
+            total = round(getattr(self, 'current_total', 0.0), 2)
             
             # Debug completo de la lectura del valor
             print(f"\n💰 DEBUG calculate_change:")
@@ -1537,15 +1537,15 @@ class POSView:
                 )
                 return
             
-            paid = float(paid_text)
+            paid = round(float(paid_text), 2)
             print(f"   Convertido a float: {paid:.2f}")
             
-            change = paid - total
+            change = round(paid - total, 2)  # Redondear el vuelto también
             print(f"   Vuelto calculado: S/ {change:.2f}")
             
-            if change >= 0:
+            if change >= -0.009:  # Tolerancia para problemas de precisión
                 self.change_label.config(
-                    text=f"S/ {change:.2f}",
+                    text=f"S/ {max(0, change):.2f}",  # No mostrar vueltos negativos por redondeo
                     foreground='#27ae60',
                     font=('Segoe UI', 13, 'bold')
                 )
@@ -1608,22 +1608,24 @@ class POSView:
         payment_method = self.get_payment_value()  # Usar la función helper
         
         try:
-            # Usar la variable de instancia current_total
-            total = self.current_total
+            # Usar la variable de instancia current_total (ya redondeado a 2 decimales)
+            total = round(self.current_total, 2)
             
             # LEER DIRECTAMENTE DEL ENTRY WIDGET
             paid_text = self.paid_entry.get().strip()
             if not paid_text:
                 paid = 0.0
             else:
-                paid = float(paid_text)
+                paid = round(float(paid_text), 2)  # Redondear a 2 decimales
             
             print(f"🔍 DEBUG process_sale:")
             print(f"   Total a pagar: S/ {total:.2f}")
             print(f"   Monto pagado: S/ {paid:.2f}")
             print(f"   Método de pago: {payment_method}")
             
-            if payment_method == 'cash' and paid < total:
+            # Validar con tolerancia de 0.01 para evitar problemas de precisión
+            # Esto permite pequeñas diferencias de redondeo
+            if payment_method == 'cash' and paid < (total - 0.009):
                 print(f"   ❌ Monto insuficiente!")
                 messagebox.showerror(
                     "Error",
@@ -1648,17 +1650,20 @@ class POSView:
         # Preparar datos de pago
         discount = 0.0
         try:
-            discount = float(self.discount_var.get())
+            discount = round(float(self.discount_var.get()), 2)
         except:
             pass
         
         # Obtener el estado del IGV
         include_tax = self.include_tax_var.get()
         
+        # Calcular change redondeado para evitar problemas de precisión
+        change_amount = round(max(0, paid - total), 2) if payment_method == 'cash' else 0
+        
         payment_info = {
             'method': payment_method,
-            'paid_amount': paid if payment_method == 'cash' else total,
-            'change_amount': max(0, paid - total) if payment_method == 'cash' else 0,
+            'paid_amount': round(paid if payment_method == 'cash' else total, 2),
+            'change_amount': change_amount,
             'discount_amount': discount,
             'include_tax': include_tax  # ✅ Pasar el estado del IGV al controlador
         }

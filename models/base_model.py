@@ -44,37 +44,18 @@ class BaseModel:
             return None
 
         try:
-            # Preferir método seguro si está disponible
+            # ✅ Usar ensure_connection que maneja el pool automáticamente
             if hasattr(self.db, 'ensure_connection') and callable(self.db.ensure_connection):
-                connection = self.db.ensure_connection()
-            else:
-                connection = getattr(self.db, 'connection', None)
-
-                if not connection:
-                    if not self.db.connect():
-                        self.logger.error("No se pudo establecer conexión a la base de datos")
-                        return None
-                    connection = getattr(self.db, 'connection', None)
-
-                if connection and hasattr(connection, 'is_connected'):
-                    try:
-                        if not connection.is_connected():
-                            self.logger.warning("Conexión no activa, intentando reconectar...")
-                            if not self.db.connect():
-                                self.logger.error("No se pudo reconectar a la base de datos")
-                                return None
-                            connection = getattr(self.db, 'connection', None)
-                    except AttributeError:
-                        self.logger.warning("Conexión inválida (AttributeError), intentando reconectar...")
-                        if not self.db.connect():
-                            self.logger.error("No se pudo reconectar a la base de datos")
-                            return None
-                        connection = getattr(self.db, 'connection', None)
-
+                return self.db.ensure_connection()
+            
+            # Fallback para compatibilidad
+            connection = getattr(self.db, 'connection', None)
             if not connection:
-                self.logger.error("Conexión a la base de datos no disponible tras reintentos")
-                return None
-
+                if not self.db.connect():
+                    self.logger.error("No se pudo establecer conexión a la base de datos")
+                    return None
+                connection = getattr(self.db, 'connection', None)
+            
             return connection
 
         except Exception as exc:

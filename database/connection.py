@@ -66,11 +66,11 @@ class DatabaseConnection:
         """Establecer conexión con la base de datos"""
         try:
             if self._is_connection_alive():
-                self.logger.info("✅ Ya existe una conexión activa")
+                # ✅ Reducir logging: Solo log en DEBUG mode
                 return True
             
-            # DEBUG: Ver qué contiene self.config
-            self.logger.info(f"🔍 DEBUG - Config completa: {self.config}")
+            # DEBUG: Ver qué contiene self.config (solo en modo debug)
+            # self.logger.debug(f"🔍 DEBUG - Config completa: {self.config}")
             
             # Parámetros de conexión
             connection_params = {
@@ -83,14 +83,13 @@ class DatabaseConnection:
                 'collation': 'utf8mb4_unicode_ci',
                 'autocommit': True,
                 'pool_name': 'pos_pool',
-                'pool_size': int(self.config.get('max_connections', 5)),
-                'pool_reset_session': True
+                'pool_size': int(self.config.get('max_connections', 10)),
+                'pool_reset_session': True,
+                'connect_timeout': 10,  # ✅ Timeout de conexión
+                'use_pure': False  # ✅ Usar C extension para mejor performance
             }
             
-            # DEBUG: Ver si la contraseña se leyó
-            pwd_len = len(connection_params['password'])
-            self.logger.info(f"🔍 DEBUG - Contraseña leída: {'*' * pwd_len if pwd_len > 0 else '(VACÍA)'} ({pwd_len} caracteres)")
-            
+            # ✅ Solo log al reconectar, no en cada verificación
             self.logger.info(f"🔌 Conectando a MySQL: {connection_params['user']}@{connection_params['host']}:{connection_params['port']}/{connection_params['database']}")
             
             self.connection = mysql.connector.connect(**connection_params)
@@ -123,7 +122,7 @@ class DatabaseConnection:
         except Error as e:
             self.logger.error(f"❌ Error al cerrar conexión: {e}")
     
-    def execute_query(self, query: str, params: tuple = None, fetch: bool = True) -> Optional[List[Dict] | int]:
+    def execute_query(self, query: str, params: tuple = None, fetch: bool = True, timeout: int = 30) -> Optional[List[Dict] | int]:
         """
         Ejecutar consulta SQL
         
@@ -131,6 +130,7 @@ class DatabaseConnection:
             query: Consulta SQL
             params: Parámetros para la consulta
             fetch: Si es True, retorna resultados. Si es False, retorna filas afectadas.
+            timeout: Timeout en segundos para la consulta (default: 30)
         
         Returns:
             Lista de diccionarios (si fetch=True) o número de filas afectadas (si fetch=False)
@@ -145,6 +145,11 @@ class DatabaseConnection:
                     return None
 
                 cursor = connection.cursor(dictionary=True)
+                
+                # ✅ Establecer timeout para la query
+                if timeout:
+                    cursor.execute(f"SET SESSION max_execution_time={timeout * 1000}")
+                
                 cursor.execute(query, params)
 
                 if fetch:
@@ -284,13 +289,15 @@ class DatabaseConnection:
         if not self.connection:
             return False
         try:
+            # ✅ Verificación rápida sin overhead
             return bool(self.connection.is_connected())
         except AttributeError:
             self.logger.warning("⚠️  Conexión inválida detectada (AttributeError), restableciendo handle.")
             self.connection = None
             return False
         except Exception as exc:
-            self.logger.warning(f"⚠️  Error verificando conexión: {exc}")
+            # ✅ Solo log en caso de error real, no en verificaciones rutinarias
+            self.logger.debug(f"Conexión perdida: {exc}")
             try:
                 self.connection.close()
             except Exception:
@@ -300,7 +307,9 @@ class DatabaseConnection:
 
     def ensure_connection(self):
         """Obtener una conexión activa, reconectando si es necesario."""
+        # ✅ Usar pool de conexiones: si existe pool, reutilizar
         if not self._is_connection_alive():
+            self.logger.info("🔄 Reconectando a la base de datos...")
             if not self.connect():
                 return None
         return self.connection
