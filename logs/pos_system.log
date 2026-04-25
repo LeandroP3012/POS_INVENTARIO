@@ -36098,3 +36098,146 @@ KeyError: 0
 2026-02-11 13:00:47,068 - MainController - INFO - Aplicación cerrada correctamente
 2026-02-11 13:00:47,086 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
 2026-02-11 13:00:47,119 - DatabaseConnection - INFO - ✅ Conexión a MySQL cerrada
+2026-02-13 00:27:13,689 - POS_SYSTEM - INFO - Sistema POS iniciado
+2026-02-13 00:27:13,811 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2026-02-13 00:27:13,812 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2026-02-13 00:27:13,813 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2026-02-13 00:27:13,813 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2026-02-13 00:27:13,814 - MainController - INFO - Sistema POS iniciado
+2026-02-13 00:27:13,814 - MainController - INFO - Iniciando aplicación POS
+2026-02-13 00:27:13,814 - MainController - INFO - Mostrando pantalla de login
+2026-02-13 00:27:14,071 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2026-02-13 00:27:14,071 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2026-02-13 00:27:20,823 - AuthController - INFO - Intento de login para usuario: admin
+2026-02-13 00:27:20,930 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2026-02-13 00:27:21,852 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2026-02-13 00:27:21,868 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2026-02-13 00:27:21,869 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2026, 2, 13, 0, 27, 21, 860510), 'updated_at': datetime.datetime(2026, 2, 13, 0, 27, 21, 868705)}
+2026-02-13 00:27:21,878 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2026-02-13 00:27:21,880 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2026-02-13 00:27:23,903 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2026-02-13 00:27:23,904 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2026-02-13 00:27:26,929 - MainController - INFO - Login exitoso para admin: admin
+2026-02-13 00:28:37,563 - MainController - INFO - Cerrando aplicación POS
+2026-02-13 00:28:37,565 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 507
+2026-02-13 00:28:37,565 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2026, 2, 13, 0, 28, 37, 563760), 'logout_reason': 'cleanup'}
+2026-02-13 00:28:37,570 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2026-02-13 00:28:37,571 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2026-02-13 00:28:37,572 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2026-02-13 00:28:37,572 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2026-02-13 00:28:37,645 - AuthController - INFO - Logout exitoso para: admin
+2026-02-13 00:28:37,664 - AuthController - INFO - Controlador de autenticación limpiado
+2026-02-13 00:28:37,664 - MainController - INFO - Aplicación cerrada correctamente
+2026-02-13 00:28:37,693 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2026-02-13 00:28:37,735 - DatabaseConnection - INFO - ✅ Conexión a MySQL cerrada
+2026-02-13 00:28:58,805 - POS_SYSTEM - INFO - Sistema POS iniciado
+2026-02-13 00:28:58,848 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2026-02-13 00:28:58,848 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2026-02-13 00:28:58,849 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2026-02-13 00:28:58,849 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2026-02-13 00:28:58,850 - MainController - INFO - Sistema POS iniciado
+2026-02-13 00:28:58,850 - MainController - INFO - Iniciando aplicación POS
+2026-02-13 00:28:58,850 - MainController - INFO - Mostrando pantalla de login
+2026-02-13 00:28:58,978 - utils.AutoScaler - INFO - 🖥️  Resolución: 1366x768
+2026-02-13 00:28:58,978 - utils.AutoScaler - INFO - 📊 Factor de escala: 0.71
+2026-02-13 00:29:02,807 - AuthController - INFO - Intento de login para usuario: admin
+2026-02-13 00:29:02,913 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2026-02-13 00:29:03,637 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2026-02-13 00:29:03,649 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2026-02-13 00:29:03,649 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2026, 2, 13, 0, 29, 3, 643149), 'updated_at': datetime.datetime(2026, 2, 13, 0, 29, 3, 649256)}
+2026-02-13 00:29:03,654 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2026-02-13 00:29:03,657 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2026-02-13 00:29:05,673 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2026-02-13 00:29:05,674 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2026-02-13 00:29:08,700 - MainController - INFO - Login exitoso para admin: admin
+2026-02-13 00:29:31,536 - MainController - INFO - Cerrando aplicación POS
+2026-02-13 00:29:31,538 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 508
+2026-02-13 00:29:31,538 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2026, 2, 13, 0, 29, 31, 536568), 'logout_reason': 'cleanup'}
+2026-02-13 00:29:31,543 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2026-02-13 00:29:31,545 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2026-02-13 00:29:31,546 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2026-02-13 00:29:31,546 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2026-02-13 00:29:31,624 - AuthController - INFO - Logout exitoso para: admin
+2026-02-13 00:29:31,643 - AuthController - INFO - Controlador de autenticación limpiado
+2026-02-13 00:29:31,643 - MainController - INFO - Aplicación cerrada correctamente
+2026-02-13 00:29:31,670 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2026-02-13 00:29:31,700 - DatabaseConnection - INFO - ✅ Conexión a MySQL cerrada
+2026-02-13 00:33:17,831 - POS_SYSTEM - INFO - Sistema POS iniciado
+2026-02-13 00:33:17,872 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2026-02-13 00:33:17,873 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2026-02-13 00:33:17,874 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2026-02-13 00:33:17,874 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2026-02-13 00:33:17,874 - MainController - INFO - Sistema POS iniciado
+2026-02-13 00:33:17,874 - MainController - INFO - Iniciando aplicación POS
+2026-02-13 00:33:17,874 - MainController - INFO - Mostrando pantalla de login
+2026-02-13 00:33:18,000 - utils.AutoScaler - INFO - 🖥️  Resolución: 1366x768
+2026-02-13 00:33:18,000 - utils.AutoScaler - INFO - 📊 Factor de escala: 0.71
+2026-02-13 00:33:22,983 - AuthController - INFO - Intento de login para usuario: admin
+2026-02-13 00:33:23,091 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2026-02-13 00:33:23,902 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2026-02-13 00:33:23,912 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2026-02-13 00:33:23,912 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 1, 'updated_at': datetime.datetime(2026, 2, 13, 0, 33, 23, 912473)}
+2026-02-13 00:33:23,918 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2026-02-13 00:33:23,918 - model.UserModel - WARNING - Contraseña incorrecta para: admin
+2026-02-13 00:33:25,926 - AuthController - WARNING - Error de login: Credenciales incorrectas. Te quedan 2 intentos.
+2026-02-13 00:33:25,926 - MainController - WARNING - Fallo de login: Credenciales incorrectas. Te quedan 2 intentos.
+2026-02-13 00:33:27,227 - AuthController - INFO - Intento de login para usuario: admin
+2026-02-13 00:33:27,338 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2026-02-13 00:33:27,339 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2026, 2, 13, 0, 33, 27, 337702), 'updated_at': datetime.datetime(2026, 2, 13, 0, 33, 27, 338929)}
+2026-02-13 00:33:27,346 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2026-02-13 00:33:27,349 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2026-02-13 00:33:29,369 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2026-02-13 00:33:29,370 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2026-02-13 00:33:32,385 - MainController - INFO - Login exitoso para admin: admin
+2026-02-13 00:34:02,036 - MainController - INFO - Cerrando aplicación POS
+2026-02-13 00:34:02,038 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 509
+2026-02-13 00:34:02,039 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2026, 2, 13, 0, 34, 2, 37436), 'logout_reason': 'cleanup'}
+2026-02-13 00:34:02,044 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2026-02-13 00:34:02,047 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2026-02-13 00:34:02,047 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2026-02-13 00:34:02,047 - MainController - INFO - Logout de usuario admin, razón: cleanup
+2026-02-13 00:34:02,127 - AuthController - INFO - Logout exitoso para: admin
+2026-02-13 00:34:02,145 - AuthController - INFO - Controlador de autenticación limpiado
+2026-02-13 00:34:02,146 - MainController - INFO - Aplicación cerrada correctamente
+2026-02-13 00:34:02,176 - AuthController - ERROR - Error limpiando controlador: 'NoneType' object has no attribute 'get_current_session'
+2026-02-13 00:34:02,209 - DatabaseConnection - INFO - ✅ Conexión a MySQL cerrada
+2026-04-25 18:10:05,556 - POS_SYSTEM - INFO - Sistema POS iniciado
+2026-04-25 18:10:05,674 - DatabaseConnection - INFO - 🔍 DEBUG - Intentando leer: C:\Users\USER\Desktop\POS\config\database.json
+2026-04-25 18:10:05,674 - DatabaseConnection - INFO - 🔍 DEBUG - ¿Archivo existe?: True
+2026-04-25 18:10:05,676 - DatabaseConnection - INFO - ✅ Configuración cargada desde: C:\Users\USER\Desktop\POS\config\database.json
+2026-04-25 18:10:05,677 - DatabaseConnection - INFO - 🔍 DEBUG - Contenido leído: {'max_connections': '30', 'timeout': '30', 'host': 'localhost', 'port': '3306', 'name': 'pos_system', 'user': 'root', 'password': 'D3v3l0p3r@@$'}
+2026-04-25 18:10:05,678 - MainController - INFO - Sistema POS iniciado
+2026-04-25 18:10:05,678 - MainController - INFO - Iniciando aplicación POS
+2026-04-25 18:10:05,678 - MainController - INFO - Mostrando pantalla de login
+2026-04-25 18:10:05,960 - utils.AutoScaler - INFO - 🖥️  Resolución: 3440x1440
+2026-04-25 18:10:05,960 - utils.AutoScaler - INFO - 📊 Factor de escala: 1.33
+2026-04-25 18:10:13,227 - AuthController - INFO - Intento de login para usuario: admin
+2026-04-25 18:10:13,332 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2026-04-25 18:10:14,018 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2026-04-25 18:10:14,126 - model.UserModel - INFO - 🔧 BaseModel.update - Table: users, ID: 1
+2026-04-25 18:10:14,127 - model.UserModel - INFO - 🔧 BaseModel.update - Data: {'failed_attempts': 0, 'locked_until': None, 'last_login': datetime.datetime(2026, 4, 25, 18, 10, 14, 109890), 'updated_at': datetime.datetime(2026, 4, 25, 18, 10, 14, 126833)}
+2026-04-25 18:10:14,144 - model.UserModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2026-04-25 18:10:14,154 - model.RoleModel - WARNING - Permisos desconocidos ignorados en rol Administrador: inventory.controlled
+2026-04-25 18:10:14,154 - model.UserModel - INFO - Usuario autenticado exitosamente: admin
+2026-04-25 18:10:16,285 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2026-04-25 18:10:16,285 - model.AuthModel - INFO - Sesión creada para usuario: admin
+2026-04-25 18:10:19,324 - MainController - INFO - Login exitoso para admin: admin
+2026-04-25 18:10:55,824 - DatabaseConnection - WARNING - ⚠️  Conexión inválida detectada (AttributeError), restableciendo handle.
+2026-04-25 18:10:55,825 - DatabaseConnection - INFO - 🔄 Reconectando a la base de datos...
+2026-04-25 18:10:55,825 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2026-04-25 18:10:55,826 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2026-04-25 18:10:57,519 - controller.ProductController - INFO - Obteniendo productos (incluir inactivos: False)
+2026-04-25 18:10:57,520 - DatabaseConnection - WARNING - ⚠️  Conexión inválida detectada (AttributeError), restableciendo handle.
+2026-04-25 18:10:57,520 - DatabaseConnection - INFO - 🔄 Reconectando a la base de datos...
+2026-04-25 18:10:57,520 - DatabaseConnection - INFO - 🔌 Conectando a MySQL: root@localhost:3306/pos_system
+2026-04-25 18:10:57,521 - DatabaseConnection - INFO - ✅ Conectado a MySQL Server version 8.0.41
+2026-04-25 18:10:57,540 - model.ProductModel - INFO - Se obtuvieron 28 productos
+2026-04-25 18:11:03,216 - model.AuthModel - INFO - 🔧 BaseModel.update - Table: user_sessions, ID: 525
+2026-04-25 18:11:03,217 - model.AuthModel - INFO - 🔧 BaseModel.update - Data: {'is_active': False, 'logout_time': datetime.datetime(2026, 4, 25, 18, 11, 3, 215043), 'logout_reason': 'manual'}
+2026-04-25 18:11:03,228 - model.AuthModel - INFO - 🔧 BaseModel.update - Rows affected: 1
+2026-04-25 18:11:03,230 - model.AuthModel - WARNING - No se pudo registrar actividad: No module named 'models.activity_log_model'
+2026-04-25 18:11:03,230 - model.AuthModel - INFO - Sesión cerrada para usuario: admin
+2026-04-25 18:11:03,231 - MainController - INFO - Logout de usuario admin, razón: manual
+2026-04-25 18:11:03,361 - MainController - INFO - Mostrando pantalla de login
+2026-04-25 18:11:07,815 - AuthController - INFO - Logout exitoso para: admin
+2026-04-25 18:11:07,816 - AuthController - ERROR - Error completando login: 'NoneType' object has no attribute 'get'

@@ -11,6 +11,13 @@ from datetime import datetime, timedelta
 from tkcalendar import DateEntry
 import os
 import threading
+from collections import defaultdict
+
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 
 class ReportsView:
@@ -41,9 +48,37 @@ class ReportsView:
         left_panel.pack_propagate(False)
         self.create_report_options(left_panel)
         
-        # Panel derecho: Visualización
-        self.right_panel = tk.Frame(content, bg='white', relief='solid', borderwidth=1)
-        self.right_panel.pack(side='left', fill='both', expand=True, padx=(5, 0))
+        # Panel derecho: Visualización con scroll
+        right_outer = tk.Frame(content, bg='white', relief='solid', borderwidth=1)
+        right_outer.pack(side='left', fill='both', expand=True, padx=(5, 0))
+        
+        self._right_canvas = tk.Canvas(right_outer, bg='white', highlightthickness=0)
+        self._right_scrollbar = tk.Scrollbar(right_outer, orient='vertical', command=self._right_canvas.yview)
+        self._right_scrollbar.pack(side='right', fill='y')
+        self._right_canvas.pack(side='left', fill='both', expand=True)
+        self._right_canvas.configure(yscrollcommand=self._right_scrollbar.set)
+        
+        self.right_panel = tk.Frame(self._right_canvas, bg='white')
+        self._right_canvas_window = self._right_canvas.create_window(
+            (0, 0), window=self.right_panel, anchor='nw'
+        )
+        
+        # Ajustar scroll region y ancho del frame interno
+        def _configure_scroll(event=None):
+            self._right_canvas.configure(scrollregion=self._right_canvas.bbox('all'))
+        
+        def _configure_width(event):
+            self._right_canvas.itemconfig(self._right_canvas_window, width=event.width)
+        
+        self.right_panel.bind('<Configure>', _configure_scroll)
+        self._right_canvas.bind('<Configure>', _configure_width)
+        
+        # Scroll con rueda del mouse
+        def _on_mousewheel(event):
+            self._right_canvas.yview_scroll(int(-1 * (event.delta / 120)), 'units')
+        
+        self._right_canvas.bind_all('<MouseWheel>', _on_mousewheel)
+        
         self.create_welcome_screen()
     
     def create_header(self):
@@ -139,6 +174,8 @@ class ReportsView:
     def _clear_right_panel(self):
         for widget in self.right_panel.winfo_children():
             widget.destroy()
+        # Resetear scroll al inicio
+        self._right_canvas.yview_moveto(0)
 
     def _create_report_header(self, title, icon, color):
         header = tk.Frame(self.right_panel, bg=color, height=60)
@@ -190,6 +227,37 @@ class ReportsView:
             font=('Segoe UI', 10, 'bold'), bg='#27ae60', fg='white',
             relief='flat', padx=15, pady=8, cursor='hand2'
         ).pack(pady=10)
+
+    def _embed_chart(self, parent, figsize=(6, 3)):
+        """Crear un gráfico matplotlib embebido en un frame Tkinter.
+        Retorna (fig, ax, canvas) para que el llamador dibuje su gráfico."""
+        chart_frame = tk.Frame(parent, bg='white', relief='groove', borderwidth=1)
+        chart_frame.pack(fill='x', pady=8, padx=5)
+
+        fig = Figure(figsize=figsize, dpi=90, facecolor='white')
+        ax = fig.add_subplot(111)
+        ax.set_facecolor('#fafafa')
+
+        canvas = FigureCanvasTkAgg(fig, master=chart_frame)
+        canvas.get_tk_widget().pack(fill='x', expand=True)
+
+        return fig, ax, canvas
+
+    def _embed_chart_dual(self, parent, figsize=(7, 3)):
+        """Crear un gráfico con dos subplots lado a lado."""
+        chart_frame = tk.Frame(parent, bg='white', relief='groove', borderwidth=1)
+        chart_frame.pack(fill='x', pady=8, padx=5)
+
+        fig = Figure(figsize=figsize, dpi=90, facecolor='white')
+        ax1 = fig.add_subplot(121)
+        ax2 = fig.add_subplot(122)
+        ax1.set_facecolor('#fafafa')
+        ax2.set_facecolor('#fafafa')
+
+        canvas = FigureCanvasTkAgg(fig, master=chart_frame)
+        canvas.get_tk_widget().pack(fill='x', expand=True)
+
+        return fig, ax1, ax2, canvas
 
     def _export_to_excel(self, data_rows, columns, sheet_name, title):
         """Exportar datos a Excel usando openpyxl"""
@@ -317,6 +385,28 @@ class ReportsView:
             for title, value, icon, color in cards:
                 self.create_summary_card(cards_frame, title, value, icon, color)
             
+            # === GRÁFICO: Distribución por Método de Pago ===
+            try:
+                pay_counts = defaultdict(float)
+                for sale in data['sales']:
+                    method = sale['payment_method'].upper()
+                    pay_counts[method] += float(sale['total_amount'])
+                if pay_counts:
+                    fig, ax, canvas = self._embed_chart(self.sales_results, figsize=(5, 2.5))
+                    labels = list(pay_counts.keys())
+                    sizes = list(pay_counts.values())
+                    colors_pie = ['#3498db', '#27ae60', '#f39c12', '#e74c3c', '#9b59b6', '#1abc9c']
+                    wedges, texts, autotexts = ax.pie(
+                        sizes, labels=labels, autopct='%1.1f%%',
+                        colors=colors_pie[:len(labels)], startangle=90,
+                        textprops={'fontsize': 8}
+                    )
+                    ax.set_title('Distribución por Método de Pago', fontsize=10, fontweight='bold', pad=10)
+                    fig.tight_layout()
+                    canvas.draw()
+            except Exception:
+                pass
+            
             columns = ('Número', 'Fecha', 'Cajero', 'Cliente', 'Total', 'Método Pago')
             tree = self._create_treeview(self.sales_results, columns)
             
@@ -423,6 +513,30 @@ class ReportsView:
             for title, value, icon, color in cards:
                 self.create_summary_card(cards_frame, title, value, icon, color)
             
+            # === GRÁFICO: Top 10 Productos con Movimiento ===
+            try:
+                prods_mov = [p for p in data['products'] if int(p['total_movimientos'] or 0) > 0]
+                prods_mov.sort(key=lambda x: int(x['total_movimientos'] or 0), reverse=True)
+                top10 = prods_mov[:10]
+                if top10:
+                    fig, ax, canvas = self._embed_chart(self.flow_results, figsize=(6, 3))
+                    names = [p['name'][:18] for p in reversed(top10)]
+                    entradas = [int(p['total_entradas']) for p in reversed(top10)]
+                    salidas = [int(p['total_salidas']) for p in reversed(top10)]
+                    y_pos = range(len(names))
+                    ax.barh(y_pos, entradas, height=0.4, label='Entradas', color='#27ae60', align='center')
+                    ax.barh([y + 0.4 for y in y_pos], salidas, height=0.4, label='Salidas', color='#e74c3c', align='center')
+                    ax.set_yticks([y + 0.2 for y in y_pos])
+                    ax.set_yticklabels(names, fontsize=7)
+                    ax.set_xlabel('Unidades', fontsize=8)
+                    ax.set_title('Top 10 Productos con Mayor Movimiento', fontsize=10, fontweight='bold')
+                    ax.legend(fontsize=7, loc='lower right')
+                    ax.tick_params(axis='x', labelsize=7)
+                    fig.tight_layout()
+                    canvas.draw()
+            except Exception:
+                pass
+            
             columns = ('SKU', 'Producto', 'Categoría', 'Entradas', 'Salidas', 'Stock Actual')
             tree = self._create_treeview(self.flow_results, columns)
             
@@ -515,6 +629,36 @@ class ReportsView:
             
             for title, value, icon, color in cards:
                 self.create_summary_card(cards_frame, title, value, icon, color)
+            
+            # === GRÁFICO: Ventas Mensuales (Barras + Línea) ===
+            try:
+                meses = [m['nombre'][:3] for m in data['months']]
+                montos = [m['monto_total'] for m in data['months']]
+                tickets = [m['ticket_promedio'] for m in data['months']]
+                if any(m > 0 for m in montos):
+                    fig, ax1, canvas = self._embed_chart(self.monthly_results, figsize=(7, 3))
+                    x = range(len(meses))
+                    bars = ax1.bar(x, montos, color='#3498db', alpha=0.8, label='Monto Total (S/)')
+                    ax1.set_xlabel('Mes', fontsize=8)
+                    ax1.set_ylabel('Monto (S/)', fontsize=8, color='#3498db')
+                    ax1.set_xticks(list(x))
+                    ax1.set_xticklabels(meses, fontsize=7)
+                    ax1.tick_params(axis='y', labelsize=7, labelcolor='#3498db')
+                    # Línea de ticket promedio en segundo eje
+                    ax2 = ax1.twinx()
+                    ax2.plot(list(x), tickets, color='#e74c3c', marker='o', linewidth=2,
+                             markersize=4, label='Ticket Prom. (S/)')
+                    ax2.set_ylabel('Ticket Promedio (S/)', fontsize=8, color='#e74c3c')
+                    ax2.tick_params(axis='y', labelsize=7, labelcolor='#e74c3c')
+                    ax1.set_title(f'Ventas Mensuales - {data["year"]}', fontsize=10, fontweight='bold')
+                    # Leyenda combinada
+                    lines1, labels1 = ax1.get_legend_handles_labels()
+                    lines2, labels2 = ax2.get_legend_handles_labels()
+                    ax1.legend(lines1 + lines2, labels1 + labels2, fontsize=7, loc='upper left')
+                    fig.tight_layout()
+                    canvas.draw()
+            except Exception:
+                pass
             
             columns = ('Mes', 'Ventas', 'Monto Total', 'Ticket Prom.', 'Productos', 'Descuentos')
             tree = self._create_treeview(self.monthly_results, columns)
@@ -615,6 +759,29 @@ class ReportsView:
                      f"🔢 {summary['total_unidades']} unidades en stock",
                 font=('Segoe UI', 11), bg='white', fg='#2c3e50'
             ).pack(pady=5)
+            
+            # === GRÁFICO: Inversión por Categoría (Pie) ===
+            try:
+                cats_with_data = [c for c in data['categories'] if float(c['inversion_costo'] or 0) > 0]
+                if cats_with_data:
+                    fig, ax1, ax2, canvas = self._embed_chart_dual(self.inventory_results, figsize=(7, 3))
+                    cat_names = [c['category_name'][:15] for c in cats_with_data]
+                    cat_inv = [float(c['inversion_costo'] or 0) for c in cats_with_data]
+                    cat_venta = [float(c['valor_venta'] or 0) for c in cats_with_data]
+                    colors_pie = ['#3498db', '#27ae60', '#f39c12', '#e74c3c', '#9b59b6',
+                                  '#1abc9c', '#e67e22', '#2c3e50', '#d35400', '#c0392b']
+                    ax1.pie(cat_inv, labels=cat_names, autopct='%1.1f%%',
+                            colors=colors_pie[:len(cat_names)], startangle=90,
+                            textprops={'fontsize': 7})
+                    ax1.set_title('Inversión (Costo)', fontsize=9, fontweight='bold')
+                    ax2.pie(cat_venta, labels=cat_names, autopct='%1.1f%%',
+                            colors=colors_pie[:len(cat_names)], startangle=90,
+                            textprops={'fontsize': 7})
+                    ax2.set_title('Valor de Venta', fontsize=9, fontweight='bold')
+                    fig.tight_layout()
+                    canvas.draw()
+            except Exception:
+                pass
             
             # Tabla por categoría
             tk.Label(self.inventory_results, text="Inversión por Categoría",
@@ -790,6 +957,32 @@ class ReportsView:
                      f"Costo Total: S/ {summary['costo_total_vendido']:.2f}",
                 font=('Segoe UI', 10), bg='white', fg='#7f8c8d'
             ).pack(pady=3)
+            
+            # === GRÁFICO: Unidades vendidas por fecha ===
+            try:
+                ventas_por_fecha = defaultdict(int)
+                for s in data['sales']:
+                    sd = s['sale_date']
+                    if isinstance(sd, datetime):
+                        key = sd.strftime('%d/%m')
+                    else:
+                        key = str(sd)[:10]
+                    ventas_por_fecha[key] += int(s['quantity'])
+                if ventas_por_fecha:
+                    fig, ax, canvas = self._embed_chart(self.specific_results, figsize=(6, 2.5))
+                    fechas = list(ventas_por_fecha.keys())
+                    cantidades = list(ventas_por_fecha.values())
+                    ax.bar(range(len(fechas)), cantidades, color='#8e44ad', alpha=0.85)
+                    ax.set_xticks(range(len(fechas)))
+                    ax.set_xticklabels(fechas, fontsize=7, rotation=45, ha='right')
+                    ax.set_ylabel('Unidades', fontsize=8)
+                    ax.set_title(f'Unidades Vendidas por Fecha - {product["name"]}',
+                                 fontsize=9, fontweight='bold')
+                    ax.tick_params(axis='y', labelsize=7)
+                    fig.tight_layout()
+                    canvas.draw()
+            except Exception:
+                pass
             
             # Tabla de ventas
             tk.Label(self.specific_results, text="Historial de Ventas",
