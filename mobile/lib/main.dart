@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import 'core/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/product_provider.dart';
 import 'providers/sale_provider.dart';
@@ -9,7 +10,10 @@ import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('es', null);
+  await initializeDateFormatting('es_PE', null);
   runApp(const PosApp());
 }
 
@@ -27,15 +31,7 @@ class PosApp extends StatelessWidget {
       child: MaterialApp(
         title: 'T-Gestiona POS',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2c3e50),
-            primary: const Color(0xFF2c3e50),
-            secondary: const Color(0xFF3498db),
-          ),
-          textTheme: GoogleFonts.interTextTheme(),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.theme,
         initialRoute: '/',
         routes: {
           '/': (_) => const SplashScreen(),

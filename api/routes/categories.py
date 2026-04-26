@@ -31,7 +31,7 @@ def list_categories(
     include_inactive: bool = False,
     current_user: Dict = Depends(get_current_user),
 ):
-    return category_ctrl.get_all_categories(include_inactive=include_inactive)
+    return category_ctrl.get_all_categories(current_user, include_inactive=include_inactive)
 
 
 @router.get("/{category_id}")
@@ -53,8 +53,7 @@ def create_category(category: CategoryCreate, current_user: Dict = Depends(get_c
 @router.put("/{category_id}")
 def update_category(category_id: int, category: CategoryUpdate, current_user: Dict = Depends(get_current_user)):
     data = {k: v for k, v in category.dict().items() if v is not None}
-    data["id"] = category_id
-    success, message = category_ctrl.update_category(data, current_user)
+    success, message = category_ctrl.update_category(category_id, data, current_user)
     if not success:
         raise HTTPException(status_code=400, detail=message)
     return {"success": True, "message": message}

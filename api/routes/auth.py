@@ -3,6 +3,7 @@ Ruta: /api/auth
 Autenticación de usuarios - login y refresh de token
 """
 
+import json
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
@@ -57,6 +58,19 @@ def login(request: LoginRequest):
         "user_type": user.get("user_type", "user"),
         "role_id": user.get("role_id"),
     }
+
+    # Incluir custom_permissions en el token para que el PermissionService
+    # pueda verificar permisos sin consultar la BD en cada request
+    raw_perms = user.get("custom_permissions") or user.get("permissions")
+    if raw_perms:
+        if isinstance(raw_perms, str):
+            try:
+                raw_perms = json.loads(raw_perms)
+            except (json.JSONDecodeError, ValueError):
+                raw_perms = None
+        if raw_perms:
+            token_data["permissions"] = raw_perms
+
     token = create_access_token(token_data)
 
     return LoginResponse(

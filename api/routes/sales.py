@@ -69,14 +69,14 @@ def list_sales(
     current_user: Dict = Depends(get_current_user),
 ):
     """Listar ventas recientes"""
-    result = sale_ctrl.get_recent_sales(limit=limit)
+    result = sale_ctrl.get_sales_list(filters={'limit': limit})
     return result
 
 
 @router.get("/{sale_id}")
 def get_sale(sale_id: int, current_user: Dict = Depends(get_current_user)):
     """Obtener detalle de una venta"""
-    result = sale_ctrl.get_sale_by_id(sale_id)
+    result = sale_ctrl.get_sale_detail(sale_id)
     if not result:
         raise HTTPException(status_code=404, detail="Venta no encontrada")
     return result
@@ -85,7 +85,7 @@ def get_sale(sale_id: int, current_user: Dict = Depends(get_current_user)):
 @router.post("/{sale_id}/cancel")
 def cancel_sale(sale_id: int, current_user: Dict = Depends(get_current_user)):
     """Cancelar una venta"""
-    result = sale_ctrl.cancel_sale(sale_id, int(current_user.get("sub", 0)))
+    result = sale_ctrl.cancel_sale(sale_id, int(current_user.get("sub", 0)), reason="Cancelado desde app móvil")
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("message", "Error al cancelar"))
     return result

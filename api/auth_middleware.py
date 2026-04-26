@@ -44,4 +44,12 @@ def decode_token(token: str) -> Dict[str, Any]:
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict[str, Any]:
     """Dependencia para obtener el usuario actual desde el token"""
-    return decode_token(credentials.credentials)
+    payload = decode_token(credentials.credentials)
+    # El token almacena el ID en 'sub' (estándar JWT), pero los controladores
+    # y el PermissionService buscan 'id' como entero. Normalizamos aquí.
+    if 'sub' in payload and 'id' not in payload:
+        try:
+            payload['id'] = int(payload['sub'])
+        except (ValueError, TypeError):
+            pass
+    return payload

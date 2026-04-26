@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../core/app_theme.dart';
 import '../models/product.dart';
 import '../providers/product_provider.dart';
 
@@ -45,27 +47,16 @@ class _ProductsScreenState extends State<ProductsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      backgroundColor: Colors.transparent,
       builder: (_) => _AddProductSheet(
         onSave: (data) async {
           final ok = await context.read<ProductProvider>().createProduct(data);
           if (!mounted) return;
           if (ok) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Producto creado correctamente'),
-                backgroundColor: Colors.green,
-              ),
-            );
+            showSuccess(context, 'Producto creado correctamente');
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(context.read<ProductProvider>().error ??
-                    'Error al crear el producto'),
-                backgroundColor: Colors.red,
-              ),
-            );
+            showError(context,
+                context.read<ProductProvider>().error ?? 'Error al crear el producto');
           }
         },
       ),
@@ -75,10 +66,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
+          // Barra de búsqueda y acción
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             child: Row(
               children: [
                 Expanded(
@@ -86,32 +80,55 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: 'Buscar producto o SKU...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      contentPadding:
-                          const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                      prefixIcon: const Icon(Icons.search_rounded, size: 20),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear),
+                              icon: const Icon(Icons.close_rounded, size: 18),
                               onPressed: () {
                                 _searchController.clear();
                                 setState(() => _searchQuery = '');
                               })
                           : null,
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 0, horizontal: 16),
+                      filled: true,
+                      fillColor: AppColors.background,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.divider),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppColors.divider),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide:
+                            const BorderSide(color: AppColors.accent, width: 2),
+                      ),
                     ),
                     onChanged: (v) => setState(() => _searchQuery = v),
                   ),
                 ),
-                const SizedBox(width: 8),
-                FilledButton.icon(
-                  icon: const Icon(Icons.add),
-                  label: const Text('Nuevo'),
+                const SizedBox(width: 10),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: Text('Nuevo',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
                   onPressed: _showAddProduct,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 13),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
               ],
             ),
           ),
+          const Divider(height: 1),
           Expanded(child: _productList()),
         ],
       ),
@@ -121,32 +138,93 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Widget _productList() {
     return Consumer<ProductProvider>(builder: (_, pp, __) {
       if (pp.loading) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      if (pp.error != null) {
-        return Center(
+        return const Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(pp.error!, style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                  onPressed: pp.loadProducts, child: const Text('Reintentar')),
+              CircularProgressIndicator(color: AppColors.accent),
+              SizedBox(height: 12),
+              Text('Cargando productos...',
+                  style: TextStyle(color: AppColors.textSecondary)),
             ],
+          ),
+        );
+      }
+      if (pp.error != null) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.danger.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.wifi_off_rounded,
+                      color: AppColors.danger, size: 26),
+                ),
+                const SizedBox(height: 16),
+                Text(pp.error!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: AppColors.textSecondary)),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('Reintentar'),
+                  onPressed: pp.loadProducts,
+                ),
+              ],
+            ),
           ),
         );
       }
       final products = _filtered(pp.products);
       if (products.isEmpty) {
-        return const Center(child: Text('No hay productos registrados'));
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.inventory_2_outlined,
+                  size: 56,
+                  color: AppColors.textMuted.withValues(alpha: 0.4)),
+              const SizedBox(height: 12),
+              Text(
+                _searchQuery.isEmpty
+                    ? 'No hay productos registrados'
+                    : 'Sin resultados para "$_searchQuery"',
+                style: GoogleFonts.inter(
+                  color: AppColors.textSecondary,
+                  fontSize: 15,
+                ),
+              ),
+              if (_searchQuery.isEmpty) ...[
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.add_rounded, size: 16),
+                  label: const Text('Agregar producto'),
+                  onPressed: _showAddProduct,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
       }
       return RefreshIndicator(
         onRefresh: pp.loadProducts,
+        color: AppColors.accent,
         child: ListView.separated(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 80),
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 80),
           itemCount: products.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (_, i) => _ProductTile(
+          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          itemBuilder: (_, i) => _ProductCard(
             product: products[i],
             currency: _currency,
           ),
@@ -156,58 +234,122 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 }
 
-// ── Tile de producto ──────────────────────────────────────────────────────────
+// ── Tarjeta de producto ───────────────────────────────────────────────────────
 
-class _ProductTile extends StatelessWidget {
+class _ProductCard extends StatelessWidget {
   final Product product;
   final NumberFormat currency;
 
-  const _ProductTile({required this.product, required this.currency});
+  const _ProductCard({required this.product, required this.currency});
 
   @override
   Widget build(BuildContext context) {
-    final isLow = product.isLowStock && product.stockQuantity > 0;
-    final isOut = product.stockQuantity <= 0;
+    final isOut  = product.stockQuantity <= 0;
+    final isLow  = product.isLowStock && !isOut;
+    final status = isOut
+        ? (AppColors.danger, 'Sin stock', Icons.remove_circle_outline)
+        : isLow
+            ? (AppColors.warning, 'Stock bajo', Icons.warning_amber_rounded)
+            : (AppColors.success, 'Disponible', Icons.check_circle_outline);
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      leading: CircleAvatar(
-        backgroundColor: isOut
-            ? Colors.red.shade100
-            : isLow
-                ? Colors.orange.shade100
-                : Colors.green.shade100,
-        child: Icon(
-          Icons.inventory_2_outlined,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
           color: isOut
-              ? Colors.red
+              ? AppColors.danger.withValues(alpha: 0.2)
               : isLow
-                  ? Colors.orange
-                  : Colors.green,
-          size: 20,
+                  ? AppColors.warning.withValues(alpha: 0.2)
+                  : AppColors.cardBorder,
         ),
       ),
-      title: Text(product.name,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-      subtitle: Text('SKU: ${product.sku}  •  Stock: ${product.stockQuantity.toStringAsFixed(0)}',
-          style: const TextStyle(fontSize: 12)),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      padding: const EdgeInsets.all(14),
+      child: Row(
         children: [
-          Text(currency.format(product.price),
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 14)),
-          if (isOut)
-            const Text('Sin stock',
-                style: TextStyle(color: Colors.red, fontSize: 10))
-          else if (isLow)
-            const Text('Stock bajo',
-                style: TextStyle(color: Colors.orange, fontSize: 10))
-          else
-            Text(product.status,
-                style:
-                    const TextStyle(color: Colors.green, fontSize: 10)),
+          // Ícono de categoría
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: status.$1.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Center(
+              child: Text(
+                product.name.isNotEmpty ? product.name[0].toUpperCase() : '?',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: status.$1,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Info principal
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.name,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'SKU: ${product.sku}',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Stock badge
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                currency.format(product.price),
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: status.$1.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(status.$3, size: 11, color: status.$1),
+                    const SizedBox(width: 3),
+                    Text(
+                      isOut
+                          ? 'Sin stock'
+                          : '${product.stockQuantity.toStringAsFixed(0)} uds',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: status.$1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -266,8 +408,12 @@ class _AddProductSheetState extends State<_AddProductSheet> {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, bottom + 16),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 0, 20, bottom + 20),
       child: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -275,53 +421,90 @@ class _AddProductSheetState extends State<_AddProductSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Text('Nuevo producto',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context)),
-                ],
+              // Handle bar
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.divider,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
+              // Header
+              Row(children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.add_box_outlined,
+                      color: AppColors.accent, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Text('Nuevo producto',
+                    style: GoogleFonts.inter(
+                        fontSize: 17, fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary)),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () => Navigator.pop(context),
+                  color: AppColors.textSecondary,
+                ),
+              ]),
+              const SizedBox(height: 16),
+              _field(_nameCtrl, 'Nombre del producto',
+                  hint: 'Ej. Coca Cola 500ml', required: true),
               const SizedBox(height: 12),
-              _field(_nameCtrl, 'Nombre del producto', required: true),
-              const SizedBox(height: 10),
-              _field(_skuCtrl, 'SKU / Código', required: true),
-              const SizedBox(height: 10),
+              _field(_skuCtrl, 'SKU / Código',
+                  hint: 'Ej. CC-500', required: true),
+              const SizedBox(height: 12),
               Row(children: [
                 Expanded(
                     child: _field(_priceCtrl, 'Precio de venta',
-                        required: true, isNumber: true, prefix: 'S/ ')),
-                const SizedBox(width: 10),
-                Expanded(
-                    child: _field(_costCtrl, 'Costo',
+                        hint: '0.00', required: true,
                         isNumber: true, prefix: 'S/ ')),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: _field(_costCtrl, 'Costo (opcional)',
+                        hint: '0.00', isNumber: true, prefix: 'S/ ')),
               ]),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(children: [
                 Expanded(
                     child: _field(_stockCtrl, 'Stock inicial',
-                        isNumber: true)),
-                const SizedBox(width: 10),
+                        hint: '0', isNumber: true)),
+                const SizedBox(width: 12),
                 Expanded(
                     child: _field(_minStockCtrl, 'Stock mínimo',
-                        isNumber: true)),
+                        hint: '5', isNumber: true)),
               ]),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton(
-                  onPressed: _saving ? null : _save,
-                  child: _saving
+                height: 48,
+                child: ElevatedButton.icon(
+                  icon: _saving
                       ? const SizedBox(
-                          height: 18,
-                          width: 18,
+                          height: 16,
+                          width: 16,
                           child: CircularProgressIndicator(
                               strokeWidth: 2, color: Colors.white))
-                      : const Text('Guardar producto'),
+                      : const Icon(Icons.save_outlined, size: 18),
+                  label: Text(_saving ? 'Guardando...' : 'Guardar producto',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                  onPressed: _saving ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
               ),
             ],
@@ -334,32 +517,50 @@ class _AddProductSheetState extends State<_AddProductSheet> {
   Widget _field(
     TextEditingController ctrl,
     String label, {
+    String? hint,
     bool required = false,
     bool isNumber = false,
     String? prefix,
   }) {
-    return TextFormField(
-      controller: ctrl,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixText: prefix,
-        border: const OutlineInputBorder(),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      ),
-      keyboardType: isNumber
-          ? const TextInputType.numberWithOptions(decimal: true)
-          : TextInputType.text,
-      validator: required
-          ? (v) => (v == null || v.trim().isEmpty) ? 'Campo requerido' : null
-          : isNumber
-              ? (v) {
-                  if (v != null && v.isNotEmpty) {
-                    if (double.tryParse(v) == null) return 'Número inválido';
-                  }
-                  return null;
-                }
-              : null,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: ctrl,
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixText: prefix,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+          ),
+          keyboardType: isNumber
+              ? const TextInputType.numberWithOptions(decimal: true)
+              : TextInputType.text,
+          validator: required
+              ? (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Campo requerido' : null
+              : isNumber
+                  ? (v) {
+                      if (v != null && v.isNotEmpty) {
+                        if (double.tryParse(v) == null) {
+                          return 'Número inválido';
+                        }
+                      }
+                      return null;
+                    }
+                  : null,
+        ),
+      ],
     );
   }
 }

@@ -48,7 +48,7 @@ class ProductUpdate(BaseModel):
 @router.get("/")
 def list_products(current_user: Dict = Depends(get_current_user)):
     """Listar todos los productos"""
-    result = product_ctrl.get_all_products()
+    result = product_ctrl.get_all_products(current_user)
     if isinstance(result, dict) and not result.get("success", True):
         raise HTTPException(status_code=500, detail=result.get("message", "Error"))
     return result
@@ -57,7 +57,7 @@ def list_products(current_user: Dict = Depends(get_current_user)):
 @router.get("/{product_id}")
 def get_product(product_id: int, current_user: Dict = Depends(get_current_user)):
     """Obtener un producto por ID"""
-    result = product_ctrl.get_product_by_id(product_id)
+    result = product_ctrl.get_product_by_id(product_id, current_user)
     if not result:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     return result
@@ -76,8 +76,7 @@ def create_product(product: ProductCreate, current_user: Dict = Depends(get_curr
 def update_product(product_id: int, product: ProductUpdate, current_user: Dict = Depends(get_current_user)):
     """Actualizar producto"""
     data = {k: v for k, v in product.dict().items() if v is not None}
-    data["id"] = product_id
-    success, message = product_ctrl.update_product(data, current_user)
+    success, message = product_ctrl.update_product(product_id, data, current_user)
     if not success:
         raise HTTPException(status_code=400, detail=message)
     return {"success": True, "message": message}
@@ -95,4 +94,4 @@ def delete_product(product_id: int, current_user: Dict = Depends(get_current_use
 @router.get("/low-stock/alerts")
 def low_stock(current_user: Dict = Depends(get_current_user)):
     """Productos con stock bajo"""
-    return product_ctrl.get_low_stock_products()
+    return product_ctrl.get_low_stock_products(current_user)
