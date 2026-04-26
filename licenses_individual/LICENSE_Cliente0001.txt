@@ -33,9 +33,9 @@ IMPORTANTE:
 ──────────────────────────────────────────────────────────────────
 • Esta licencia es válida para UNA instalación
 • Mantener este archivo en un lugar seguro
-• Para soporte técnico: soporte@tuempresa.com
+• Para soporte técnico: soporte@t-gestiona.com
 
 ╔════════════════════════════════════════════════════════════════╗
-║  © 2025 System_pos. Todos los derechos reservados.             ║
+║  © 2025 T-Gestiona. Todos los derechos reservados.             ║
 ╚════════════════════════════════════════════════════════════════╝
 

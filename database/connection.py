@@ -30,22 +30,38 @@ class DatabaseConnection:
         self.load_config()
     
     def load_config(self):
-        """Cargar configuración de la base de datos"""
+        """Cargar configuración de la base de datos.
+        Prioridad: variables de entorno (Railway/producción) > database.json (local)
+        """
+        # 1. Variables de entorno tienen prioridad (Railway las inyecta automáticamente)
+        if os.environ.get("DB_HOST"):
+            self.config = {
+                "host":            os.environ.get("DB_HOST", "localhost"),
+                "port":            os.environ.get("DB_PORT", "3306"),
+                "name":            os.environ.get("DB_NAME", "pos_system"),
+                "user":            os.environ.get("DB_USER", "root"),
+                "password":        os.environ.get("DB_PASSWORD", ""),
+                "max_connections": os.environ.get("DB_MAX_CONNECTIONS", "10"),
+                "timeout":         os.environ.get("DB_TIMEOUT", "30"),
+            }
+            self.logger.info("✅ Configuración DB cargada desde variables de entorno")
+            return
+
+        # 2. Fallback: leer database.json (entorno local)
         try:
-            # Usar PathManager para obtener la ruta correcta
             config_path = get_config_path(self.config_file)
             self.logger.info(f"🔍 DEBUG - Intentando leer: {config_path}")
             self.logger.info(f"🔍 DEBUG - ¿Archivo existe?: {config_path.exists()}")
-            
+
             self.config = load_config(self.config_file)
-            
+
             if not self.config:
                 self.logger.error("No se pudo cargar la configuración de la base de datos")
                 self.config = self._get_default_config()
             else:
                 self.logger.info(f"✅ Configuración cargada desde: {config_path}")
                 self.logger.info(f"🔍 DEBUG - Contenido leído: {self.config}")
-                
+
         except Exception as e:
             self.logger.error(f"Error cargando configuración: {e}")
             self.config = self._get_default_config()
