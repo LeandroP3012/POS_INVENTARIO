@@ -88,7 +88,8 @@ class DatabaseConnection:
             # DEBUG: Ver qué contiene self.config (solo en modo debug)
             # self.logger.debug(f"🔍 DEBUG - Config completa: {self.config}")
             
-            # Parámetros de conexión
+            # Parámetros de conexión — sin pool nombrado para evitar problemas
+            # con el fork de procesos de uvicorn --reload
             connection_params = {
                 'host': self.config.get('host', 'localhost'),
                 'port': int(self.config.get('port', 3306)),
@@ -98,11 +99,8 @@ class DatabaseConnection:
                 'charset': 'utf8mb4',
                 'collation': 'utf8mb4_unicode_ci',
                 'autocommit': True,
-                'pool_name': 'pos_pool',
-                'pool_size': int(self.config.get('max_connections', 10)),
-                'pool_reset_session': True,
-                'connect_timeout': 10,  # ✅ Timeout de conexión
-                'use_pure': False  # ✅ Usar C extension para mejor performance
+                'connect_timeout': 10,
+                'use_pure': True,
             }
             
             # ✅ Solo log al reconectar, no en cada verificación
@@ -323,9 +321,15 @@ class DatabaseConnection:
 
     def ensure_connection(self):
         """Obtener una conexión activa, reconectando si es necesario."""
-        # ✅ Usar pool de conexiones: si existe pool, reutilizar
         if not self._is_connection_alive():
             self.logger.info("🔄 Reconectando a la base de datos...")
+            if not self.connect():
+                return None
+        # Ping real al socket para detectar conexiones silenciosamente muertas
+        try:
+            self.connection.ping(reconnect=True, attempts=3, delay=1)
+        except Exception:
+            self.connection = None
             if not self.connect():
                 return None
         return self.connection

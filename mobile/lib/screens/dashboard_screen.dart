@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
 import '../core/app_theme.dart';
@@ -19,38 +22,101 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, dynamic>? _dailyData;
   Map<String, dynamic>? _salesData;
   bool _loading = true;
+  bool _refreshing = false; // refresco silencioso en fondo
+  String? _error;
 
   final _currency = NumberFormat.currency(locale: 'es_PE', symbol: 'S/ ');
   final _fmt = DateFormat('yyyy-MM-dd');
+
+  static const _cacheKeyDaily = 'dashboard_cache_daily';
+  static const _cacheKeySales = 'dashboard_cache_sales';
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductProvider>().loadProducts();
-      _loadData();
+      _initData();
     });
   }
 
-  Future<void> _loadData() async {
-    setState(() => _loading = true);
+  /// Carga caché primero (muestra datos al instante) y luego refresca en fondo.
+  Future<void> _initData() async {
+    await _loadFromCache();
+    _loadData(silent: _dailyData != null);
+  }
+
+  Future<void> _loadFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dailyJson = prefs.getString(_cacheKeyDaily);
+      final salesJson = prefs.getString(_cacheKeySales);
+      if (dailyJson != null && salesJson != null && mounted) {
+        setState(() {
+          _dailyData = jsonDecode(dailyJson) as Map<String, dynamic>;
+          _salesData = jsonDecode(salesJson) as Map<String, dynamic>;
+          _loading = false;
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveToCache(
+      Map<String, dynamic> daily, Map<String, dynamic> sales) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_cacheKeyDaily, jsonEncode(daily));
+      await prefs.setString(_cacheKeySales, jsonEncode(sales));
+    } catch (_) {}
+  }
+
+  Future<void> _loadData({bool silent = false}) async {
+    if (silent) {
+      if (mounted) setState(() => _refreshing = true);
+    } else {
+      if (mounted)
+        setState(() {
+          _loading = true;
+          _error = null;
+        });
+    }
     try {
       final today = _fmt.format(DateTime.now());
-      final start = _fmt.format(DateTime.now().subtract(const Duration(days: 6)));
+      final start =
+          _fmt.format(DateTime.now().subtract(const Duration(days: 6)));
 
       final results = await Future.wait([
-        ApiClient.instance.get('/reports/daily', params: {'report_date': today}),
-        ApiClient.instance.get('/reports/sales', params: {'start_date': start, 'end_date': today}),
+        ApiClient.instance
+            .get('/reports/daily', params: {'report_date': today}),
+        ApiClient.instance.get('/reports/sales',
+            params: {'start_date': start, 'end_date': today}),
       ]);
 
       if (!mounted) return;
-      setState(() {
-        _dailyData = results[0].data as Map<String, dynamic>?;
-        _salesData = results[1].data as Map<String, dynamic>?;
-        _loading = false;
-      });
-    } catch (_) {
-      if (mounted) setState(() => _loading = false);
+      final daily = results[0].data as Map<String, dynamic>;
+      final sales = results[1].data as Map<String, dynamic>;
+      await _saveToCache(daily, sales);
+      if (mounted) {
+        setState(() {
+          _dailyData = daily;
+          _salesData = sales;
+          _loading = false;
+          _refreshing = false;
+          _error = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _refreshing = false;
+          // Solo mostrar error si no hay datos en caché
+          if (_dailyData == null) {
+            _error =
+                'No se pudo conectar al servidor. Verifique que el backend esté activo.';
+          }
+        });
+      }
     }
   }
 
@@ -62,7 +128,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: RefreshIndicator(
-        onRefresh: _loadData,
+        onRefresh: () => _loadData(silent: false),
         color: AppColors.accent,
         child: CustomScrollView(
           slivers: [
@@ -110,23 +176,75 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ],
                       ),
                     ),
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
+                    // Indicador de refresco silencioso
+                    if (_refreshing)
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white54,
+                        ),
+                      )
+                    else
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.dashboard_rounded,
+                          color: Colors.white,
+                          size: 26,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.dashboard_rounded,
-                        color: Colors.white,
-                        size: 26,
-                      ),
-                    ),
                   ],
                 ),
               ),
             ),
+
+            // Banner sin conexión (solo cuando hay caché disponible)
+            if (_error != null && _dailyData != null)
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: AppColors.warning.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.wifi_off_rounded,
+                          color: AppColors.warning, size: 18),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'Sin conexión — mostrando datos guardados',
+                          style:
+                              TextStyle(color: AppColors.warning, fontSize: 12),
+                        ),
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () => _loadData(silent: false),
+                        child: const Text('Reintentar',
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.warning)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
             SliverPadding(
               padding: const EdgeInsets.all(16),
@@ -134,27 +252,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ? const SliverFillRemaining(
                       child: Center(child: CircularProgressIndicator()),
                     )
-                  : SliverList(
-                      delegate: SliverChildListDelegate([
-                        // ── KPIs de hoy ─────────────────────────────────────
-                        const SectionHeader(title: 'Resumen del día'),
-                        const SizedBox(height: 12),
-                        _buildKpiGrid(),
-                        const SizedBox(height: 24),
+                  : (_error != null && _dailyData == null)
+                      ? SliverFillRemaining(
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.wifi_off_rounded,
+                                      color: AppColors.danger, size: 48),
+                                  const SizedBox(height: 16),
+                                  Text(_error!,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          color: AppColors.textSecondary)),
+                                  const SizedBox(height: 16),
+                                  OutlinedButton.icon(
+                                    icon: const Icon(Icons.refresh_rounded,
+                                        size: 16),
+                                    label: const Text('Reintentar'),
+                                    onPressed: () => _loadData(silent: false),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                      : SliverList(
+                          delegate: SliverChildListDelegate([
+                            // ── KPIs de hoy ─────────────────────────────────────
+                            const SectionHeader(title: 'Resumen del día'),
+                            const SizedBox(height: 12),
+                            _buildKpiGrid(),
+                            const SizedBox(height: 24),
 
-                        // ── Inventario ──────────────────────────────────────
-                        const SectionHeader(title: 'Estado del inventario'),
-                        const SizedBox(height: 12),
-                        _buildInventoryRow(),
-                        const SizedBox(height: 24),
+                            // ── Inventario ──────────────────────────────────────
+                            const SectionHeader(title: 'Estado del inventario'),
+                            const SizedBox(height: 12),
+                            _buildInventoryRow(),
+                            const SizedBox(height: 24),
 
-                        // ── Accesos rápidos ─────────────────────────────────
-                        const SectionHeader(title: 'Accesos rápidos'),
-                        const SizedBox(height: 12),
-                        _buildQuickActions(context),
-                        const SizedBox(height: 16),
-                      ]),
-                    ),
+                            // ── Accesos rápidos ─────────────────────────────────
+                            const SectionHeader(title: 'Accesos rápidos'),
+                            const SizedBox(height: 12),
+                            _buildQuickActions(context),
+                            const SizedBox(height: 16),
+                          ]),
+                        ),
             ),
           ],
         ),
@@ -384,9 +529,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   static String _spanishDate(DateTime d) {
-    const dias = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-                   'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const dias = [
+      'lunes',
+      'martes',
+      'miércoles',
+      'jueves',
+      'viernes',
+      'sábado',
+      'domingo'
+    ];
+    const meses = [
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto',
+      'septiembre',
+      'octubre',
+      'noviembre',
+      'diciembre'
+    ];
     final dia = dias[d.weekday - 1];
     final mes = meses[d.month - 1];
     return '$dia, ${d.day} de $mes de ${d.year}';

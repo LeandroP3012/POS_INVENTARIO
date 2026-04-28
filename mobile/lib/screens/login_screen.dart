@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
           content: Row(children: [
             const Icon(Icons.error_outline, color: Colors.white, size: 18),
             const SizedBox(width: 8),
-            Expanded(child: Text(auth.error ?? 'Error al iniciar sesiÃ³n')),
+            Expanded(child: Text(auth.error ?? 'Error al iniciar sesión')),
           ]),
           backgroundColor: AppColors.danger,
         ),
@@ -122,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Sistema de gestiÃ³n de punto de venta\nmoderno e intuitivo para tu negocio.',
+                      'Sistema de gestión de punto de venta\nmoderno e intuitivo para tu negocio.',
                       style: GoogleFonts.inter(
                         color: Colors.white60,
                         fontSize: 15,
@@ -132,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 48),
                     _featureChip(Icons.shield_outlined, 'Seguro y confiable'),
                     const SizedBox(height: 12),
-                    _featureChip(Icons.speed_outlined, 'RÃ¡pido y eficiente'),
+                    _featureChip(Icons.speed_outlined, 'Rápido y eficiente'),
                     const SizedBox(height: 12),
                     _featureChip(Icons.bar_chart_outlined, 'Reportes en tiempo real'),
                   ],
@@ -236,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Iniciar SesiÃ³n',
+            'Iniciar Sesión',
             style: GoogleFonts.inter(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -276,9 +276,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Campo contraseÃ±a
+          // Campo contraseña
           Text(
-            'ContraseÃ±a',
+            'Contraseña',
             style: GoogleFonts.inter(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -292,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
             textInputAction: TextInputAction.done,
             onFieldSubmitted: (_) => auth.loading ? null : _login(),
             decoration: InputDecoration(
-              hintText: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+              hintText: '••••••••',
               prefixIcon: const Icon(Icons.lock_outline_rounded),
               suffixIcon: IconButton(
                 icon: Icon(
@@ -304,11 +304,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             validator: (v) =>
-                (v == null || v.isEmpty) ? 'Ingresa tu contraseÃ±a' : null,
+                (v == null || v.isEmpty) ? 'Ingresa tu contraseña' : null,
           ),
           const SizedBox(height: 28),
 
-          // BotÃ³n
+          // Botón
           SizedBox(
             width: double.infinity,
             height: 50,
@@ -323,12 +323,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : Row(
+                  : const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.login_rounded, size: 18),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.login_rounded, size: 18),
+                        SizedBox(width: 8),
+                        Text(
                           'Ingresar al sistema',
                           style: TextStyle(fontSize: 15),
                         ),

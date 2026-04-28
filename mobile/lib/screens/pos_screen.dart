@@ -217,7 +217,7 @@ class _PosScreenState extends State<PosScreen> {
         padding: const EdgeInsets.all(12),
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 170,
-          mainAxisExtent: 120,
+          mainAxisExtent: 130,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),
@@ -491,10 +491,10 @@ class _PosProductCard extends StatelessWidget {
                     ),
                     child: Text(
                       outOfStock
-                          ? '0'
+                          ? 'Agotado'
                           : product.stockQuantity.toStringAsFixed(0),
                       style: GoogleFonts.inter(
-                        fontSize: 10,
+                        fontSize: 9,
                         fontWeight: FontWeight.bold,
                         color: outOfStock
                             ? AppColors.danger
@@ -531,15 +531,6 @@ class _PosProductCard extends StatelessWidget {
                   color: outOfStock ? AppColors.textMuted : AppColors.accent,
                 ),
               ),
-              if (outOfStock)
-                Text(
-                  'Sin stock',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    color: AppColors.danger,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
             ],
           ),
         ),

@@ -8,6 +8,7 @@ import 'dashboard_screen.dart';
 import 'pos_screen.dart';
 import 'products_screen.dart';
 import 'reports_screen.dart';
+import 'settings_screen.dart';
 
 // ── Modelo de elemento de navegación ─────────────────────────────────────────
 
@@ -62,6 +63,12 @@ class _HomeScreenState extends State<HomeScreen> {
       label: 'Reportes',
       section: 'Análisis',
     ),
+    _NavTab(
+      icon: Icons.settings_outlined,
+      activeIcon: Icons.settings_rounded,
+      label: 'Configuración',
+      section: 'Sistema',
+    ),
   ];
 
   static const _screens = [
@@ -69,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
     PosScreen(),
     ProductsScreen(),
     ReportsScreen(),
+    SettingsScreen(),
   ];
 
   void _onSelect(int index) => setState(() => _selectedIndex = index);
@@ -110,7 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: AppColors.accent,
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.point_of_sale, color: Colors.white, size: 16),
+              child: const Icon(Icons.point_of_sale,
+                  color: Colors.white, size: 16),
             ),
             const SizedBox(width: 8),
             Text(
@@ -146,11 +155,13 @@ class _HomeScreenState extends State<HomeScreen> {
           selectedIndex: _selectedIndex,
           onDestinationSelected: _onSelect,
           height: 64,
-          destinations: _tabs.map((t) => NavigationDestination(
-            icon: Icon(t.icon),
-            selectedIcon: Icon(t.activeIcon),
-            label: t.label.split(' ').first,
-          )).toList(),
+          destinations: _tabs
+              .map((t) => NavigationDestination(
+                    icon: Icon(t.icon),
+                    selectedIcon: Icon(t.activeIcon),
+                    label: t.label.split(' ').first,
+                  ))
+              .toList(),
         ),
       ),
     );
@@ -230,7 +241,8 @@ class _SidebarContent extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(9),
                     ),
-                    child: const Icon(Icons.point_of_sale, color: Colors.white, size: 20),
+                    child: const Icon(Icons.point_of_sale,
+                        color: Colors.white, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Column(
@@ -316,7 +328,8 @@ class _SidebarContent extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppColors.success.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4),

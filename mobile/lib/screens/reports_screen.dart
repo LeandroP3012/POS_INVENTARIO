@@ -49,7 +49,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _loading = false);
+      setState(() {
+        _loading = false;
+        _salesData = null;
+        _dailyData = null;
+      });
     }
   }
 
@@ -212,7 +216,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionLabel(
+                    const _SectionLabel(
                         label: 'Últimos 30 días',
                         icon: Icons.calendar_month_outlined),
                     const SizedBox(height: 10),
@@ -283,7 +287,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _SectionLabel(
+                      const _SectionLabel(
                           label: 'Ingresos por día',
                           icon: Icons.bar_chart_rounded),
                       const SizedBox(height: 12),
@@ -472,7 +476,7 @@ class _SalesChart extends StatelessWidget {
           show: true,
           drawVerticalLine: false,
           horizontalInterval: null,
-          getDrawingHorizontalLine: (_) => FlLine(
+          getDrawingHorizontalLine: (_) => const FlLine(
             color: AppColors.divider,
             strokeWidth: 1,
           ),

@@ -1,0 +1,51 @@
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+.env
+*.env
+
+# ── Credenciales / Configuración sensible ────────────────
+config/database.json
+licenses_database.json
+LICENCIAS_MAESTRAS.txt
+licenses_list.csv
+licenses_individual/
+
+# ── Logs / Backups ────────────────────────────────────────
+logs/
+backups/
+*.log
+
+# ── Base de datos local ───────────────────────────────────
+*.sql
+*.db
+*.sqlite3
+
+# ── IDE ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+
+# ── Flutter / Dart ────────────────────────────────────────
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+
+# ── Output del instalador ─────────────────────────────────
+Output/
+
+# ── Windows ───────────────────────────────────────────────
+Thumbs.db
+desktop.ini

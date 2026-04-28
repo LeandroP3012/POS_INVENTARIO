@@ -8,10 +8,12 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:pos_mobile/main.dart';
+import 'package:pos_mobile/providers/printer_provider.dart';
 
 void main() {
   testWidgets('App loads splash screen', (WidgetTester tester) async {
-    await tester.pumpWidget(const PosApp());
+    final printerProvider = PrinterProvider();
+    await tester.pumpWidget(PosApp(printerProvider: printerProvider));
     expect(find.byType(PosApp), findsOneWidget);
   });
 }
