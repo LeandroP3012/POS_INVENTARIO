@@ -40,8 +40,7 @@ class _PosScreenState extends State<PosScreen> {
     final q = _searchQuery.toLowerCase();
     return products
         .where((p) =>
-            p.name.toLowerCase().contains(q) ||
-            p.sku.toLowerCase().contains(q))
+            p.name.toLowerCase().contains(q) || p.sku.toLowerCase().contains(q))
         .toList();
   }
 
@@ -180,7 +179,8 @@ class _PosScreenState extends State<PosScreen> {
             children: [
               CircularProgressIndicator(color: AppColors.accent),
               SizedBox(height: 12),
-              Text('Cargando productos...', style: TextStyle(color: AppColors.textSecondary)),
+              Text('Cargando productos...',
+                  style: TextStyle(color: AppColors.textSecondary)),
             ],
           ),
         );
@@ -241,8 +241,7 @@ class _PosScreenState extends State<PosScreen> {
           children: [
             // Header carrito
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(bottom: BorderSide(color: AppColors.divider)),
@@ -289,8 +288,8 @@ class _PosScreenState extends State<PosScreen> {
                         padding: EdgeInsets.zero,
                         minimumSize: const Size(0, 0),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        textStyle:
-                            GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500),
+                        textStyle: GoogleFonts.inter(
+                            fontSize: 12, fontWeight: FontWeight.w500),
                       ),
                     ),
                 ],
@@ -393,9 +392,8 @@ class _PosScreenState extends State<PosScreen> {
                       style: GoogleFonts.inter(
                           fontWeight: FontWeight.w600, fontSize: 14),
                     ),
-                    onPressed: sale.loading || sale.cart.isEmpty
-                        ? null
-                        : _checkout,
+                    onPressed:
+                        sale.loading || sale.cart.isEmpty ? null : _checkout,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.success,
                       foregroundColor: Colors.white,
@@ -479,8 +477,8 @@ class _PosProductCard extends StatelessWidget {
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 5, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     decoration: BoxDecoration(
                       color: outOfStock
                           ? AppColors.danger.withValues(alpha: 0.1)
@@ -515,9 +513,8 @@ class _PosProductCard extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: outOfStock
-                      ? AppColors.textMuted
-                      : AppColors.textPrimary,
+                  color:
+                      outOfStock ? AppColors.textMuted : AppColors.textPrimary,
                   height: 1.2,
                 ),
               ),
@@ -742,7 +739,8 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white54, size: 20),
+                    icon: const Icon(Icons.close,
+                        color: Colors.white54, size: 20),
                     onPressed: () => Navigator.pop(context),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -841,7 +839,8 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _paidCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
                         prefixText: 'S/ ',
                         errorText: _hasError ? 'Monto insuficiente' : null,
@@ -903,9 +902,8 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                           ? null
                           : () => Navigator.pop(context, {
                                 'method': _method,
-                                'paid': _method == 'cash'
-                                    ? _paid
-                                    : widget.total,
+                                'paid':
+                                    _method == 'cash' ? _paid : widget.total,
                               }),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.success,
@@ -971,10 +969,8 @@ class _PayMethodChip extends StatelessWidget {
                 label,
                 style: GoogleFonts.inter(
                   fontSize: 11,
-                  fontWeight:
-                      selected ? FontWeight.w600 : FontWeight.w400,
-                  color:
-                      selected ? AppColors.accent : AppColors.textSecondary,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  color: selected ? AppColors.accent : AppColors.textSecondary,
                 ),
               ),
             ],
@@ -1043,4 +1039,3 @@ class _ErrorState extends StatelessWidget {
     );
   }
 }
-

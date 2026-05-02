@@ -166,7 +166,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         Expanded(
                           child: _GradientKpi(
                             label: 'Ventas',
-                            value: dailySummary?['total_sales']?.toString() ?? '0',
+                            value:
+                                dailySummary?['total_sales']?.toString() ?? '0',
                             icon: Icons.receipt_long_outlined,
                           ),
                         ),
@@ -224,8 +225,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       Expanded(
                         child: _KpiCard(
                           title: 'Transacciones',
-                          value: summary?['total_transactions']?.toString() ??
-                              '0',
+                          value:
+                              summary?['total_transactions']?.toString() ?? '0',
                           icon: Icons.point_of_sale_rounded,
                           iconColor: AppColors.accent,
                         ),
@@ -315,9 +316,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   static String _spanishDate(DateTime d) {
-    const dias = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-                   'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const dias = [
+      'lunes',
+      'martes',
+      'miércoles',
+      'jueves',
+      'viernes',
+      'sábado',
+      'domingo'
+    ];
+    const meses = [
+      'enero',
+      'febrero',
+      'marzo',
+      'abril',
+      'mayo',
+      'junio',
+      'julio',
+      'agosto',
+      'septiembre',
+      'octubre',
+      'noviembre',
+      'diciembre'
+    ];
     final dia = dias[d.weekday - 1];
     final mes = meses[d.month - 1];
     return '$dia, ${d.day} de $mes';
@@ -456,8 +477,7 @@ class _SalesChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spots = dailySales.asMap().entries.map((e) {
-      final revenue =
-          (e.value['total_revenue'] as num?)?.toDouble() ?? 0;
+      final revenue = (e.value['total_revenue'] as num?)?.toDouble() ?? 0;
       return FlSpot(e.key.toDouble(), revenue);
     }).toList();
 
@@ -465,7 +485,8 @@ class _SalesChart extends StatelessWidget {
       return Center(
         child: Text(
           'Sin datos para mostrar',
-          style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 13),
+          style:
+              GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 13),
         ),
       );
     }
@@ -493,12 +514,12 @@ class _SalesChart extends StatelessWidget {
               ),
             ),
           ),
-          bottomTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false)),
+          bottomTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
         borderData: FlBorderData(show: false),
         lineBarsData: [
