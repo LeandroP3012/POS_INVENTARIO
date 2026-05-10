@@ -13,10 +13,11 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
-    from database.connection import get_db_connection
+    from database.connection import get_db_connection, _get_pool
     DB_AVAILABLE = True
 except ImportError:
     DB_AVAILABLE = False
+    _get_pool = None
     print("⚠️ Base de datos no disponible en base_model")
 
 class BaseModel:
@@ -38,28 +39,14 @@ class BaseModel:
         self.logger = logging.getLogger(f'model.{self.__class__.__name__}')
     
     def get_connection(self):
-        """Obtener conexión a la base de datos"""
-        if not self.db:
+        """Obtener conexión fresca del pool (cada llamada retorna una independiente)."""
+        if not DB_AVAILABLE or _get_pool is None:
             self.logger.error("DB no disponible")
             return None
-
         try:
-            # ✅ Usar ensure_connection que maneja el pool automáticamente
-            if hasattr(self.db, 'ensure_connection') and callable(self.db.ensure_connection):
-                return self.db.ensure_connection()
-            
-            # Fallback para compatibilidad
-            connection = getattr(self.db, 'connection', None)
-            if not connection:
-                if not self.db.connect():
-                    self.logger.error("No se pudo establecer conexión a la base de datos")
-                    return None
-                connection = getattr(self.db, 'connection', None)
-            
-            return connection
-
+            return _get_pool().get_connection()
         except Exception as exc:
-            self.logger.error(f"Error obteniendo conexión a la base de datos: {exc}")
+            self.logger.error(f"Error obteniendo conexión del pool: {exc}")
             return None
     
     def connect(self) -> bool:

@@ -152,6 +152,10 @@ class ReportModel(BaseModel):
             import traceback
             traceback.print_exc()
             return {'success': False, 'message': str(e)}
+        finally:
+            if connection:
+                try: connection.close()
+                except Exception: pass
     
     def get_products_sold_report(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """Reporte de productos vendidos"""
@@ -204,6 +208,10 @@ class ReportModel(BaseModel):
         except Exception as e:
             self.logger.error(f"Error en reporte de productos: {e}")
             return {'success': False, 'message': str(e)}
+        finally:
+            if connection:
+                try: connection.close()
+                except Exception: pass
     
     def get_inventory_report(self) -> Dict[str, Any]:
         """Reporte de inventario actual"""
@@ -267,6 +275,10 @@ class ReportModel(BaseModel):
         except Exception as e:
             self.logger.error(f"Error en reporte de inventario: {e}")
             return {'success': False, 'message': str(e)}
+        finally:
+            if connection:
+                try: connection.close()
+                except Exception: pass
     
     def get_cashier_report(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """Reporte por cajero"""
@@ -315,6 +327,10 @@ class ReportModel(BaseModel):
         except Exception as e:
             self.logger.error(f"Error en reporte de cajeros: {e}")
             return {'success': False, 'message': str(e)}
+        finally:
+            if connection:
+                try: connection.close()
+                except Exception: pass
     
     def get_daily_summary(self, date: datetime) -> Dict[str, Any]:
         """Resumen del día"""
@@ -471,6 +487,10 @@ class ReportModel(BaseModel):
             import traceback
             traceback.print_exc()
             return {'success': False, 'message': str(e)}
+        finally:
+            if connection:
+                try: connection.close()
+                except Exception: pass
 
     def get_monthly_sales_report(self, year: int) -> Dict[str, Any]:
         """Reporte mensual de ventas agrupado por mes para un año dado"""
@@ -568,6 +588,10 @@ class ReportModel(BaseModel):
             import traceback
             traceback.print_exc()
             return {'success': False, 'message': str(e)}
+        finally:
+            if connection:
+                try: connection.close()
+                except Exception: pass
 
     def get_inventory_investment_report(self) -> Dict[str, Any]:
         """Reporte de inversión en inventario: stock × costo y stock × precio de venta"""
@@ -651,6 +675,10 @@ class ReportModel(BaseModel):
             import traceback
             traceback.print_exc()
             return {'success': False, 'message': str(e)}
+        finally:
+            if connection:
+                try: connection.close()
+                except Exception: pass
 
     def get_specific_product_report(self, product_id: int, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """Reporte de rendimiento de un producto específico en un período"""
@@ -759,6 +787,10 @@ class ReportModel(BaseModel):
             import traceback
             traceback.print_exc()
             return {'success': False, 'message': str(e)}
+        finally:
+            if connection:
+                try: connection.close()
+                except Exception: pass
 
     def get_all_products_list(self) -> List[Dict[str, Any]]:
         """Obtener lista simple de productos activos para selectores"""
@@ -781,3 +813,7 @@ class ReportModel(BaseModel):
         except Exception as e:
             self.logger.error(f"Error al obtener lista de productos: {e}")
             return []
+        finally:
+            if connection:
+                try: connection.close()
+                except Exception: pass
