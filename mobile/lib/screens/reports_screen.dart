@@ -14,7 +14,7 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
-  bool _loading = false;
+  bool _loading = true;  // true desde el inicio: evita flash del estado vacío
   String? _errorMsg;
   Map<String, dynamic>? _salesData;
   Map<String, dynamic>? _dailyData;
@@ -43,10 +43,22 @@ class _ReportsScreenState extends State<ReportsScreen> {
         'report_date': fmt.format(DateTime.now()),
       });
 
+      final salesData = salesRes.data as Map<String, dynamic>;
+      final dailyData = dailyRes.data as Map<String, dynamic>;
+
+      // Verificar éxito a nivel de API (HTTP 200 con {success: false} no lanza
+      // excepción de red, pero los datos no existen y todo mostraría 0).
+      if (salesData['success'] != true) {
+        throw Exception(salesData['message'] ?? 'Error al obtener ventas');
+      }
+      if (dailyData['success'] != true) {
+        throw Exception(dailyData['message'] ?? 'Error al obtener datos del día');
+      }
+
       if (!mounted) return;
       setState(() {
-        _salesData = salesRes.data as Map<String, dynamic>;
-        _dailyData = dailyRes.data as Map<String, dynamic>;
+        _salesData = salesData;
+        _dailyData = dailyData;
         _loading = false;
       });
     } catch (e) {

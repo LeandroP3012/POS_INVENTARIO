@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../core/app_theme.dart';
+import '../core/navigation_state.dart';
 import '../providers/auth_provider.dart';
 import 'dashboard_screen.dart';
 import 'pos_screen.dart';
@@ -38,6 +39,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    tabIndexNotifier.addListener(_handleTabChange);
+  }
+
+  void _handleTabChange() => _onSelect(tabIndexNotifier.value);
+
+  @override
+  void dispose() {
+    tabIndexNotifier.removeListener(_handleTabChange);
+    super.dispose();
+  }
 
   static const _tabs = [
     _NavTab(

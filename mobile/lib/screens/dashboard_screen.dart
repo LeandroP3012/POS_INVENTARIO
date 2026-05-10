@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
 import '../core/app_theme.dart';
+import '../core/navigation_state.dart';
 import '../providers/auth_provider.dart';
 import '../providers/product_provider.dart';
 
@@ -94,6 +95,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
       final daily = results[0].data as Map<String, dynamic>;
       final sales = results[1].data as Map<String, dynamic>;
+
+      // Verificar éxito a nivel de API. El backend puede responder HTTP 200
+      // con {success: false, message: '...'} cuando la BD falla, lo que no
+      // lanza excepción de red y haría que todos los valores queden en 0.
+      if (daily['success'] != true) {
+        throw Exception(daily['message'] ?? 'Error al obtener el reporte diario');
+      }
+      if (sales['success'] != true) {
+        throw Exception(sales['message'] ?? 'Error al obtener el reporte de ventas');
+      }
+
       await _saveToCache(daily, sales);
       if (mounted) {
         setState(() {
@@ -291,6 +303,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             _buildKpiGrid(),
                             const SizedBox(height: 24),
 
+                            // ── Métodos de pago hoy (condicional) ───────────────
+                            _buildPaymentSection(),
+
                             // ── Inventario ──────────────────────────────────────
                             const SectionHeader(title: 'Estado del inventario'),
                             const SizedBox(height: 12),
@@ -343,12 +358,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           subtitle: 'por venta',
         ),
         KpiCard(
-          title: 'Período (7 días)',
-          value:
-              '${((_salesData?['data'] as Map<String, dynamic>?)?['summary'] as Map?)?['total_sales'] ?? 0}',
+          title: 'Ingresos 7 días',
+          value: _currency.format(
+            (((_salesData?['data'] as Map?)?['summary'] as Map?)?['total_amount'] as num?)?.toDouble() ?? 0.0,
+          ),
           icon: Icons.calendar_today_rounded,
           color: AppColors.info,
-          subtitle: 'ventas totales',
+          subtitle: '${((_salesData?['data'] as Map?)?['summary'] as Map?)?['total_sales'] ?? 0} ventas',
         ),
       ];
 
@@ -447,28 +463,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         label: 'Nueva Venta',
         icon: Icons.add_shopping_cart_rounded,
         color: AppColors.accent,
-        onTap: () {
-          // Navegar al tab Punto de Venta (index 1)
-          final home = context.findAncestorStateOfType<State>();
-          if (home != null) {
-            final homeState = home as dynamic;
-            try {
-              homeState._onSelect(1);
-            } catch (_) {}
-          }
-        },
+        onTap: () => tabIndexNotifier.value = 1,
       ),
       _QuickAction(
         label: 'Ver Productos',
         icon: Icons.inventory_2_rounded,
         color: AppColors.success,
-        onTap: () {},
+        onTap: () => tabIndexNotifier.value = 2,
       ),
       _QuickAction(
         label: 'Ver Reportes',
         icon: Icons.bar_chart_rounded,
         color: AppColors.warning,
-        onTap: () {},
+        onTap: () => tabIndexNotifier.value = 3,
       ),
     ];
 
@@ -526,6 +533,94 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+  // ── Sección de métodos de pago ──────────────────────────────────────────────
+
+  Widget _buildPaymentSection() {
+    final summary =
+        (_dailyData?['data'] as Map?)?['sales_summary'] as Map?;
+    final methods = summary?['payment_methods'] as Map?;
+    if (methods == null || methods.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader(title: 'Pagos de hoy'),
+        const SizedBox(height: 12),
+        ...methods.entries.map((e) {
+          final name = e.key as String;
+          final data = e.value as Map;
+          final count = data['count'] as int? ?? 0;
+          final amount = (data['amount'] as num?)?.toDouble() ?? 0.0;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(_paymentIcon(name),
+                      size: 20, color: AppColors.accent),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _capitalize(name),
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '$count ${count == 1 ? 'venta' : 'ventas'}',
+                    style: GoogleFonts.inter(
+                        fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    _currency.format(amount),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  static IconData _paymentIcon(String method) {
+    switch (method.toLowerCase()) {
+      case 'efectivo':
+        return Icons.payments_outlined;
+      case 'tarjeta':
+      case 'tarjeta_credito':
+      case 'tarjeta_debito':
+        return Icons.credit_card_rounded;
+      case 'transferencia':
+      case 'yape':
+      case 'plin':
+        return Icons.phone_android_rounded;
+      default:
+        return Icons.attach_money_rounded;
+    }
+  }
+
+  static String _capitalize(String s) => s.isEmpty
+      ? s
+      : '${s[0].toUpperCase()}${s.substring(1).toLowerCase().replaceAll('_', ' ')}';
 
   static String _getGreeting() {
     final hour = DateTime.now().hour;
