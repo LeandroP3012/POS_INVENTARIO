@@ -8,6 +8,7 @@ import 'dashboard_screen.dart';
 import 'pos_screen.dart';
 import 'products_screen.dart';
 import 'reports_screen.dart';
+import 'categories_screen.dart';
 import 'settings_screen.dart';
 
 // ── Modelo de elemento de navegación ─────────────────────────────────────────
@@ -64,6 +65,12 @@ class _HomeScreenState extends State<HomeScreen> {
       section: 'Análisis',
     ),
     _NavTab(
+      icon: Icons.category_outlined,
+      activeIcon: Icons.category_rounded,
+      label: 'Categorías',
+      section: 'Operaciones',
+    ),
+    _NavTab(
       icon: Icons.settings_outlined,
       activeIcon: Icons.settings_rounded,
       label: 'Configuración',
@@ -76,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
     PosScreen(),
     ProductsScreen(),
     ReportsScreen(),
+    CategoriesScreen(),
     SettingsScreen(),
   ];
 

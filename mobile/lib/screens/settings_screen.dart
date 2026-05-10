@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import '../core/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/printer_provider.dart';
+import 'roles_screen.dart';
+import 'ticket_config_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -82,6 +84,31 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 const _PrinterList(),
+                const SizedBox(height: 28),
+
+                // ── Sección ajustes ───────────────────────────────────────
+                const _SectionHeader(title: 'Ajustes del sistema'),
+                const SizedBox(height: 10),
+                _SettingsTile(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Configuración del ticket',
+                  subtitle: 'Empresa, RUC, pie de página, opciones',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const TicketConfigScreen()),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _SettingsTile(
+                  icon: Icons.manage_accounts_rounded,
+                  title: 'Roles y permisos',
+                  subtitle: 'Gestionar roles de usuario y accesos',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RolesScreen()),
+                  ),
+                ),
                 const SizedBox(height: 28),
 
                 // ── Sección cuenta ────────────────────────────────────────
@@ -599,6 +626,67 @@ class _AccountCard extends StatelessWidget {
 }
 
 // ── Widgets auxiliares ────────────────────────────────────────────────────────
+
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.accent.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: AppColors.accent, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: AppColors.textPrimary)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      style: GoogleFonts.inter(
+                          fontSize: 12, color: AppColors.textSecondary)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _SectionHeader extends StatelessWidget {
   final String title;

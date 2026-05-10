@@ -106,14 +106,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final msg = e.toString().contains('SocketException') ||
+                e.toString().contains('Connection')
+            ? 'Sin conexión a internet'
+            : e.toString().contains('401')
+                ? 'Sesión expirada — vuelve a iniciar sesión'
+                : e.toString().contains('TimeoutException') ||
+                        e.toString().contains('timeout')
+                    ? 'El servidor tardó demasiado. Intenta de nuevo.'
+                    : 'Error: ${e.toString().length > 80 ? e.toString().substring(0, 80) : e.toString()}';
         setState(() {
           _loading = false;
           _refreshing = false;
-          // Solo mostrar error si no hay datos en caché
-          if (_dailyData == null) {
-            _error =
-                'No se pudo conectar al servidor. Verifique que el backend esté activo.';
-          }
+          if (_dailyData == null) _error = msg;
         });
       }
     }
@@ -307,7 +312,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildKpiGrid() {
-    final daily = (_dailyData?['data'] as Map<String, dynamic>?)?['sales_summary'] as Map<String, dynamic>?;
+    final daily = (_dailyData?['data']
+        as Map<String, dynamic>?)?['sales_summary'] as Map<String, dynamic>?;
     final totalSales = daily?['total_sales'] ?? 0;
     final totalRevenue = (daily?['total_amount'] as num?)?.toDouble() ?? 0.0;
     final avgTicket = totalSales > 0 ? totalRevenue / (totalSales as num) : 0.0;
@@ -338,7 +344,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         KpiCard(
           title: 'Período (7 días)',
-          value: '${((_salesData?['data'] as Map<String, dynamic>?)?['summary'] as Map?)?['total_sales'] ?? 0}',
+          value:
+              '${((_salesData?['data'] as Map<String, dynamic>?)?['summary'] as Map?)?['total_sales'] ?? 0}',
           icon: Icons.calendar_today_rounded,
           color: AppColors.info,
           subtitle: 'ventas totales',

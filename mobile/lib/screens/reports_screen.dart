@@ -15,6 +15,7 @@ class ReportsScreen extends StatefulWidget {
 
 class _ReportsScreenState extends State<ReportsScreen> {
   bool _loading = false;
+  String? _errorMsg;
   Map<String, dynamic>? _salesData;
   Map<String, dynamic>? _dailyData;
   final _currency = NumberFormat.currency(locale: 'es_PE', symbol: 'S/ ');
@@ -30,6 +31,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Future<void> _loadReports() async {
     setState(() => _loading = true);
+    _errorMsg = null;
 
     final fmt = DateFormat('yyyy-MM-dd');
     try {
@@ -49,8 +51,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+      final msg = e.toString().contains('SocketException') ||
+              e.toString().contains('Connection')
+          ? 'Sin conexión a internet'
+          : e.toString().contains('401')
+              ? 'Sesión expirada — vuelve a iniciar sesión'
+              : e.toString().contains('TimeoutException') ||
+                      e.toString().contains('timeout')
+                  ? 'El servidor tardó demasiado (Railway puede estar iniciando). Intenta de nuevo.'
+                  : 'Error: ${e.toString().length > 100 ? e.toString().substring(0, 100) : e.toString()}';
       setState(() {
         _loading = false;
+        _errorMsg = msg;
         _salesData = null;
         _dailyData = null;
       });
@@ -76,8 +88,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
       );
     }
 
-    final summary = (_salesData?['data'] as Map<String, dynamic>?)?['summary'] as Map<String, dynamic>?;
-    final dailySummary = (_dailyData?['data'] as Map<String, dynamic>?)?['sales_summary'] as Map<String, dynamic>?;
+    final summary = (_salesData?['data'] as Map<String, dynamic>?)?['summary']
+        as Map<String, dynamic>?;
+    final dailySummary = (_dailyData?['data']
+        as Map<String, dynamic>?)?['sales_summary'] as Map<String, dynamic>?;
     final hasError = _salesData == null && _dailyData == null;
 
     if (hasError) {
@@ -108,7 +122,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       fontSize: 16,
                     )),
                 const SizedBox(height: 8),
-                Text('Verifica tu conexión e intenta de nuevo.',
+                Text(_errorMsg ?? 'Verifica tu conexión e intenta de nuevo.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                         color: AppColors.textSecondary, fontSize: 13)),
@@ -225,8 +239,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       Expanded(
                         child: _KpiCard(
                           title: 'Transacciones',
-                          value:
-                              summary?['total_sales']?.toString() ?? '0',
+                          value: summary?['total_sales']?.toString() ?? '0',
                           icon: Icons.point_of_sale_rounded,
                           iconColor: AppColors.accent,
                         ),
@@ -265,8 +278,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         child: _KpiCard(
                           title: 'Promedio diario',
                           value: _currency.format(
-                              ((summary?['total_amount'] as num?)
-                                          ?.toDouble() ??
+                              ((summary?['total_amount'] as num?)?.toDouble() ??
                                       0) /
                                   30),
                           icon: Icons.today_outlined,
@@ -281,7 +293,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
             // Gráfico ventas diarias
             if ((_salesData?['data'] as Map?)?['daily_sales'] != null &&
-                ((_salesData!['data'] as Map)['daily_sales'] as List).isNotEmpty)
+                ((_salesData!['data'] as Map)['daily_sales'] as List)
+                    .isNotEmpty)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -301,7 +314,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           border: Border.all(color: AppColors.cardBorder),
                         ),
                         child: _SalesChart(
-                            dailySales: (_salesData!['data'] as Map)['daily_sales'] as List),
+                            dailySales: (_salesData!['data']
+                                as Map)['daily_sales'] as List),
                       ),
                     ],
                   ),

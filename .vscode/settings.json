@@ -9,6 +9,9 @@
       "approve": true,
       "matchCommandLine": true
     },
-    "flutter": true
+    "flutter": true,
+    "git add": true,
+    "git commit": true,
+    "git push": true
   }
 }
