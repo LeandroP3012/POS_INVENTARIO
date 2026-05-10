@@ -76,8 +76,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
       );
     }
 
-    final summary = _salesData?['summary'] as Map<String, dynamic>?;
-    final dailySummary = _dailyData?['summary'] as Map<String, dynamic>?;
+    final summary = (_salesData?['data'] as Map<String, dynamic>?)?['summary'] as Map<String, dynamic>?;
+    final dailySummary = (_dailyData?['data'] as Map<String, dynamic>?)?['sales_summary'] as Map<String, dynamic>?;
     final hasError = _salesData == null && _dailyData == null;
 
     if (hasError) {
@@ -179,7 +179,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           child: _GradientKpi(
                             label: 'Ingresos',
                             value: _currency.format(
-                                (dailySummary?['total_revenue'] as num?)
+                                (dailySummary?['total_amount'] as num?)
                                         ?.toDouble() ??
                                     0),
                             icon: Icons.attach_money_rounded,
@@ -195,7 +195,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             value: dailySummary?['total_sales'] != null &&
                                     (dailySummary!['total_sales'] as int) > 0
                                 ? _currency.format(
-                                    ((dailySummary['total_revenue'] as num?)
+                                    ((dailySummary['total_amount'] as num?)
                                                 ?.toDouble() ??
                                             0) /
                                         (dailySummary['total_sales'] as int))
@@ -226,7 +226,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         child: _KpiCard(
                           title: 'Transacciones',
                           value:
-                              summary?['total_transactions']?.toString() ?? '0',
+                              summary?['total_sales']?.toString() ?? '0',
                           icon: Icons.point_of_sale_rounded,
                           iconColor: AppColors.accent,
                         ),
@@ -236,7 +236,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         child: _KpiCard(
                           title: 'Total ingresos',
                           value: _currency.format(
-                              (summary?['total_revenue'] as num?)?.toDouble() ??
+                              (summary?['total_amount'] as num?)?.toDouble() ??
                                   0),
                           icon: Icons.trending_up_rounded,
                           iconColor: AppColors.success,
@@ -248,13 +248,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       Expanded(
                         child: _KpiCard(
                           title: 'Ticket promedio',
-                          value: summary?['total_transactions'] != null &&
-                                  (summary!['total_transactions'] as int) > 0
+                          value: summary?['total_sales'] != null &&
+                                  (summary!['total_sales'] as int) > 0
                               ? _currency.format(
-                                  ((summary['total_revenue'] as num?)
+                                  ((summary['total_amount'] as num?)
                                               ?.toDouble() ??
                                           0) /
-                                      (summary['total_transactions'] as int))
+                                      (summary['total_sales'] as int))
                               : 'S/ 0.00',
                           icon: Icons.receipt_outlined,
                           iconColor: AppColors.warning,
@@ -265,7 +265,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         child: _KpiCard(
                           title: 'Promedio diario',
                           value: _currency.format(
-                              ((summary?['total_revenue'] as num?)
+                              ((summary?['total_amount'] as num?)
                                           ?.toDouble() ??
                                       0) /
                                   30),
@@ -280,8 +280,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
 
             // Gráfico ventas diarias
-            if (_salesData?['daily_sales'] != null &&
-                (_salesData!['daily_sales'] as List).isNotEmpty)
+            if ((_salesData?['data'] as Map?)?['daily_sales'] != null &&
+                ((_salesData!['data'] as Map)['daily_sales'] as List).isNotEmpty)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -301,7 +301,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           border: Border.all(color: AppColors.cardBorder),
                         ),
                         child: _SalesChart(
-                            dailySales: _salesData!['daily_sales'] as List),
+                            dailySales: (_salesData!['data'] as Map)['daily_sales'] as List),
                       ),
                     ],
                   ),
@@ -477,7 +477,7 @@ class _SalesChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spots = dailySales.asMap().entries.map((e) {
-      final revenue = (e.value['total_revenue'] as num?)?.toDouble() ?? 0;
+      final revenue = (e.value['total_amount'] as num?)?.toDouble() ?? 0;
       return FlSpot(e.key.toDouble(), revenue);
     }).toList();
 

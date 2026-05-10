@@ -40,10 +40,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  /// Carga caché primero (muestra datos al instante) y luego refresca en fondo.
+  /// Siempre carga datos frescos del servidor al entrar al tab.
   Future<void> _initData() async {
-    await _loadFromCache();
-    _loadData(silent: _dailyData != null);
+    _loadData(silent: false);
   }
 
   Future<void> _loadFromCache() async {
@@ -308,9 +307,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildKpiGrid() {
-    final daily = _dailyData?['summary'] as Map<String, dynamic>?;
+    final daily = (_dailyData?['data'] as Map<String, dynamic>?)?['sales_summary'] as Map<String, dynamic>?;
     final totalSales = daily?['total_sales'] ?? 0;
-    final totalRevenue = (daily?['total_revenue'] as num?)?.toDouble() ?? 0.0;
+    final totalRevenue = (daily?['total_amount'] as num?)?.toDouble() ?? 0.0;
     final avgTicket = totalSales > 0 ? totalRevenue / (totalSales as num) : 0.0;
 
     return LayoutBuilder(builder: (context, constraints) {
@@ -339,7 +338,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         KpiCard(
           title: 'Período (7 días)',
-          value: '${_salesData?['summary']?['total_transactions'] ?? 0}',
+          value: '${((_salesData?['data'] as Map<String, dynamic>?)?['summary'] as Map?)?['total_sales'] ?? 0}',
           icon: Icons.calendar_today_rounded,
           color: AppColors.info,
           subtitle: 'ventas totales',
