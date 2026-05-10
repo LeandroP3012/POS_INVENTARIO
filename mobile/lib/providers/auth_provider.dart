@@ -18,11 +18,28 @@ class AuthProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isLoggedIn => _currentUser != null;
 
-  /// Intenta recargar sesión desde almacenamiento seguro
+  /// Intenta recargar sesión desde almacenamiento seguro.
+  /// Si el token existe pero tiene más de [kSessionMaxSeconds] segundos
+  /// desde que se guardó, se elimina la sesión y se devuelve false.
   Future<bool> tryAutoLogin() async {
     final token = await _storage.read(key: kTokenKey);
     final userData = await _storage.read(key: kUserKey);
     if (token == null || userData == null) return false;
+
+    // Comprobar tiempo de vida de la sesión
+    final tsStr = await _storage.read(key: kSessionTimestampKey);
+    if (tsStr != null) {
+      final loginTime =
+          DateTime.fromMillisecondsSinceEpoch(int.parse(tsStr));
+      if (DateTime.now().difference(loginTime).inSeconds > kSessionMaxSeconds) {
+        await _storage.deleteAll();
+        return false;
+      }
+    } else {
+      // No hay timestamp (instalación anterior): invalidar
+      await _storage.deleteAll();
+      return false;
+    }
 
     try {
       final json = jsonDecode(userData) as Map<String, dynamic>;
@@ -60,6 +77,11 @@ class AuthProvider extends ChangeNotifier {
           'user_type': user.userType,
           'role_id': user.roleId,
         }),
+      );
+      // Registrar momento del login para control de expiración de sesión
+      await _storage.write(
+        key: kSessionTimestampKey,
+        value: DateTime.now().millisecondsSinceEpoch.toString(),
       );
 
       _loading = false;

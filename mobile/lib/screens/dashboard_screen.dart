@@ -19,7 +19,8 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen>
+    with WidgetsBindingObserver {
   Map<String, dynamic>? _dailyData;
   Map<String, dynamic>? _salesData;
   bool _loading = true;
@@ -35,10 +36,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductProvider>().loadProducts();
       _initData();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Recarga datos cuando la app vuelve al primer plano.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Si ya hay datos en pantalla, refresco silencioso; si no, muestra spinner
+      _loadData(silent: _dailyData != null);
+    }
   }
 
   /// Siempre carga datos frescos del servidor al entrar al tab.

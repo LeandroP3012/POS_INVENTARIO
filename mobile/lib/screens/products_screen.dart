@@ -377,6 +377,33 @@ class _AddProductSheetState extends State<_AddProductSheet> {
   final _minStockCtrl = TextEditingController(text: '5');
   bool _saving = false;
 
+  // Categorías cargadas desde la API
+  List<Map<String, dynamic>> _categories = [];
+  int? _selectedCategoryId;
+  bool _loadingCategories = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final res = await ApiClient.instance.get('/categories/');
+      final data = res.data;
+      List<Map<String, dynamic>> cats = [];
+      if (data is List) {
+        cats = List<Map<String, dynamic>>.from(data);
+      } else if (data is Map && data['data'] != null) {
+        cats = List<Map<String, dynamic>>.from(data['data'] as List);
+      }
+      if (mounted) setState(() { _categories = cats; _loadingCategories = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loadingCategories = false);
+    }
+  }
+
   @override
   void dispose() {
     _nameCtrl.dispose();
@@ -400,6 +427,7 @@ class _AddProductSheetState extends State<_AddProductSheet> {
       'stock_quantity': double.tryParse(_stockCtrl.text) ?? 0,
       'min_stock': double.tryParse(_minStockCtrl.text) ?? 5,
       'status': 'active',
+      if (_selectedCategoryId != null) 'category_id': _selectedCategoryId,
     });
 
     if (mounted) Navigator.pop(context);
@@ -463,6 +491,57 @@ class _AddProductSheetState extends State<_AddProductSheet> {
               const SizedBox(height: 12),
               _field(_skuCtrl, 'SKU / Código',
                   hint: 'Ej. CC-500', required: true),
+              const SizedBox(height: 12),
+              // ── Categoría ───────────────────────────────────
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Categoría',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  _loadingCategories
+                      ? const SizedBox(
+                          height: 48,
+                          child: Center(
+                              child: SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2))))
+                      : DropdownButtonFormField<int?>(
+                          value: _selectedCategoryId,
+                          decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 13),
+                          ),
+                          hint: const Text('Sin categoría'),
+                          items: [
+                            const DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text('Sin categoría'),
+                            ),
+                            ..._categories.map((cat) {
+                              final id = cat['category_id'] as int? ??
+                                  cat['id'] as int?;
+                              final name =
+                                  cat['name']?.toString() ?? 'Sin nombre';
+                              return DropdownMenuItem<int?>(
+                                value: id,
+                                child: Text(name),
+                              );
+                            }),
+                          ],
+                          onChanged: (v) =>
+                              setState(() => _selectedCategoryId = v),
+                        ),
+                ],
+              ),
               const SizedBox(height: 12),
               Row(children: [
                 Expanded(
