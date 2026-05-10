@@ -6,6 +6,7 @@ Proporciona funcionalidad común para todos los modelos
 import os
 import sys
 import logging
+import time
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
@@ -38,16 +39,29 @@ class BaseModel:
         """Configurar sistema de logging para modelos"""
         self.logger = logging.getLogger(f'model.{self.__class__.__name__}')
     
-    def get_connection(self):
-        """Obtener conexión fresca del pool (cada llamada retorna una independiente)."""
+    def get_connection(self, max_retries: int = 3, retry_delay: float = 0.4):
+        """
+        Obtener conexión fresca del pool con reintentos.
+        Si el pool está agotado, espera un poco y vuelve a intentar hasta
+        max_retries veces antes de devolver None.
+        """
         if not DB_AVAILABLE or _get_pool is None:
             self.logger.error("DB no disponible")
             return None
-        try:
-            return _get_pool().get_connection()
-        except Exception as exc:
-            self.logger.error(f"Error obteniendo conexión del pool: {exc}")
-            return None
+        for attempt in range(max_retries):
+            try:
+                return _get_pool().get_connection()
+            except Exception as exc:
+                if attempt < max_retries - 1:
+                    self.logger.warning(
+                        f"Pool ocupado, reintentando ({attempt + 1}/{max_retries}): {exc}"
+                    )
+                    time.sleep(retry_delay)
+                else:
+                    self.logger.error(
+                        f"Error obteniendo conexión del pool: {exc}"
+                    )
+        return None
     
     def connect(self) -> bool:
         """Establecer conexión con la base de datos"""

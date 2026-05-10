@@ -27,6 +27,13 @@ class _DashboardScreenState extends State<DashboardScreen>
   bool _refreshing = false; // refresco silencioso en fondo
   String? _error;
 
+  // Última vez que los datos se cargaron con éxito.
+  // Evita el "retry storm" cuando la app reanuda: si la carga anterior
+  // fue hace menos de 30 s y hay datos, no se vuelve a pedir.
+  DateTime? _lastSuccessfulLoad;
+
+  static const _kMinRefreshInterval = Duration(seconds: 30);
+
   final _currency = NumberFormat.currency(locale: 'es_PE', symbol: 'S/ ');
   final _fmt = DateFormat('yyyy-MM-dd');
 
@@ -50,12 +57,22 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   /// Recarga datos cuando la app vuelve al primer plano.
+  /// Guarda freno de 30 s para no disparar peticiones en cascada cuando
+  /// el pool de BD está saturado (retry storm).
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // Si ya hay datos en pantalla, refresco silencioso; si no, muestra spinner
-      _loadData(silent: _dailyData != null);
+    if (state != AppLifecycleState.resumed) return;
+
+    // Nunca lanzar si ya hay una carga en vuelo
+    if (_loading || _refreshing) return;
+
+    // Si hay datos recientes (< 30 s), no volver a pedir
+    if (_dailyData != null && _lastSuccessfulLoad != null) {
+      final elapsed = DateTime.now().difference(_lastSuccessfulLoad!);
+      if (elapsed < _kMinRefreshInterval) return;
     }
+
+    _loadData(silent: _dailyData != null);
   }
 
   /// Siempre carga datos frescos del servidor al entrar al tab.
@@ -133,6 +150,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           _loading = false;
           _refreshing = false;
           _error = null;
+          _lastSuccessfulLoad = DateTime.now();
         });
       }
     } catch (e) {
