@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../core/app_theme.dart';
 import '../models/cart_item.dart';
 import '../models/product.dart';
+import '../providers/printer_provider.dart';
 import '../providers/product_provider.dart';
 import '../providers/sale_provider.dart';
 
@@ -82,7 +83,16 @@ class _PosScreenState extends State<PosScreen> {
     if (!mounted) return;
 
     if (ok) {
-      showSuccess(context, 'Â¡Venta registrada correctamente!');
+      showSuccess(context, '¡Venta registrada correctamente!');
+      // Imprimir ticket automáticamente
+      final printer = context.read<PrinterProvider>().defaultPrinter;
+      final saleData = sale.lastSaleResult;
+      if (printer != null && saleData != null) {
+        context.read<PrinterProvider>().printTicket(
+          printer: printer,
+          saleData: saleData,
+        );
+      }
     } else {
       showError(context, sale.error ?? 'Error al procesar la venta');
     }
