@@ -21,6 +21,36 @@ except ImportError:
     _get_pool = None
     print("⚠️ Base de datos no disponible en base_model")
 
+class _PooledConnectionWrapper:
+    """
+    Envuelve una PooledMySQLConnection para garantizar que siempre se
+    devuelva al pool (vía close()) incluso si el código que la usa
+    olvida llamar close() explícitamente.
+    """
+
+    def __init__(self, cnx):
+        object.__setattr__(self, '_cnx', cnx)
+
+    def __getattr__(self, name):
+        cnx = object.__getattribute__(self, '_cnx')
+        if cnx is None:
+            raise AttributeError(f"Conexión cerrada, no se puede acceder a '{name}'")
+        return getattr(cnx, name)
+
+    def close(self):
+        cnx = object.__getattribute__(self, '_cnx')
+        if cnx is not None:
+            try:
+                cnx.close()
+            except Exception:
+                pass
+            object.__setattr__(self, '_cnx', None)
+
+    def __del__(self):
+        """Garantía de seguridad: devuelve al pool si el caller olvidó close()."""
+        self.close()
+
+
 class BaseModel:
     """Clase base para todos los modelos del sistema"""
     
@@ -50,7 +80,8 @@ class BaseModel:
             return None
         for attempt in range(max_retries):
             try:
-                return _get_pool().get_connection()
+                raw = _get_pool().get_connection()
+                return _PooledConnectionWrapper(raw)
             except Exception as exc:
                 if attempt < max_retries - 1:
                     self.logger.warning(
