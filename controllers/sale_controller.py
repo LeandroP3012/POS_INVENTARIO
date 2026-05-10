@@ -82,11 +82,11 @@ class SaleController:
             items = []
             for item in cart_items:
                 items.append({
-                    'product_id': item['id'],
-                    'product_sku': item['sku'],
-                    'product_name': item['name'],
+                    'product_id': item.get('product_id') or item.get('id'),
+                    'product_sku': item.get('sku', ''),
+                    'product_name': item.get('product_name') or item.get('name', ''),
                     'quantity': item['quantity'],
-                    'unit_price': item['price'],
+                    'unit_price': item.get('unit_price') or item.get('price'),
                     'discount_percent': item.get('discount_percent', 0),
                     'discount_amount': item.get('discount_amount', 0),
                     'subtotal': item['subtotal'],
@@ -135,7 +135,8 @@ class SaleController:
         
         # Calcular subtotal de cada item
         for item in cart_items:
-            item_subtotal = Decimal(str(item['price'])) * Decimal(str(item['quantity']))
+            unit_price = item.get('unit_price') or item.get('price', 0)
+            item_subtotal = Decimal(str(unit_price)) * Decimal(str(item['quantity']))
             item_discount = item.get('discount_amount', 0)
             item_subtotal_after_discount = item_subtotal - Decimal(str(item_discount))
             

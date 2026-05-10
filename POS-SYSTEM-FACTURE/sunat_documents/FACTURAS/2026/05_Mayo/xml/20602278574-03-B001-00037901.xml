@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ccts="urn:un:unece:uncefact:documentation:2" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:qdt="urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2" xmlns:sac="urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1" xmlns:udt="urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2 http://docs.oasis-open.org/ubl/os-UBL-2.1/xsd/maindoc/UBL-Invoice-2.1.xsd">
+  <ext:UBLExtensions>
+    <ext:UBLExtension>
+      <ext:ExtensionContent><ds:Signature><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/><ds:Reference URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/><ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>zsmh0Oy+UMA4mEwRZpwB2gYhFESHRJgdfpRfSqTeW0c=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>cJq+Im/1Me+Qfmn7TPFkAFj2A5AQOt0S94i9oI9+46MOonDf4h6+Ioq/Z3B92kDPR4/5alW9eO31uU9xiXfBQSLq7RpYKHRrsF/PAM10bnJwC9fjMK3kIY3NmwdUNoWhAtEl/GZ4YB+HPw5JuXTpSPA/5HIO+U1ZSSy+dO2+ogL9HgRmP16fHX24pPTkzWTONKDZpQzgwHJqVs9XspD0Fo2nSRLR7tTn1mmsZeQ5O8XHi6GAklbmu2tFdTmBOz4oxUeVW078yc4i31gFgMc95O30GtTOA16iwrXeLlxZhcybmz9dgjbBMQnSvu09rc2omGVIB2X4ADgSwXldY7J0yw==</ds:SignatureValue><ds:KeyInfo><ds:X509Data><ds:X509Certificate>MIIJtDCCB5ygAwIBAgIJe3W1KTozgp6NMA0GCSqGSIb3DQEBCwUAMIIBIjELMAkG
+A1UEBhMCUEUxDTALBgNVBAgMBExJTUExDTALBgNVBAcMBExJTUExPTA7BgNVBAsM
+NHNlZSBjdXJyZW50IGFkZHJlc3MgYXQgd3d3LmNhbWVyZmlybWEuY29tLnBlL2Fk
+ZHJlc3MxMDAuBgNVBAsMJ0FDIENBTUVSRklSTUEgUEVSw5ogQ0VSVElGSUNBRE9T
+IC0gMjAxNjEUMBIGA1UEBRMLMjA1NjYzMDI0NDcxGjAYBgNVBGEMEU5UUlBFLTIw
+NTY2MzAyNDQ3MSAwHgYDVQQKDBdDQU1FUkZJUk1BIFBFUsOaIFMuQS5DLjEwMC4G
+A1UEAwwnQUMgQ0FNRVJGSVJNQSBQRVLDmiBDRVJUSUZJQ0FET1MgLSAyMDE2MB4X
+DTI2MDMwNzE1MTYwMFoXDTI4MDMwNjE1MTYwMFowggGqMSYwJAYJKoZIhvcNAQkB
+FhdqaG9hb2ZyYW5jbzMwQGdtYWlsLmNvbTEzMDEGA1UEAwwqRVZFTFlOIEdVSVNF
+TExBIEFMVkFSQURPIFBJTkVETyBERSBQSUxMQUNBMRgwFgYDVQQqDA9FVkVMWU4g
+R1VJU0VMTEExIzAhBgNVBAQMGkFMVkFSQURPIFBJTkVETyBERSBQSUxMQUNBMRUw
+EwYDVQQFEwxETkk6NDExNTAzMjYxHzAdBgNVBAcMFlNBTiBKVUFOIERFIE1JUkFG
+TE9SRVMxFDASBgNVBAgMC0xJTUEgLSBMSU1BMRgwFgYDVQQMDA9HRVJFTlRFIEdF
+TkVSQUwxETAPBgNVBAsMCEdFUkVOQ0lBMTMwMQYDVQQLDCpJc3N1ZWQgYnkgQUMg
+Q0FNRVJGSVJNQSBQRVLDmiBTQUMgRVIgW1BFMV0xFDASBgNVBGEMCzIwNjAyMjc4
+NTc0MTkwNwYDVQQKDDBCT1RJQ0FTIE1BUyBTQUxVRCBFICYgTyBTT0NJRURBRCBB
+Tk9OSU1BIENFUlJBREExCzAJBgNVBAYTAlBFMIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEA5I98nl7BTzBFA1Qvx2HE3T7SJqipgR58NvkTov+gEutB4Oqt
+r5aCqlP7lWw5BTS+XB6SvJjhjwDu6q3l5lLsGlMobbtg8xfFSQ8lLCVcNRBo7qQW
+0o7zEFP0tLHvjcnBl5lXXslmtnBQYeoLrK1y8Asb2b5v/5GO8bHrCC/uzS2WnPdu
+ck0Te05rLOGZuCGJEFOvWEgmfU+hQus4G/YZJrmQRY2rgEXwvnh9oJV3MgAkC+sP
+llQFMsP98Wv/zs+gbpENuTtNchU69O+jauoEz86tTlXIoWJ3ylDokxC8M6gdn7Tl
+Hoc3KXwx/eZoWQOThjR+rz175JsUPAtm4wmiUwIDAQABo4IDXzCCA1swDAYDVR0T
+AQH/BAIwADAOBgNVHQ8BAf8EBAMCBsAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsG
+AQUFBwMEMB0GA1UdDgQWBBTXRIQEvjX+2Z5VoFUR+rembVQh5DCBjQYIKwYBBQUH
+AQEEgYAwfjBUBggrBgEFBQcwAoZIaHR0cDovL3d3dy5jYW1lcmZpcm1hLmNvbS9j
+ZXJ0cy9hY19jYW1lcmZpcm1hX3BlcnVfY2VydGlmaWNhZG9zLTIwMTYuY3J0MCYG
+CCsGAQUFBzABhhpodHRwOi8vb2NzcC5jYW1lcmZpcm1hLmNvbTAfBgNVHSMEGDAW
+gBQ6bmUY51bS5PMt3aV8cm3/MOGGJzCBoAYDVR0fBIGYMIGVMEigRqBEhkJodHRw
+Oi8vY3JsLmNhbWVyZmlybWEuY29tL2FjX2NhbWVyZmlybWFfcGVydV9jZXJ0aWZp
+Y2Fkb3MtMjAxNi5jcmwwSaBHoEWGQ2h0dHA6Ly9jcmwxLmNhbWVyZmlybWEuY29t
+L2FjX2NhbWVyZmlybWFfcGVydV9jZXJ0aWZpY2Fkb3MtMjAxNi5jcmwwgd0GA1Ud
+EQSB1TCB0oEXamhvYW9mcmFuY28zMEBnbWFpbC5jb22kgbYwgbMxHzAdBgorBgEE
+AYGHLh4HDA9FVkVMWU4gR1VJU0VMTEExGDAWBgorBgEEAYGHLh4IDAhBTFZBUkFE
+TzEhMB8GCisGAQQBgYcuHgkMEVBJTkVETyBERSBQSUxMQUNBMVMwUQYKKwYBBAGB
+hy4eCgxDQ0VSVElGSUNBRE8gREUgUEVSU09OQSBKVVJJRElDQSAtIEFUUklCVVRP
+IERFIFZJTkNVTEFDSU9OIEEgRU5USURBRDAeBgNVHRIEFzAVgRNpbmZvQGNhbWVy
+ZmlybWEuY29tMIGoBgNVHSAEgaAwgZ0wgZoGDCsGAQQBgYcuHhAAATCBiTA0Bggr
+BgEFBQcCARYoaHR0cHM6Ly93d3cuY2FtZXJmaXJtYS5jb20ucGUvbm9ybWF0aXZh
+LzBRBggrBgEFBQcCAjBFGkNDRVJUSUZJQ0FETyBERSBQRVJTT05BIEpVUklESUNB
+IC0gQVRSSUJVVE8gREUgVklOQ1VMQUNJT04gQSBFTlRJREFEMA0GCSqGSIb3DQEB
+CwUAA4ICAQCFnruxb4W0fGLg2xq4UqyXr/DAy6wudfHcc2rOAKiG2c3Sk1TZZMq1
+H2HzT3vgqjndZhtYI0yk1Rjhgd+MpjhtJ6om0uGOuHRn2MceYDo8vYiwXvTxc/fG
+n1OHhhGV3+j2qnYPxm6yceSyc2elm/s1yV4qY+OQD3WNm7phtwGl2VI29U+Mg3iZ
++g4mja6swPZcI8PmDyPr4h3m7VLOUWhRGjW4DhVgkKauyx6gwUZ8aYa3EYmgMOKc
+3n7WKL5CLP6ILARy/rgMaDSuytiUk3uwse3kMA55/rwbm2iB3EaGYjyZNbehDS+j
+kzNqszsF19B6zm/0A1oP4m56GSE/KrJOVOueYJMVFjmDsDYku3Wt7cL99IDenV3y
+1ZdidUxDP/2qeKr29rtdmuMQvbs0o/q6dUzgXaDPdMTfXVqwyC+FwttW1ZAflZsr
+MKnytt7YcztDCmWV4nJXuP4V8fSbSEKaVxs4aq3bpwCyfTMa6rcGd0YwTJ+7den6
+264SQF0RIrfoCQB9ouhzaHnD1kyXmkPkUffnziSqw6ZkPSFcdj/hg+ezZap+KlFP
+02y+D83sLB30ZpkvBd/zJVSJbfv4Se6nhbuve+nFCUhQd5j78i35hZSWys5BR7cW
+lYy+FqHIWEPpHa2whm3HMLp7+UGJEM0fSgCxx0l5TUwfqKIBYzZs2Q==
+</ds:X509Certificate></ds:X509Data></ds:KeyInfo></ds:Signature></ext:ExtensionContent>
+    </ext:UBLExtension>
+  </ext:UBLExtensions>
+  <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+  <cbc:CustomizationID>2.0</cbc:CustomizationID>
+  <cbc:ID>B001-00037901</cbc:ID>
+  <cbc:IssueDate>2026-05-04</cbc:IssueDate>
+  <cbc:IssueTime>19:35:37</cbc:IssueTime>
+  <cbc:InvoiceTypeCode listID="0101">03</cbc:InvoiceTypeCode>
+  <cbc:DocumentCurrencyCode>PEN</cbc:DocumentCurrencyCode>
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <cac:PartyIdentification>
+        <cbc:ID schemeID="6">20602278574</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>BOTICAS MAS SALUD E &amp; O SOCIEDAD ANONIMA CERRADA</cbc:RegistrationName>
+        <cac:RegistrationAddress>
+          <cbc:AddressTypeCode>0000</cbc:AddressTypeCode>
+          <cac:AddressLine>
+            <cbc:Line>AV. CENTRAL 106 AA.HH ALFONSO UGARTE SAN JUAN DE MIRAFLORES</cbc:Line>
+          </cac:AddressLine>
+        </cac:RegistrationAddress>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cac:Party>
+      <cac:PartyIdentification>
+        <cbc:ID schemeID="0">-</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>Cliente Generico</cbc:RegistrationName>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:PaymentTerms>
+    <cbc:ID>FormaPago</cbc:ID>
+    <cbc:PaymentMeansID>Contado</cbc:PaymentMeansID>
+  </cac:PaymentTerms>
+  <cac:TaxTotal>
+    <cbc:TaxAmount currencyID="PEN">0.00</cbc:TaxAmount>
+    <cac:TaxSubtotal>
+      <cbc:TaxableAmount currencyID="PEN">22.00</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="PEN">0.00</cbc:TaxAmount>
+      <cac:TaxCategory>
+        <cbc:ID>S</cbc:ID>
+        <cac:TaxScheme>
+          <cbc:ID>1000</cbc:ID>
+          <cbc:Name>IGV</cbc:Name>
+          <cbc:TaxTypeCode>VAT</cbc:TaxTypeCode>
+        </cac:TaxScheme>
+      </cac:TaxCategory>
+    </cac:TaxSubtotal>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="PEN">22.00</cbc:LineExtensionAmount>
+    <cbc:TaxInclusiveAmount currencyID="PEN">25.96</cbc:TaxInclusiveAmount>
+    <cbc:PayableAmount currencyID="PEN">25.96</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+  <cac:InvoiceLine>
+    <cbc:ID>1</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="NIU">1.00</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="PEN">18.64</cbc:LineExtensionAmount>
+    <cac:PricingReference>
+      <cac:AlternativeConditionPrice>
+        <cbc:PriceAmount currencyID="PEN">22.00</cbc:PriceAmount>
+        <cbc:PriceTypeCode>01</cbc:PriceTypeCode>
+      </cac:AlternativeConditionPrice>
+    </cac:PricingReference>
+    <cac:TaxTotal>
+      <cbc:TaxAmount currencyID="PEN">3.36</cbc:TaxAmount>
+      <cac:TaxSubtotal>
+        <cbc:TaxableAmount currencyID="PEN">18.64</cbc:TaxableAmount>
+        <cbc:TaxAmount currencyID="PEN">3.36</cbc:TaxAmount>
+        <cac:TaxCategory>
+          <cbc:ID>S</cbc:ID>
+          <cbc:Percent>18.00</cbc:Percent>
+          <cbc:TaxExemptionReasonCode>10</cbc:TaxExemptionReasonCode>
+          <cac:TaxScheme>
+            <cbc:ID>1000</cbc:ID>
+            <cbc:Name>IGV</cbc:Name>
+            <cbc:TaxTypeCode>VAT</cbc:TaxTypeCode>
+          </cac:TaxScheme>
+        </cac:TaxCategory>
+      </cac:TaxSubtotal>
+    </cac:TaxTotal>
+    <cac:Item>
+      <cbc:Description>( HIDROCORTISONA )NETRACORT 1% CREMA X20GR.</cbc:Description>
+      <cac:ClassifiedTaxCategory>
+        <cbc:ID>S</cbc:ID>
+        <cbc:Percent>18.00</cbc:Percent>
+        <cac:TaxScheme>
+          <cbc:ID>1000</cbc:ID>
+          <cbc:Name>IGV</cbc:Name>
+          <cbc:TaxTypeCode>VAT</cbc:TaxTypeCode>
+        </cac:TaxScheme>
+      </cac:ClassifiedTaxCategory>
+    </cac:Item>
+    <cac:Price>
+      <cbc:PriceAmount currencyID="PEN">18.64</cbc:PriceAmount>
+    </cac:Price>
+  </cac:InvoiceLine>
+</Invoice>
