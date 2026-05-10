@@ -8,6 +8,7 @@
     "/^python -c \"\nimport os, glob\n\nfiles = glob\\.glob\\(r'C:\\\\Users\\\\USER\\\\Desktop\\\\POS\\\\mobile\\\\lib\\\\\\*\\*\\\\\\*\\.dart', recursive=True\\)\n\n# Additional replacements missed \\(lowercase variants \\+ box drawing\\)\nreplacements = \\{\n    'sesiÃ³n': 'sesión',\n    'â\\\\u201dâ\\\\u20acâ€': '──',  # box drawing dashes in comments\n\\}\n\nfor path in files:\n    with open\\(path, 'r', encoding='utf-8'\\) as f:\n        content = f\\.read\\(\\)\n    original = content\n    for bad, good in replacements\\.items\\(\\):\n        content = content\\.replace\\(bad, good\\)\n    if content != original:\n        with open\\(path, 'w', encoding='utf-8'\\) as f:\n            f\\.write\\(content\\)\n        print\\(f'Fixed: \\{os\\.path\\.basename\\(path\\)\\}'\\)\n\"\n$/": {
       "approve": true,
       "matchCommandLine": true
-    }
+    },
+    "flutter": true
   }
 }

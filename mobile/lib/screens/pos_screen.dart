@@ -88,10 +88,24 @@ class _PosScreenState extends State<PosScreen> {
       final printer = context.read<PrinterProvider>().defaultPrinter;
       final saleData = sale.lastSaleResult;
       if (printer != null && saleData != null) {
+        // Los datos reales están en saleData['sale'] (anidado en la respuesta API)
+        final ticketData = Map<String, dynamic>.from(
+            (saleData['sale'] as Map<String, dynamic>?) ?? saleData);
+        // Inyectar datos de pago del diálogo (no vienen en la respuesta de la BD)
+        final paid = result['paid'] as double;
+        final total = ticketData['total_amount'] != null
+            ? double.tryParse(ticketData['total_amount'].toString()) ?? paid
+            : paid;
+        ticketData['payment_info'] = {
+          'method': result['method'],
+          'paid_amount': paid,
+          'change_amount': paid - total > 0 ? paid - total : 0.0,
+          'include_tax': result['include_tax'] ?? true,
+        };
         context.read<PrinterProvider>().printTicket(
-          printer: printer,
-          saleData: saleData,
-        );
+              printer: printer,
+              saleData: ticketData,
+            );
       }
     } else {
       showError(context, sale.error ?? 'Error al procesar la venta');
