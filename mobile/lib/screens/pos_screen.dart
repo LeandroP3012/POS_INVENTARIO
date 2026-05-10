@@ -102,10 +102,26 @@ class _PosScreenState extends State<PosScreen> {
           'change_amount': paid - total > 0 ? paid - total : 0.0,
           'include_tax': result['include_tax'] ?? true,
         };
-        context.read<PrinterProvider>().printTicket(
+        final printed = await context.read<PrinterProvider>().printTicket(
               printer: printer,
               saleData: ticketData,
             );
+        if (!printed && mounted) {
+          final err = context.read<PrinterProvider>().lastPrintError ??
+              'Error desconocido';
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Venta OK pero error al imprimir: $err'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 6),
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+      } else if (printer == null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Venta OK. Sin impresora configurada.'),
+          duration: Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+        ));
       }
     } else {
       showError(context, sale.error ?? 'Error al procesar la venta');
