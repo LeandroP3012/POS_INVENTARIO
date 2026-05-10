@@ -100,10 +100,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // con {success: false, message: '...'} cuando la BD falla, lo que no
       // lanza excepción de red y haría que todos los valores queden en 0.
       if (daily['success'] != true) {
-        throw Exception(daily['message'] ?? 'Error al obtener el reporte diario');
+        throw Exception(
+            daily['message'] ?? 'Error al obtener el reporte diario');
       }
       if (sales['success'] != true) {
-        throw Exception(sales['message'] ?? 'Error al obtener el reporte de ventas');
+        throw Exception(
+            sales['message'] ?? 'Error al obtener el reporte de ventas');
       }
 
       await _saveToCache(daily, sales);
@@ -360,11 +362,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         KpiCard(
           title: 'Ingresos 7 días',
           value: _currency.format(
-            (((_salesData?['data'] as Map?)?['summary'] as Map?)?['total_amount'] as num?)?.toDouble() ?? 0.0,
+            (((_salesData?['data'] as Map?)?['summary']
+                        as Map?)?['total_amount'] as num?)
+                    ?.toDouble() ??
+                0.0,
           ),
           icon: Icons.calendar_today_rounded,
           color: AppColors.info,
-          subtitle: '${((_salesData?['data'] as Map?)?['summary'] as Map?)?['total_sales'] ?? 0} ventas',
+          subtitle:
+              '${((_salesData?['data'] as Map?)?['summary'] as Map?)?['total_sales'] ?? 0} ventas',
         ),
       ];
 
@@ -537,8 +543,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // ── Sección de métodos de pago ──────────────────────────────────────────────
 
   Widget _buildPaymentSection() {
-    final summary =
-        (_dailyData?['data'] as Map?)?['sales_summary'] as Map?;
+    final summary = (_dailyData?['data'] as Map?)?['sales_summary'] as Map?;
     final methods = summary?['payment_methods'] as Map?;
     if (methods == null || methods.isEmpty) return const SizedBox.shrink();
 
@@ -560,12 +565,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: AppColors.cardBorder),
               ),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               child: Row(
                 children: [
-                  Icon(_paymentIcon(name),
-                      size: 20, color: AppColors.accent),
+                  Icon(_paymentIcon(name), size: 20, color: AppColors.accent),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(

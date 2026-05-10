@@ -14,7 +14,7 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
-  bool _loading = true;  // true desde el inicio: evita flash del estado vacío
+  bool _loading = true; // true desde el inicio: evita flash del estado vacío
   String? _errorMsg;
   Map<String, dynamic>? _salesData;
   Map<String, dynamic>? _dailyData;
@@ -52,7 +52,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         throw Exception(salesData['message'] ?? 'Error al obtener ventas');
       }
       if (dailyData['success'] != true) {
-        throw Exception(dailyData['message'] ?? 'Error al obtener datos del día');
+        throw Exception(
+            dailyData['message'] ?? 'Error al obtener datos del día');
       }
 
       if (!mounted) return;
