@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import auth, products, sales, categories, reports, users, customers, credit_notes, print as print_router
+from api.routes import auth, products, sales, categories, reports, users, customers, credit_notes, print as print_router, roles, settings
 
 app = FastAPI(
     title="Sistema POS API",
@@ -39,6 +39,8 @@ app.include_router(users.router,        prefix="/api/users",        tags=["Usuar
 app.include_router(customers.router,    prefix="/api/customers",    tags=["Clientes"])
 app.include_router(credit_notes.router, prefix="/api/credit-notes", tags=["Notas de Crédito"])
 app.include_router(print_router.router,  prefix="/api/print",         tags=["Impresión"])
+app.include_router(roles.router,         prefix="/api/roles",         tags=["Roles"])
+app.include_router(settings.router,      prefix="/api/settings",      tags=["Configuración"])
 
 
 @app.get("/")
