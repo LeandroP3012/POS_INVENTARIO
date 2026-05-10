@@ -29,8 +29,7 @@ class AuthProvider extends ChangeNotifier {
     // Comprobar tiempo de vida de la sesión
     final tsStr = await _storage.read(key: kSessionTimestampKey);
     if (tsStr != null) {
-      final loginTime =
-          DateTime.fromMillisecondsSinceEpoch(int.parse(tsStr));
+      final loginTime = DateTime.fromMillisecondsSinceEpoch(int.parse(tsStr));
       if (DateTime.now().difference(loginTime).inSeconds > kSessionMaxSeconds) {
         await _storage.deleteAll();
         return false;

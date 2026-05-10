@@ -39,8 +39,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     final q = _searchQuery.toLowerCase();
     return products
         .where((p) =>
-            p.name.toLowerCase().contains(q) ||
-            p.sku.toLowerCase().contains(q))
+            p.name.toLowerCase().contains(q) || p.sku.toLowerCase().contains(q))
         .toList();
   }
 
@@ -56,8 +55,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
           if (ok) {
             showSuccess(context, 'Producto creado correctamente');
           } else {
-            showError(context,
-                context.read<ProductProvider>().error ?? 'Error al crear el producto');
+            showError(
+                context,
+                context.read<ProductProvider>().error ??
+                    'Error al crear el producto');
           }
         },
       ),
@@ -190,8 +191,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.inventory_2_outlined,
-                  size: 56,
-                  color: AppColors.textMuted.withValues(alpha: 0.4)),
+                  size: 56, color: AppColors.textMuted.withValues(alpha: 0.4)),
               const SizedBox(height: 12),
               Text(
                 _searchQuery.isEmpty
@@ -245,8 +245,8 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOut  = product.stockQuantity <= 0;
-    final isLow  = product.isLowStock && !isOut;
+    final isOut = product.stockQuantity <= 0;
+    final isLow = product.isLowStock && !isOut;
     final status = isOut
         ? (AppColors.danger, 'Sin stock', Icons.remove_circle_outline)
         : isLow
@@ -399,7 +399,11 @@ class _AddProductSheetState extends State<_AddProductSheet> {
       } else if (data is Map && data['data'] != null) {
         cats = List<Map<String, dynamic>>.from(data['data'] as List);
       }
-      if (mounted) setState(() { _categories = cats; _loadingCategories = false; });
+      if (mounted)
+        setState(() {
+          _categories = cats;
+          _loadingCategories = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _loadingCategories = false);
     }
@@ -477,7 +481,8 @@ class _AddProductSheetState extends State<_AddProductSheet> {
                 const SizedBox(width: 10),
                 Text('Nuevo producto',
                     style: GoogleFonts.inter(
-                        fontSize: 17, fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary)),
                 const Spacer(),
                 IconButton(
@@ -547,8 +552,10 @@ class _AddProductSheetState extends State<_AddProductSheet> {
               Row(children: [
                 Expanded(
                     child: _field(_priceCtrl, 'Precio de venta',
-                        hint: '0.00', required: true,
-                        isNumber: true, prefix: 'S/ ')),
+                        hint: '0.00',
+                        required: true,
+                        isNumber: true,
+                        prefix: 'S/ ')),
                 const SizedBox(width: 12),
                 Expanded(
                     child: _field(_costCtrl, 'Costo (opcional)',
