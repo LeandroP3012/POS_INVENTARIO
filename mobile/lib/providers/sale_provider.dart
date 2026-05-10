@@ -83,7 +83,7 @@ class SaleProvider extends ChangeNotifier {
 
       final response = await ApiClient.instance.post('/sales/', data: payload);
       _lastSaleResult = response.data as Map<String, dynamic>;
-      clearCart();
+      _cart.clear(); // No usar clearCart() — ese resetea _lastSaleResult
       _loading = false;
       notifyListeners();
       return true;
